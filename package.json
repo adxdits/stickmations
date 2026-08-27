@@ -1,0 +1,28 @@
+{
+  "name": "framation",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "desktop",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently --kill-others-on-fail --names frontend,desktop \"npm run start --workspace @framation/frontend\" \"npm run dev --workspace @framation/desktop\"",
+    "start": "npm run build && npm run launch --workspace @framation/desktop",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspace @framation/frontend -- --watch=false",
+    "typecheck": "npm run typecheck --workspace @framation/desktop",
+    "check": "npm run build && npm run test && npm run typecheck && npm run core:test",
+    "core:test": "cross-env JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home ./core/gradlew -p core test"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "wait-on": "^9.0.1"
+  },
+  "engines": {
+    "node": ">=22.12 <23",
+    "npm": ">=10.9 <11"
+  },
+  "packageManager": "npm@10.9.0"
+}
