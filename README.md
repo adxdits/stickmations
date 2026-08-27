@@ -57,4 +57,11 @@ This is currently a minimal foundation with no animation features implemented ye
 
 ## License
 
-Business Source License 1.1 (BUSL-1.1). See `/LICENSE`.
+Framation is source-available and is not currently open source. The source may
+be viewed and used according to the Business Source License 1.1 (BUSL-1.1).
+Production or commercial use of the licensed source requires compliance with
+BUSL-1.1 or a commercial license from the licensor.
+
+The license is currently BUSL-1.1 and is scheduled to change to the Apache
+License 2.0 on 2029-08-22. Do not describe Framation as "open source" while
+BUSL-1.1 applies. See [LICENSE](LICENSE) for the complete license terms.
