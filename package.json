@@ -3,15 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "workspaces": [
+    "engine",
     "desktop",
     "frontend"
   ],
   "scripts": {
-    "dev": "concurrently --kill-others-on-fail --names frontend,desktop \"npm run start --workspace @framation/frontend\" \"npm run dev --workspace @framation/desktop\"",
+    "dev": "npm run build --workspace @framation/engine && concurrently --kill-others-on-fail --names engine,frontend,desktop \"npm run watch --workspace @framation/engine\" \"npm run start --workspace @framation/frontend\" \"npm run dev --workspace @framation/desktop\"",
     "start": "npm run build && npm run launch --workspace @framation/desktop",
     "build": "npm run build --workspaces --if-present",
-    "test": "npm run test --workspace @framation/frontend -- --watch=false",
-    "typecheck": "npm run typecheck --workspace @framation/desktop",
+    "test": "npm run test --workspace @framation/engine && npm run test --workspace @framation/frontend -- --watch=false",
+    "typecheck": "npm run typecheck --workspace @framation/engine && npm run typecheck --workspace @framation/desktop",
     "check": "npm run build && npm run test && npm run typecheck",
     "core:test": "cross-env JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home ./core/gradlew -p core test"
   },
