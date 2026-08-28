@@ -34,13 +34,13 @@ This starts the Angular development server and opens it in Electron. Use
 
 Useful commands:
 
-| Command             | Purpose                                   |
-| ------------------- | ----------------------------------------- |
-| `npm run build`     | Build Angular and Electron                |
-| `npm test`          | Run Angular unit tests once               |
-| `npm run typecheck` | Type-check Electron main and preload code |
-| `npm run check`     | Run all JavaScript/TypeScript validation  |
-| `npm run core:test` | Run Java core tests with Gradle           |
+| Command             | Purpose                                     |
+| ------------------- | ------------------------------------------- |
+| `npm run build`     | Build the engine, Electron and Angular      |
+| `npm test`          | Run engine and Angular unit tests once      |
+| `npm run typecheck` | Type-check the engine and Electron sources  |
+| `npm run check`     | Build, test and type-check every workspace  |
+| `npm run core:test` | Run the parked Java experiment (macOS only) |
 
 VS Code recommends the Angular, Java, EditorConfig, ESLint, and Prettier
 extensions. Run the `Framation: Dev` or `Framation: Check` task from the Command
@@ -48,12 +48,18 @@ Palette for the same workflows.
 
 ## Architecture
 
-- `frontend/` - Angular editor UI.
+- `engine/` - Framework-free animation engine: domain model, kinematics, ports.
+- `frontend/` - Angular editor UI and Canvas renderer.
 - `desktop/` - Electron main process and isolated preload boundary.
-- `core/` - Independent Java animation-engine experiment.
+- `core/` - Parked Java experiment. Not on the critical path; nothing depends on it.
 - `docs/` - Project documentation.
 
-This is currently a minimal foundation with no animation features implemented yet.
+Dependencies point inward: `engine/` knows nothing about Angular or Electron.
+See [docs/architecture.md](docs/architecture.md) for the layer boundaries, the
+data-model decisions, and how SOLID is applied here.
+
+The editor UI is still a placeholder and the engine source files are empty
+scaffolding. See the architecture document for what goes in them.
 
 ## License
 
