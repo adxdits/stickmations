@@ -17,13 +17,6 @@
         "isDefault": true
       },
       "problemMatcher": []
-    },
-    {
-      "label": "Framation: Core Test",
-      "type": "npm",
-      "script": "core:test",
-      "group": "test",
-      "problemMatcher": ["$gradle"]
     }
   ]
 }

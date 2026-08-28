@@ -12,7 +12,4 @@ coverage/
 .angular/
 *.log
 
-.gradle/
-build/
-out/
 release/
