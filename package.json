@@ -2,6 +2,9 @@
   "name": "framation",
   "version": "0.1.0",
   "private": true,
+  "description": "Desktop 2D stick-figure animation software.",
+  "author": "adxdits",
+  "main": "desktop/dist/main.js",
   "workspaces": [
     "engine",
     "desktop",
@@ -14,11 +17,51 @@
     "test": "npm run test --workspace @framation/engine && npm run test --workspace @framation/frontend -- --watch=false",
     "typecheck": "npm run typecheck --workspace @framation/engine && npm run typecheck --workspace @framation/desktop",
     "check": "npm run build && npm run test && npm run typecheck",
-    "core:test": "cross-env JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home ./core/gradlew -p core test"
+    "core:test": "cross-env JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home ./core/gradlew -p core test",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder --win"
+  },
+  "build": {
+    "appId": "com.framation.app",
+    "productName": "Framation",
+    "copyright": "Copyright (c) 2026 adxdits",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "desktop/dist/**/*",
+      "desktop/package.json",
+      "frontend/dist/frontend/browser/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
     "cross-env": "^10.1.0",
+    "electron-builder": "^26.15.3",
     "wait-on": "^9.0.1"
   },
   "engines": {
