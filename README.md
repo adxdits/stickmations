@@ -5,11 +5,6 @@ Framation is a desktop 2D stick-figure animation software.
 ## Prerequisites
 
 - Node.js 22.12 and npm 10.9. Run `nvm use` from the repository root.
-- JDK 21 for the optional Java core. On macOS: `brew install openjdk@21`.
-
-The checked-in VS Code settings and `core:test` script use Homebrew's Apple
-Silicon JDK path. Change `JAVA_HOME` and the Java paths in `.vscode/settings.json`
-if your JDK is installed elsewhere.
 
 ## Setup
 
@@ -40,9 +35,8 @@ Useful commands:
 | `npm test`          | Run engine and Angular unit tests once      |
 | `npm run typecheck` | Type-check the engine and Electron sources  |
 | `npm run check`     | Build, test and type-check every workspace  |
-| `npm run core:test` | Run the parked Java experiment (macOS only) |
 
-VS Code recommends the Angular, Java, EditorConfig, ESLint, and Prettier
+VS Code recommends the Angular, EditorConfig, ESLint, and Prettier
 extensions. Run the `Framation: Dev` or `Framation: Check` task from the Command
 Palette for the same workflows.
 
@@ -51,15 +45,12 @@ Palette for the same workflows.
 - `engine/` - Framework-free animation engine: domain model, kinematics, ports.
 - `frontend/` - Angular editor UI and Canvas renderer.
 - `desktop/` - Electron main process and isolated preload boundary.
-- `core/` - Parked Java experiment. Not on the critical path; nothing depends on it.
 - `docs/` - Project documentation.
 
 Dependencies point inward: `engine/` knows nothing about Angular or Electron.
-See [docs/architecture.md](docs/architecture.md) for the layer boundaries, the
-data-model decisions, and how SOLID is applied here.
 
 The editor UI is still a placeholder and the engine source files are empty
-scaffolding. See the architecture document for what goes in them.
+scaffolding.
 
 ## License
 
