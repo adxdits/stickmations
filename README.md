@@ -29,12 +29,12 @@ This starts the Angular development server and opens it in Electron. Use
 
 Useful commands:
 
-| Command             | Purpose                                     |
-| ------------------- | ------------------------------------------- |
-| `npm run build`     | Build the engine, Electron and Angular      |
-| `npm test`          | Run engine and Angular unit tests once      |
-| `npm run typecheck` | Type-check the engine and Electron sources  |
-| `npm run check`     | Build, test and type-check every workspace  |
+| Command             | Purpose                                    |
+| ------------------- | ------------------------------------------ |
+| `npm run build`     | Build the engine, Electron and Angular     |
+| `npm test`          | Run engine and Angular unit tests once     |
+| `npm run typecheck` | Type-check the engine and Electron sources |
+| `npm run check`     | Build, test and type-check every workspace |
 
 VS Code recommends the Angular, EditorConfig, ESLint, and Prettier
 extensions. Run the `Framation: Dev` or `Framation: Check` task from the Command
@@ -42,15 +42,11 @@ Palette for the same workflows.
 
 ## Architecture
 
-- `engine/` - Framework-free animation engine: domain model, kinematics, ports.
-- `frontend/` - Angular editor UI and Canvas renderer.
+- `engine/` - Framework-free figure import, domain model, and kinematics.
+- `frontend/` - Angular editor UI and SVG figure preview.
 - `desktop/` - Electron main process and isolated preload boundary.
-- `docs/` - Project documentation.
 
 Dependencies point inward: `engine/` knows nothing about Angular or Electron.
-
-The editor UI is still a placeholder and the engine source files are empty
-scaffolding.
 
 ## License
 
