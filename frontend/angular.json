@@ -24,9 +24,6 @@
                 "glob": "**/*",
                 "input": "public"
               }
-            ],
-            "styles": [
-              "src/styles.css"
             ]
           },
           "configurations": {
@@ -61,7 +58,10 @@
               "buildTarget": "frontend:build:production"
             },
             "development": {
-              "buildTarget": "frontend:build:development"
+              "buildTarget": "frontend:build:development",
+              "prebundle": {
+                "exclude": ["@framation/engine"]
+              }
             }
           },
           "defaultConfiguration": "development"

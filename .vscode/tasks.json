@@ -3,8 +3,8 @@
   "tasks": [
     {
       "label": "Framation: Dev",
-      "type": "npm",
-      "script": "dev",
+      "type": "shell",
+      "command": "source \"$HOME/.nvm/nvm.sh\" && nvm use 22.12.0 && npm run dev",
       "isBackground": true,
       "problemMatcher": []
     },
