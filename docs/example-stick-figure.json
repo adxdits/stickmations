@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "name": "Classic Walker",
+  "joints": [
+    { "id": "head", "x": 150, "y": 58, "radius": 24, "color": "#e94f37" },
+    { "id": "neck", "x": 150, "y": 88 },
+    { "id": "left-shoulder", "x": 118, "y": 104 },
+    { "id": "right-shoulder", "x": 182, "y": 104 },
+    { "id": "left-hand", "x": 82, "y": 158 },
+    { "id": "right-hand", "x": 218, "y": 158 },
+    { "id": "hip", "x": 150, "y": 184 },
+    { "id": "left-knee", "x": 120, "y": 240 },
+    { "id": "right-knee", "x": 180, "y": 240 },
+    { "id": "left-foot", "x": 98, "y": 300 },
+    { "id": "right-foot", "x": 202, "y": 300 }
+  ],
+  "segments": [
+    { "id": "neck", "from": "head", "to": "neck", "width": 9 },
+    { "id": "left-collar", "from": "neck", "to": "left-shoulder", "width": 9 },
+    {
+      "id": "right-collar",
+      "from": "neck",
+      "to": "right-shoulder",
+      "width": 9
+    },
+    {
+      "id": "left-arm",
+      "from": "left-shoulder",
+      "to": "left-hand",
+      "width": 9
+    },
+    {
+      "id": "right-arm",
+      "from": "right-shoulder",
+      "to": "right-hand",
+      "width": 9
+    },
+    { "id": "spine", "from": "neck", "to": "hip", "width": 10 },
+    { "id": "left-thigh", "from": "hip", "to": "left-knee", "width": 10 },
+    { "id": "right-thigh", "from": "hip", "to": "right-knee", "width": 10 },
+    { "id": "left-shin", "from": "left-knee", "to": "left-foot", "width": 9 },
+    { "id": "right-shin", "from": "right-knee", "to": "right-foot", "width": 9 }
+  ]
+}
