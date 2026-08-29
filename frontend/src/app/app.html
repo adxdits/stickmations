@@ -1,4 +1,97 @@
 <main>
   <h1>{{ title() }}</h1>
-  <p>Editor foundation — nothing implemented yet.</p>
+  <label for="stick-figure-file">Import stick figure</label>
+  <input
+    id="stick-figure-file"
+    type="file"
+    accept="application/json,.json,.nodes"
+    (change)="importFigure($event)"
+  />
+
+  @if (importedFigure(); as figure) {
+    <p>Imported: {{ figure.name }}</p>
+
+    @if (preview(); as figurePreview) {
+      <label for="control-mode">Controls</label>
+      <select id="control-mode" [value]="controlMode()" (change)="selectControlMode($event)">
+        <option value="none">None</option>
+        <option value="joints">All joints</option>
+      </select>
+      <fieldset>
+        <legend>Preview</legend>
+        <svg
+          width="800"
+          height="600"
+          [attr.viewBox]="previewViewBox() ?? figurePreview.viewBox"
+          preserveAspectRatio="xMidYMid meet"
+          role="img"
+          [attr.aria-label]="figure.name + ' preview'"
+          (pointermove)="dragControl($event)"
+          (pointerup)="stopDraggingControl()"
+          (pointercancel)="stopDraggingControl()"
+        >
+          @for (segment of figurePreview.segments; track segment.id) {
+            <line
+              [attr.x1]="segment.x1"
+              [attr.y1]="segment.y1"
+              [attr.x2]="segment.x2"
+              [attr.y2]="segment.y2"
+              [attr.stroke]="segment.color"
+              [attr.stroke-width]="segment.width"
+              [attr.stroke-linecap]="segment.rounded ? 'round' : 'butt'"
+            />
+          }
+          @for (circle of figurePreview.circles; track circle.id) {
+            <circle
+              [attr.cx]="circle.cx"
+              [attr.cy]="circle.cy"
+              [attr.r]="circle.radius"
+              [attr.fill]="circle.hollow ? 'none' : circle.color"
+              [attr.stroke]="circle.color"
+              [attr.stroke-width]="circle.hollow ? circle.width : 0"
+            />
+          }
+          @if (controlMode() !== 'none') {
+            <rect
+              [attr.x]="figurePreview.center.x - 6"
+              [attr.y]="figurePreview.center.y - 6"
+              width="12"
+              height="12"
+              fill="#ffffff"
+              stroke="#000000"
+              stroke-width="2"
+              role="button"
+              tabindex="0"
+              aria-label="Move figure"
+              (pointerdown)="startDraggingFigure($event)"
+              (keydown)="moveFigureWithKeyboard($event)"
+            />
+          }
+          @if (controlMode() === 'joints') {
+            @for (joint of figurePreview.editableJoints; track joint.id) {
+              @if (joint.id !== figurePreview.center.id) {
+                <circle
+                  [attr.cx]="joint.x"
+                  [attr.cy]="joint.y"
+                  r="4"
+                  fill="#ffffff"
+                  stroke="#000000"
+                  stroke-width="1"
+                  role="button"
+                  tabindex="0"
+                  [attr.aria-label]="'Move joint ' + joint.id"
+                  (pointerdown)="startDraggingRigJoint($event, joint.id)"
+                  (keydown)="moveRigJointWithKeyboard($event, joint.id)"
+                />
+              }
+            }
+          }
+        </svg>
+      </fieldset>
+    }
+  }
+
+  @if (importError(); as error) {
+    <p role="alert">{{ error }}</p>
+  }
 </main>
