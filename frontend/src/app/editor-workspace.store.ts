@@ -20,9 +20,10 @@ const DEFAULT_LAYOUT: WorkspaceLayout = {
 @Injectable({ providedIn: 'root' })
 export class EditorWorkspaceStore {
   readonly layout = signal<WorkspaceLayout>(loadLayout());
+  readonly canvasFocused = signal(false);
 
   isVisible(panel: WorkspacePanel): boolean {
-    return this.layout()[panel];
+    return !this.canvasFocused() && this.layout()[panel];
   }
 
   toggle(panel: WorkspacePanel): void {
@@ -30,15 +31,15 @@ export class EditorWorkspaceStore {
   }
 
   focusCanvas(): void {
-    this.setLayout({
-      project: false,
-      sceneStrip: false,
-      timeline: false,
-      inspector: false,
-    });
+    this.canvasFocused.set(true);
+  }
+
+  toggleCanvasFocus(): void {
+    this.canvasFocused.update((focused) => !focused);
   }
 
   reset(): void {
+    this.canvasFocused.set(false);
     this.setLayout(DEFAULT_LAYOUT);
   }
 

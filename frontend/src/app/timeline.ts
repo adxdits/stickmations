@@ -49,7 +49,8 @@ export class Timeline implements OnDestroy {
   readonly camera = input<SceneCamera | null>(null);
   readonly currentFrameChange = output<number>();
   readonly fpsChange = output<number>();
-  readonly playbackChange = output<boolean>();
+  readonly playbackStarted = output<void>();
+  readonly playbackStopped = output<void>();
   readonly transformChange = output<TransformChange>();
   readonly cameraChange = output<CameraChange>();
   protected readonly isPlaying = signal(false);
@@ -80,7 +81,7 @@ export class Timeline implements OnDestroy {
       return;
     }
     this.isPlaying.set(true);
-    this.playbackChange.emit(true);
+    this.playbackStarted.emit();
     this.scheduleNextFrame();
   }
   protected stepFrame(offset: number): void {
@@ -152,7 +153,7 @@ export class Timeline implements OnDestroy {
     }
     this.isPlaying.set(false);
     if (wasPlaying) {
-      this.playbackChange.emit(false);
+      this.playbackStopped.emit();
     }
   }
 

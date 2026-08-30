@@ -4,7 +4,7 @@
       type="button"
       class="canvas-tool-button"
       aria-label="Undo"
-      title="Undo"
+      data-tooltip="Undo (⌘Z)"
       [disabled]="!canUndo()"
       (click)="undo.emit()"
     >
@@ -14,7 +14,7 @@
       type="button"
       class="canvas-tool-button"
       aria-label="Redo"
-      title="Redo"
+      data-tooltip="Redo (⇧⌘Z)"
       [disabled]="!canRedo()"
       (click)="redo.emit()"
     >
@@ -29,9 +29,10 @@
       [class.active-tool]="controlMode() === 'none'"
       [attr.aria-pressed]="controlMode() === 'none'"
       aria-label="Select figure"
+      data-tooltip="Select figures"
       (click)="controlModeChange.emit('none')"
     >
-      <svg lucideMousePointer2 size="15"></svg><span class="hidden sm:inline">Select</span>
+      <svg lucideMousePointer2 size="15"></svg><span class="hidden lg:inline">Select</span>
     </button>
     <button
       type="button"
@@ -39,9 +40,10 @@
       [class.active-tool]="controlMode() === 'joints'"
       [attr.aria-pressed]="controlMode() === 'joints'"
       aria-label="Edit all joints"
+      data-tooltip="Edit figure joints"
       (click)="controlModeChange.emit('joints')"
     >
-      <svg lucideBone size="15"></svg><span class="hidden sm:inline">Joints</span>
+      <svg lucideBone size="15"></svg><span class="hidden lg:inline">Joints</span>
     </button>
     <button
       type="button"
@@ -49,9 +51,10 @@
       [class.active-tool]="controlMode() === 'camera'"
       [attr.aria-pressed]="controlMode() === 'camera'"
       aria-label="Edit camera"
+      data-tooltip="Edit animated camera"
       (click)="controlModeChange.emit('camera')"
     >
-      <svg lucideCamera size="15"></svg><span class="hidden sm:inline">Camera</span>
+      <svg lucideCamera size="15"></svg><span class="hidden lg:inline">Camera</span>
     </button>
     <button
       type="button"
@@ -59,37 +62,55 @@
       [class.active-tool]="controlMode() === 'pan'"
       [attr.aria-pressed]="controlMode() === 'pan'"
       aria-label="Pan canvas"
-      title="Hand tool"
+      data-tooltip="Hand tool (hold Space)"
       (click)="controlModeChange.emit('pan')"
     >
-      <svg lucideHand size="15"></svg><span class="hidden sm:inline">Hand</span>
+      <svg lucideHand size="15"></svg><span class="hidden lg:inline">Hand</span>
     </button>
   </fieldset>
   <div class="ml-auto flex items-center gap-0.5">
     <button
       type="button"
-      class="canvas-tool-button"
+      class="canvas-tool-button !hidden sm:!flex"
       aria-label="Pan canvas left"
-      title="Pan left"
+      data-tooltip="Pan left"
       (click)="panRequested.emit({ x: -40, y: 0 })"
     >
       <svg lucideChevronLeft size="15"></svg>
     </button>
     <button
       type="button"
-      class="canvas-tool-button"
+      class="canvas-tool-button !hidden sm:!flex"
       aria-label="Pan canvas right"
-      title="Pan right"
+      data-tooltip="Pan right"
       (click)="panRequested.emit({ x: 40, y: 0 })"
     >
       <svg lucideChevronRight size="15"></svg>
+    </button>
+    <button
+      type="button"
+      class="canvas-tool-button !hidden sm:!flex"
+      aria-label="Pan canvas up"
+      data-tooltip="Pan up"
+      (click)="panRequested.emit({ x: 0, y: -40 })"
+    >
+      <svg lucideChevronUp size="15"></svg>
+    </button>
+    <button
+      type="button"
+      class="canvas-tool-button !hidden sm:!flex"
+      aria-label="Pan canvas down"
+      data-tooltip="Pan down"
+      (click)="panRequested.emit({ x: 0, y: 40 })"
+    >
+      <svg lucideChevronDown size="15"></svg>
     </button>
     <span class="mx-1 h-5 w-px bg-[#414141]"></span>
     <button
       type="button"
       class="canvas-tool-button"
       aria-label="Zoom out"
-      title="Zoom out"
+      data-tooltip="Zoom out (-)"
       (click)="zoomOut.emit()"
     >
       <svg lucideZoomOut size="16"></svg>
@@ -98,19 +119,71 @@
       type="button"
       class="canvas-tool-button"
       aria-label="Zoom in"
-      title="Zoom in"
+      data-tooltip="Zoom in (+)"
       (click)="zoomIn.emit()"
     >
       <svg lucideZoomIn size="16"></svg>
+    </button>
+    <label
+      class="hidden h-6 items-center border border-[#414141] bg-[#232323] px-1 font-mono text-[9px] text-[#9A9A9A] md:flex"
+    >
+      <input
+        type="number"
+        class="w-8 bg-transparent text-right text-[#D6D6D6] outline-none"
+        min="10"
+        max="800"
+        aria-label="Canvas zoom"
+        [value]="zoom()"
+        (change)="changeZoom($event)"
+      /><span>%</span>
+    </label>
+    <button
+      type="button"
+      class="canvas-tool-button"
+      aria-label="Fit camera"
+      data-tooltip="Fit animated camera"
+      [disabled]="!canFitCamera()"
+      (click)="fitCamera.emit()"
+    >
+      <svg lucideFocus size="16"></svg>
     </button>
     <button
       type="button"
       class="canvas-tool-button"
       aria-label="Fit canvas"
-      title="Fit canvas"
+      data-tooltip="Fit whole scene (0)"
       (click)="fitCanvas.emit()"
     >
-      <svg lucideMaximize2 size="16"></svg>
+      <svg lucideScan size="16"></svg>
+    </button>
+    <span class="mx-1 h-5 w-px bg-[#414141]"></span>
+    <button
+      type="button"
+      class="canvas-tool-button"
+      [attr.aria-label]="canvasFocused() ? 'Restore workspace' : 'Maximize canvas'"
+      [attr.data-tooltip]="canvasFocused() ? 'Restore workspace (F)' : 'Maximize canvas (F)'"
+      [attr.aria-pressed]="canvasFocused()"
+      (click)="canvasFocusToggle.emit()"
+    >
+      @if (canvasFocused()) {
+        <svg lucideMinimize2 size="16"></svg>
+      } @else {
+        <svg lucideMaximize2 size="16"></svg>
+      }
+    </button>
+    <button
+      type="button"
+      class="canvas-tool-button"
+      [attr.aria-label]="fullscreen() ? 'Exit fullscreen' : 'Enter fullscreen'"
+      [attr.data-tooltip]="fullscreen() ? 'Exit fullscreen' : 'Enter fullscreen'"
+      [attr.aria-pressed]="fullscreen()"
+      (click)="fullscreenToggle.emit()"
+    >
+      @if (fullscreen()) {
+        <svg lucideMinimize2 size="16"></svg>
+      } @else {
+        <svg lucideFullscreen size="16"></svg>
+      }
     </button>
   </div>
 </div>
