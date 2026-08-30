@@ -48,6 +48,14 @@ select:focus-visible,
   background-size: 16px 16px;
 }
 
+.animation-stage {
+  position: absolute;
+  inset: 16px;
+  overflow: hidden;
+  border: 1px solid #6f6f6f;
+  background: #ffffff;
+}
+
 .active-tool {
   border: 1px solid #58758d;
   background: #394a58;
@@ -59,9 +67,212 @@ select:focus-visible,
   border-color: #718fa8;
 }
 
+.editor-menu {
+  position: relative;
+}
+
+.editor-menu > summary {
+  display: flex;
+  height: 100%;
+  cursor: default;
+  list-style: none;
+  align-items: center;
+  padding: 0 8px;
+  user-select: none;
+}
+
+.editor-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.editor-menu[open] > summary,
+.editor-menu > summary:hover {
+  background: #3a3a3a;
+  color: #eeeeee;
+}
+
+.editor-menu-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 80;
+  border: 1px solid #555555;
+  background: #2b2b2b;
+  padding: 3px;
+  box-shadow: 2px 3px 8px rgb(0 0 0 / 35%);
+}
+
+.editor-menu-panel > button,
+.editor-menu-panel > label {
+  display: flex;
+  width: 100%;
+  height: 25px;
+  cursor: default;
+  align-items: center;
+  gap: 7px;
+  padding: 0 7px;
+  color: #d0d0d0;
+  text-align: left;
+}
+
+.editor-menu-panel > button:hover:not(:disabled),
+.editor-menu-panel > label:hover {
+  background: #4a5c6b;
+  color: #ffffff;
+}
+
+.editor-menu-panel > button:disabled {
+  color: #666666;
+}
+
+.editor-menu-panel span {
+  min-width: 0;
+  flex: 1;
+}
+
+.editor-menu-panel kbd {
+  color: #888888;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+}
+
+.editor-menu-separator {
+  height: 1px;
+  margin: 3px 5px;
+  background: #484848;
+}
+
+.menu-bar-icon,
+.canvas-tool-button {
+  display: flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  color: #9a9a9a;
+}
+
+.menu-bar-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.menu-bar-icon:hover,
+.canvas-tool-button:hover:not(:disabled) {
+  background: #343434;
+  color: #d6d6d6;
+}
+
+.canvas-tool-button:disabled {
+  color: #555555;
+}
+
+.canvas-mode-button {
+  display: flex;
+  height: 28px;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  padding: 0 8px;
+  color: #9a9a9a;
+}
+
+.canvas-mode-button:hover {
+  background: #343434;
+  color: #d6d6d6;
+}
+
+.workspace-menu-item input {
+  width: 12px;
+  height: 12px;
+  accent-color: #718fa8;
+}
+
 .selected-frame {
   border-color: #718fa8;
   background: #39444d;
+}
+
+.frame-strip-tool {
+  display: flex;
+  width: 22px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  color: #9a9a9a;
+}
+
+.frame-strip-tool:hover:not(:disabled) {
+  background: #3c3c3c;
+  color: #d6d6d6;
+}
+
+.frame-strip-tool:disabled {
+  color: #555555;
+  cursor: default;
+}
+
+.figure-tool-button,
+.inspector-tool-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  color: #9a9a9a;
+}
+
+.figure-tool-button {
+  width: 28px;
+  height: 28px;
+}
+
+.inspector-tool-button {
+  height: 24px;
+  border-color: #414141;
+  background: #303030;
+}
+
+.figure-tool-button:hover:not(:disabled),
+.inspector-tool-button:hover:not(:disabled) {
+  border-color: #58758d;
+  background: #3c3c3c;
+  color: #e0e0e0;
+}
+
+.figure-tool-button:disabled,
+.inspector-tool-button:disabled {
+  color: #555555;
+}
+
+.layer-order-button {
+  display: flex;
+  width: 18px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  color: #777777;
+}
+
+.layer-order-button:hover:not(:disabled) {
+  background: #444444;
+  color: #d6d6d6;
+}
+
+.layer-order-button:disabled {
+  color: #4f4f4f;
+}
+
+.layer-dragging {
+  opacity: 0.45;
+}
+
+.layer-drop-target {
+  box-shadow: inset 0 2px #8ea9bf;
+  background: #35434e;
 }
 
 .timeline-track {
