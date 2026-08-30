@@ -9,8 +9,8 @@ import type { FigurePreview } from './figure-preview';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SceneStrip {
-  readonly preview = input<FigurePreview | null>(null);
+  readonly previews = input<readonly FigurePreview[]>([]);
   readonly currentFrame = input.required<number>();
   readonly frameSelected = output<number>();
-  protected readonly frames = Array.from({ length: 8 }, (_, index) => index + 1);
+  readonly frameAdded = output<void>();
 }
