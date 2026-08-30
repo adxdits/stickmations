@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { moveJointToward, translateFigure, type StickFigure } from '@framation/engine';
 import { LucideFilePlusCorner, LucideUpload } from '@lucide/angular';
-import type { ControlMode, PanOffset } from './editor-types';
+import type { ControlMode, PanOffset, ZoomRequest } from './editor-types';
 import type { FigurePreview } from './figure-preview';
 import {
   DEFAULT_BACKGROUND,
@@ -41,6 +41,11 @@ interface CameraDragState {
   imports: [LucideFilePlusCorner, LucideUpload],
   templateUrl: './figure-canvas.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '(document:keydown)': 'startSpacePan($event)',
+    '(document:keyup)': 'stopSpacePan($event)',
+    '(window:blur)': 'cancelSpacePan()',
+  },
 })
 export class FigureCanvas {
   readonly figure = input<StickFigure | null>(null);
@@ -52,6 +57,7 @@ export class FigureCanvas {
   readonly camera = input<SceneCamera | null>(null);
   readonly controlMode = input.required<ControlMode>();
   readonly playbackPreview = input(false);
+  readonly expanded = input(false);
   readonly zoom = input.required<number>();
   readonly pan = input.required<PanOffset>();
   readonly importError = input<string | null>(null);
@@ -61,8 +67,10 @@ export class FigureCanvas {
   readonly editStarted = output<void>();
   readonly editEnded = output<void>();
   readonly panChange = output<PanOffset>();
+  readonly zoomRequested = output<ZoomRequest>();
   readonly cameraChange = output<CameraChange>();
   protected readonly isPanning = signal(false);
+  protected readonly spacePanning = signal(false);
   protected readonly cameraViewBox = computed(() => {
     const sceneCamera = this.camera();
     if (this.playbackPreview() && sceneCamera) {
@@ -162,7 +170,10 @@ export class FigureCanvas {
   }
 
   protected startPanning(event: PointerEvent): void {
-    if (this.controlMode() !== 'pan') {
+    if (
+      this.playbackPreview() ||
+      (this.controlMode() !== 'pan' && !this.spacePanning() && event.button !== 1)
+    ) {
       return;
     }
 
@@ -186,7 +197,39 @@ export class FigureCanvas {
     event.preventDefault();
   }
 
+  protected zoomWithWheel(event: WheelEvent): void {
+    if (this.playbackPreview() || event.deltaY === 0) {
+      return;
+    }
+    event.preventDefault();
+    const factor = event.deltaY < 0 ? 1.1 : 1 / 1.1;
+    const svg = event.currentTarget as SVGSVGElement;
+    this.zoomRequested.emit({ factor, anchor: this.getPointerPosition(event, svg) });
+  }
+
+  protected startSpacePan(event: KeyboardEvent): void {
+    if (event.code !== 'Space' || this.playbackPreview() || isEditableTarget(event.target)) {
+      return;
+    }
+    this.spacePanning.set(true);
+    event.preventDefault();
+  }
+
+  protected stopSpacePan(event: KeyboardEvent): void {
+    if (event.code === 'Space') {
+      this.spacePanning.set(false);
+    }
+  }
+
+  protected cancelSpacePan(): void {
+    this.spacePanning.set(false);
+    this.stopDraggingControl();
+  }
+
   protected startDraggingCamera(event: PointerEvent, strategy: CameraDragStrategy): void {
+    if (this.spacePanning() || event.button === 1) {
+      return;
+    }
     const camera = this.camera();
     const element = event.currentTarget as SVGGraphicsElement;
     const svg = element.ownerSVGElement;
@@ -226,19 +269,20 @@ export class FigureCanvas {
   }
 
   protected rotateCameraWithKeyboard(event: KeyboardEvent): void {
-    const offset =
-      event.key === 'ArrowLeft' || event.key === 'ArrowUp'
-        ? -1
-        : event.key === 'ArrowRight' || event.key === 'ArrowDown'
-          ? 1
-          : 0;
+    let offset = 0;
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+      offset = -1;
+    } else if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+      offset = 1;
+    }
     const camera = this.camera();
     if (!offset || !camera) {
       return;
     }
     event.preventDefault();
     this.editStarted.emit();
-    this.emitCameraChange('rotation', camera.rotation + offset * (event.shiftKey ? 15 : 1));
+    const rotationStep = event.shiftKey ? 15 : 1;
+    this.emitCameraChange('rotation', camera.rotation + offset * rotationStep);
     this.editEnded.emit();
   }
 
@@ -265,6 +309,9 @@ export class FigureCanvas {
   }
 
   private startDragging(event: PointerEvent, strategy: DragStrategy, targetId?: string): void {
+    if (this.spacePanning() || event.button === 1) {
+      return;
+    }
     const element = event.currentTarget as SVGGraphicsElement;
     const position = element.ownerSVGElement
       ? this.getPointerPosition(event, element.ownerSVGElement)
@@ -276,6 +323,7 @@ export class FigureCanvas {
     this.dragState = { strategy, targetId, x: position.x, y: position.y };
     this.editStarted.emit();
     event.preventDefault();
+    event.stopPropagation();
   }
 
   private dragCamera(event: PointerEvent, svg: SVGSVGElement): void {
@@ -313,9 +361,12 @@ export class FigureCanvas {
   }
 
   private getPointerPosition(
-    event: PointerEvent,
+    event: MouseEvent,
     svg: SVGSVGElement,
   ): Readonly<{ x: number; y: number }> | null {
+    if (typeof svg.getScreenCTM !== 'function' || typeof svg.createSVGPoint !== 'function') {
+      return null;
+    }
     const matrix = svg.getScreenCTM();
     if (!matrix) {
       return null;
@@ -353,6 +404,15 @@ export class FigureCanvas {
     }
     this.editEnded.emit();
   }
+}
+
+function isEditableTarget(target: EventTarget | null): boolean {
+  return (
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    target instanceof HTMLSelectElement ||
+    (target instanceof HTMLElement && target.isContentEditable)
+  );
 }
 
 function parseViewBox(value: string | null): Readonly<{

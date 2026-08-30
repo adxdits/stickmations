@@ -1,43 +1,53 @@
 <main class="flex h-screen flex-col overflow-hidden bg-[#232323] text-[12px] text-[#D6D6D6]">
-  <app-application-menu-bar
-    class="contents"
-    [title]="editor.title()"
-    [projectName]="editor.importedFigure()?.name ?? 'Untitled project'"
-    [controlMode]="viewport.controlMode()"
-    [zoom]="viewport.zoom()"
-    [canUndo]="editor.canUndo()"
-    [canRedo]="editor.canRedo()"
-    [currentFrame]="editor.currentFrame()"
-    [totalFrames]="editor.animationFrames().length"
-    [selectedFigureName]="editor.importedFigure()?.name ?? null"
-    (controlModeChange)="viewport.controlMode.set($event)"
-    (undo)="editor.undo()"
-    (redo)="editor.redo()"
-    (zoomIn)="viewport.increaseZoom()"
-    (zoomOut)="viewport.decreaseZoom()"
-    (fitCanvas)="viewport.fitCanvas()"
-    (panRequested)="viewport.panBy($event)"
-    (filesSelected)="editor.importFigures($event)"
-    (backgroundFileSelected)="editor.importBackground($event)"
-    (blankProjectRequested)="editor.createBlankProject()"
-    (selectedFigureDeleted)="editor.deleteSelectedFigure()"
-    (frameAdded)="editor.addFrame()"
-    (blankFrameAdded)="editor.addBlankFrame()"
-    (frameDeleted)="editor.deleteFrame()"
-    (previousFrame)="editor.selectRelativeFrame(-1)"
-    (nextFrame)="editor.selectRelativeFrame(1)"
-  />
+  @if (!workspace.canvasFocused()) {
+    <app-application-menu-bar
+      class="contents"
+      [title]="editor.title()"
+      [projectName]="editor.importedFigure()?.name ?? 'Untitled project'"
+      [controlMode]="viewport.controlMode()"
+      [zoom]="viewport.zoom()"
+      [canUndo]="editor.canUndo()"
+      [canRedo]="editor.canRedo()"
+      [currentFrame]="editor.currentFrame()"
+      [totalFrames]="editor.animationFrames().length"
+      [selectedFigureName]="editor.importedFigure()?.name ?? null"
+      (controlModeChange)="viewport.controlMode.set($event)"
+      (undo)="editor.undo()"
+      (redo)="editor.redo()"
+      (zoomIn)="viewport.increaseZoom()"
+      (zoomOut)="viewport.decreaseZoom()"
+      (fitCanvas)="viewport.fitCanvas()"
+      (panRequested)="viewport.panBy($event)"
+      (filesSelected)="editor.importFigures($event)"
+      (backgroundFileSelected)="editor.importBackground($event)"
+      (blankProjectRequested)="editor.createBlankProject()"
+      (selectedFigureDeleted)="editor.deleteSelectedFigure()"
+      (frameAdded)="editor.addFrame()"
+      (blankFrameAdded)="editor.addBlankFrame()"
+      (frameDeleted)="editor.deleteFrame()"
+      (previousFrame)="editor.selectRelativeFrame(-1)"
+      (nextFrame)="editor.selectRelativeFrame(1)"
+    />
+  }
   <app-canvas-toolbar
     class="contents"
     [controlMode]="viewport.controlMode()"
     [canUndo]="editor.canUndo()"
     [canRedo]="editor.canRedo()"
+    [canFitCamera]="editor.currentCamera() !== null"
+    [canvasFocused]="workspace.canvasFocused()"
+    [fullscreen]="fullscreen()"
+    [zoom]="viewport.zoom()"
     (controlModeChange)="viewport.controlMode.set($event)"
     (undo)="editor.undo()"
     (redo)="editor.redo()"
     (zoomIn)="viewport.increaseZoom()"
     (zoomOut)="viewport.decreaseZoom()"
+    (zoomChange)="viewport.setZoom($event)"
     (fitCanvas)="viewport.fitCanvas()"
+    (fitCamera)="fitCurrentCamera()"
+    (canvasFocusToggle)="workspace.toggleCanvasFocus()"
+    (fullscreenToggle)="toggleFullscreen()"
     (panRequested)="viewport.panBy($event)"
   />
   <div class="flex min-h-0 flex-1">
@@ -84,6 +94,7 @@
         [camera]="editor.currentCamera()"
         [controlMode]="viewport.controlMode()"
         [playbackPreview]="viewport.isPlaybackPreview()"
+        [expanded]="workspace.canvasFocused()"
         [zoom]="viewport.zoom()"
         [pan]="viewport.pan()"
         [importError]="editor.importError()"
@@ -93,6 +104,7 @@
         (editStarted)="editor.beginFrameEdit()"
         (editEnded)="editor.endFrameEdit()"
         (panChange)="viewport.pan.set($event)"
+        (zoomRequested)="viewport.zoomAt($event.factor, $event.anchor)"
         (cameraChange)="editor.updateCamera($event)"
       />
       @if (workspace.isVisible('timeline')) {
@@ -106,7 +118,8 @@
           [camera]="editor.currentCamera()"
           (currentFrameChange)="editor.selectFrame($event)"
           (fpsChange)="editor.setFps($event)"
-          (playbackChange)="viewport.setPlaybackPreview($event)"
+          (playbackStarted)="viewport.startPlaybackPreview()"
+          (playbackStopped)="viewport.stopPlaybackPreview()"
           (transformChange)="editor.updateTransform($event)"
           (cameraChange)="editor.updateCamera($event)"
         />
@@ -131,12 +144,14 @@
       />
     }
   </div>
-  <footer
-    class="flex h-6 shrink-0 items-center border-t border-[#414141] bg-[#232323] px-2 font-mono text-[9px] text-[#666666]"
-  >
-    <span class="text-[#9A9A9A]">Ready</span
-    ><span class="ml-auto"
-      >Frame {{ editor.currentFrame() }} / {{ editor.animationFrames().length || 1 }}</span
+  @if (!workspace.canvasFocused()) {
+    <footer
+      class="flex h-6 shrink-0 items-center border-t border-[#414141] bg-[#232323] px-2 font-mono text-[9px] text-[#666666]"
     >
-  </footer>
+      <span class="text-[#9A9A9A]">Ready</span
+      ><span class="ml-auto"
+        >Frame {{ editor.currentFrame() }} / {{ editor.animationFrames().length || 1 }}</span
+      >
+    </footer>
+  }
 </main>

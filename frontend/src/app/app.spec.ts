@@ -743,15 +743,28 @@ describe('App', () => {
     );
     focusCanvas?.click();
     fixture.detectChanges();
+    expect(workspace.canvasFocused()).toBe(true);
+    expect(workspace.layout().project).toBe(false);
+    expect(root.querySelector('app-application-menu-bar')).toBeNull();
+    expect(root.querySelector('footer')).toBeNull();
+    expect(root.querySelector('.animation-stage-expanded')).toBeTruthy();
     expect(root.querySelector('app-scene-strip')).toBeNull();
     expect(root.querySelector('app-timeline')).toBeNull();
     expect(root.querySelector('app-inspector')).toBeNull();
 
-    const reset = [...view.querySelectorAll<HTMLButtonElement>('button')].find(({ textContent }) =>
-      textContent?.includes('Reset Workspace'),
+    root.querySelector<HTMLButtonElement>('button[aria-label="Restore workspace"]')?.click();
+    fixture.detectChanges();
+    expect(workspace.canvasFocused()).toBe(false);
+    expect(workspace.layout().project).toBe(false);
+    expect(root.querySelector('app-timeline')).toBeTruthy();
+
+    const restoredView = menu(root, 'View');
+    const reset = [...restoredView.querySelectorAll<HTMLButtonElement>('button')].find(
+      ({ textContent }) => textContent?.includes('Reset Workspace'),
     );
     reset?.click();
     fixture.detectChanges();
+    expect(workspace.canvasFocused()).toBe(false);
     expect(workspace.layout()).toEqual({
       project: true,
       sceneStrip: true,
@@ -780,7 +793,7 @@ describe('App', () => {
     zoomOut.click();
     zoomOut.click();
     zoomOut.click();
-    expect(viewport.zoom()).toBe(25);
+    expect(viewport.zoom()).toBe(10);
     fixture.detectChanges();
     expect(thumbnail.getAttribute('viewBox')).toBe('-320 -180 640 360');
 
@@ -819,8 +832,8 @@ describe('App', () => {
     fixture.detectChanges();
     const pannedViewBox = canvas.getAttribute('viewBox')?.split(' ').map(Number);
     expect(canvas.style.transform).toBe('');
-    expect(pannedViewBox?.[2]).toBe(2560);
-    expect(pannedViewBox?.[3]).toBe(1440);
+    expect(pannedViewBox?.[2]).toBe(6400);
+    expect(pannedViewBox?.[3]).toBe(3600);
 
     (
       fixture.nativeElement.querySelector('button[aria-label="Fit canvas"]') as HTMLButtonElement
@@ -838,9 +851,37 @@ describe('App', () => {
     zoomIn.click();
     zoomIn.click();
     zoomIn.click();
-    expect(viewport.zoom()).toBe(200);
+    expect(viewport.zoom()).toBe(225);
     fixture.detectChanges();
     expect(thumbnail.getAttribute('viewBox')).toBe('-320 -180 640 360');
+
+    viewport.fitCamera({ positionX: 100, positionY: 0, width: 320, height: 180, rotation: 0 });
+    expect(viewport.zoom()).toBe(182);
+    expect(viewport.pan()).toEqual({ x: -100, y: 0 });
+
+    viewport.fitCanvas();
+    fixture.detectChanges();
+    canvas.dispatchEvent(
+      new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: -100 }),
+    );
+    expect(viewport.zoom()).toBe(110);
+
+    viewport.fitCanvas();
+    viewport.controlMode.set('none');
+    fixture.detectChanges();
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { bubbles: true, cancelable: true, code: 'Space', key: ' ' }),
+    );
+    canvas.dispatchEvent(
+      new PointerEvent('pointerdown', { bubbles: true, clientX: 10, clientY: 20, pointerId: 2 }),
+    );
+    canvas.dispatchEvent(
+      new PointerEvent('pointermove', { bubbles: true, clientX: 35, clientY: 50, pointerId: 2 }),
+    );
+    canvas.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId: 2 }));
+    document.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, code: 'Space', key: ' ' }));
+    expect(viewport.controlMode()).toBe('none');
+    expect(viewport.pan()).toEqual({ x: 25, y: 30 });
   });
 
   it('controls project FPS, timecode, and playback speed', () => {
