@@ -5,41 +5,41 @@
     Scene 1
   </div>
   <div class="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto px-2 py-1.5">
-    @for (frame of frames; track frame) {
+    @for (thumbnail of previews(); track $index; let frameIndex = $index) {
       <button
         type="button"
         class="relative h-[68px] w-[76px] shrink-0 overflow-hidden rounded-[2px] border bg-[#333333] text-left"
-        [class.selected-frame]="currentFrame() === frame"
-        [class.border-[#414141]]="currentFrame() !== frame"
-        [attr.aria-label]="'Go to scene frame ' + frame"
-        (click)="frameSelected.emit(frame)"
+        [class.selected-frame]="currentFrame() === frameIndex + 1"
+        [class.border-[#414141]]="currentFrame() !== frameIndex + 1"
+        [attr.aria-label]="'Go to scene frame ' + (frameIndex + 1)"
+        (click)="frameSelected.emit(frameIndex + 1)"
       >
-        <span class="absolute left-1 top-1 font-mono text-[8px] text-[#9A9A9A]">{{ frame }}</span>
-        @if (preview(); as thumbnail) {
-          <svg class="size-full p-2" [attr.viewBox]="thumbnail.viewBox" aria-hidden="true">
-            @for (segment of thumbnail.segments; track segment.id) {
-              <line
-                [attr.x1]="segment.x1"
-                [attr.y1]="segment.y1"
-                [attr.x2]="segment.x2"
-                [attr.y2]="segment.y2"
-                [attr.stroke]="segment.color"
-                [attr.stroke-width]="segment.width"
-                [attr.stroke-linecap]="segment.rounded ? 'round' : 'butt'"
-              />
-            }
-            @for (circle of thumbnail.circles; track circle.id) {
-              <circle
-                [attr.cx]="circle.cx"
-                [attr.cy]="circle.cy"
-                [attr.r]="circle.radius"
-                [attr.fill]="circle.hollow ? 'none' : circle.color"
-                [attr.stroke]="circle.color"
-                [attr.stroke-width]="circle.hollow ? circle.width : 0"
-              />
-            }
-          </svg>
-        }
+        <span class="absolute left-1 top-1 font-mono text-[8px] text-[#9A9A9A]">{{
+          frameIndex + 1
+        }}</span>
+        <svg class="size-full p-2" [attr.viewBox]="thumbnail.viewBox" aria-hidden="true">
+          @for (segment of thumbnail.segments; track segment.id) {
+            <line
+              [attr.x1]="segment.x1"
+              [attr.y1]="segment.y1"
+              [attr.x2]="segment.x2"
+              [attr.y2]="segment.y2"
+              [attr.stroke]="segment.color"
+              [attr.stroke-width]="segment.width"
+              [attr.stroke-linecap]="segment.rounded ? 'round' : 'butt'"
+            />
+          }
+          @for (circle of thumbnail.circles; track circle.id) {
+            <circle
+              [attr.cx]="circle.cx"
+              [attr.cy]="circle.cy"
+              [attr.r]="circle.radius"
+              [attr.fill]="circle.hollow ? 'none' : circle.color"
+              [attr.stroke]="circle.color"
+              [attr.stroke-width]="circle.hollow ? circle.width : 0"
+            />
+          }
+        </svg>
       </button>
     }
     <button
@@ -47,6 +47,8 @@
       class="flex h-[68px] w-12 shrink-0 items-center justify-center rounded-[2px] border border-dashed border-[#4A4A4A] text-[#666666] hover:border-[#718FA8] hover:text-[#B8C8D5]"
       aria-label="Add frame"
       title="Add frame"
+      [disabled]="previews().length === 0"
+      (click)="frameAdded.emit()"
     >
       <svg lucidePlus size="18"></svg>
     </button>

@@ -53,22 +53,24 @@
     <div
       class="relative flex h-6 items-end justify-between border-b border-[#414141] px-2 font-mono text-[8px] text-[#666666]"
     >
-      @for (tick of ticks; track tick) {
-        <span>{{ tick }}</span>
+      @for (frame of frameNumbers(); track frame) {
+        <span>{{ frame }}</span>
       }
     </div>
     <div class="timeline-track relative h-[86px] sm:h-[126px]">
       <div
         class="absolute inset-y-0 w-px bg-[#718FA8]"
-        [style.left.%]="(currentFrame() / 60) * 100"
+        [style.left.%]="framePosition(currentFrame())"
       >
         <span class="absolute -left-1.5 -top-1 size-3 rotate-45 bg-[#718FA8]"></span>
       </div>
-      @for (frame of keyframes; track frame) {
+      @for (frame of frameNumbers(); track frame) {
         <button
           type="button"
           class="absolute top-[43px] size-2 -translate-x-1/2 rotate-45 border border-[#9A9A9A] bg-[#666666] hover:border-[#AFC0CE] hover:bg-[#718FA8]"
-          [style.left.%]="(frame / 60) * 100"
+          [class.border-[#AFC0CE]]="currentFrame() === frame"
+          [class.bg-[#718FA8]]="currentFrame() === frame"
+          [style.left.%]="framePosition(frame)"
           [attr.aria-label]="'Keyframe ' + frame"
           (click)="selectFrame(frame)"
         ></button>
