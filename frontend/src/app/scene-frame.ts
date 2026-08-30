@@ -26,6 +26,21 @@ export interface SceneBackground {
   readonly positionY: number;
 }
 
+export interface SceneCamera {
+  readonly positionX: number;
+  readonly positionY: number;
+  readonly width: number;
+  readonly height: number;
+  readonly rotation: number;
+}
+
+export type CameraProperty = keyof SceneCamera;
+
+export interface CameraChange {
+  readonly property: CameraProperty;
+  readonly value: number;
+}
+
 export type BackgroundChange =
   | Readonly<{ property: 'fit'; value: BackgroundFit }>
   | Readonly<{
@@ -36,6 +51,7 @@ export type BackgroundChange =
 export interface SceneFrame {
   readonly figures: readonly FigureLayer[];
   readonly background: SceneBackground;
+  readonly camera: SceneCamera;
 }
 
 export interface LayerMove {
@@ -53,6 +69,14 @@ export const DEFAULT_BACKGROUND: SceneBackground = {
   positionY: 0,
 };
 
+export const DEFAULT_CAMERA: SceneCamera = {
+  positionX: 0,
+  positionY: 0,
+  width: 640,
+  height: 360,
+  rotation: 0,
+};
+
 export function createFigureLayer(id: string, figure: StickFigure): FigureLayer {
   return {
     id,
@@ -61,10 +85,25 @@ export function createFigureLayer(id: string, figure: StickFigure): FigureLayer 
   };
 }
 
-export function createSceneFrame(layer?: FigureLayer): SceneFrame {
+export function createSceneFrame(layer?: FigureLayer, camera = DEFAULT_CAMERA): SceneFrame {
   return {
     figures: layer ? [layer] : [],
     background: DEFAULT_BACKGROUND,
+    camera,
+  };
+}
+
+export function createSceneCamera(viewBox: string): SceneCamera {
+  const [x, y, width, height] = viewBox.split(/\s+/).map(Number);
+  if (![x, y, width, height].every(Number.isFinite) || width! <= 0 || height! <= 0) {
+    return DEFAULT_CAMERA;
+  }
+  return {
+    positionX: x! + width! / 2,
+    positionY: y! + height! / 2,
+    width: width!,
+    height: height!,
+    rotation: 0,
   };
 }
 
@@ -76,7 +115,16 @@ export function cloneSceneFrame(frame: SceneFrame): SceneFrame {
       visible: layer.visible,
     })),
     background: { ...frame.background },
+    camera: { ...frame.camera },
   };
+}
+
+export function applyCameraChange(frame: SceneFrame, change: CameraChange): SceneFrame {
+  const value =
+    change.property === 'width' || change.property === 'height'
+      ? Math.max(1, change.value)
+      : change.value;
+  return { ...frame, camera: { ...frame.camera, [change.property]: value } };
 }
 
 export function updateFigureLayer(

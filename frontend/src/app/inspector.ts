@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import type { StickFigure } from '@framation/engine';
 import {
+  LucideCamera,
   LucideFlipHorizontal2,
   LucideFlipVertical2,
   LucideFolderOpen,
@@ -16,13 +17,21 @@ import type {
   TransformProperty,
 } from './animation-frame';
 import type { ControlMode } from './editor-types';
-import type { BackgroundChange, BackgroundFit, SceneBackground } from './scene-frame';
+import type {
+  BackgroundChange,
+  BackgroundFit,
+  CameraChange,
+  CameraProperty,
+  SceneBackground,
+  SceneCamera,
+} from './scene-frame';
 
 @Component({
   selector: 'app-inspector',
   imports: [
     LucideFlipHorizontal2,
     LucideFlipVertical2,
+    LucideCamera,
     LucideFolderOpen,
     LucidePersonStanding,
     LucideRotateCcw,
@@ -36,6 +45,7 @@ export class Inspector {
   readonly figure = input<StickFigure | null>(null);
   readonly transform = input<FrameTransform | null>(null);
   readonly background = input<SceneBackground | null>(null);
+  readonly camera = input<SceneCamera | null>(null);
   readonly controlMode = input.required<ControlMode>();
   readonly controlModeChange = output<ControlMode>();
   readonly transformChange = output<TransformChange>();
@@ -44,6 +54,7 @@ export class Inspector {
   readonly backgroundChange = output<BackgroundChange>();
   readonly backgroundReset = output<void>();
   readonly backgroundImageRemoved = output<void>();
+  readonly cameraChange = output<CameraChange>();
   protected readonly tab = signal<'properties' | 'library'>('properties');
   protected readonly uniformScale = computed(() => {
     const transform = this.transform();
@@ -69,6 +80,13 @@ export class Inspector {
 
   protected changeBackgroundColor(event: Event): void {
     this.backgroundColorChange.emit((event.target as HTMLInputElement).value);
+  }
+
+  protected changeCamera(property: CameraProperty, event: Event): void {
+    const value = Number((event.target as HTMLInputElement).value);
+    if (Number.isFinite(value)) {
+      this.cameraChange.emit({ property, value });
+    }
   }
 
   protected changeBackgroundFit(event: Event): void {

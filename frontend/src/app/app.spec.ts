@@ -181,6 +181,90 @@ describe('App', () => {
     expect(app.animationFrames()[0]).not.toBe(app.animationFrames()[1]);
   });
 
+  it('stores camera animation independently per frame and supports undo', () => {
+    const fixture = TestBed.createComponent(App);
+    const app = getEditor(fixture.componentInstance);
+    app.animationFrames.set([sceneFrame(simpleFigure)]);
+
+    app.addFrame();
+    app.updateCamera({ property: 'positionX', value: 120 });
+    app.updateCamera({ property: 'rotation', value: 25 });
+
+    expect(app.animationFrames()[0]?.camera).toMatchObject({ positionX: 0, rotation: 0 });
+    expect(app.animationFrames()[1]?.camera).toMatchObject({ positionX: 120, rotation: 25 });
+
+    app.undo();
+    expect(app.animationFrames()[1]?.camera.rotation).toBe(0);
+  });
+
+  it('edits the camera box and uses it as the rotated playback preview', () => {
+    vi.useFakeTimers();
+    try {
+      const fixture = TestBed.createComponent(App);
+      const app = getEditor(fixture.componentInstance);
+      app.animationFrames.set([sceneFrame(simpleFigure)]);
+      app.updateCamera({ property: 'positionX', value: 25 });
+      app.updateCamera({ property: 'positionY', value: -10 });
+      app.updateCamera({ property: 'width', value: 320 });
+      app.updateCamera({ property: 'height', value: 180 });
+      fixture.detectChanges();
+
+      const cameraRotation = fixture.nativeElement.querySelector(
+        'input[aria-label="Camera rotation"]',
+      ) as HTMLInputElement;
+      cameraRotation.value = '30';
+      cameraRotation.dispatchEvent(new Event('input'));
+      expect(
+        (
+          fixture.nativeElement.querySelector(
+            'input[aria-label="Timeline camera position X"]',
+          ) as HTMLInputElement
+        ).value,
+      ).toBe('25');
+      (
+        fixture.nativeElement.querySelector('button[aria-label="Edit camera"]') as HTMLButtonElement
+      ).click();
+      fixture.detectChanges();
+
+      const cameraFrame = fixture.nativeElement.querySelector(
+        '[data-testid="camera-frame"]',
+      ) as SVGGElement;
+      expect(cameraFrame.getAttribute('transform')).toBe('rotate(30 25 -10)');
+      expect(cameraFrame.querySelector('[aria-label="Move camera"]')).toBeTruthy();
+      expect(cameraFrame.querySelector('[aria-label="Rotate camera"]')).toBeTruthy();
+      expect(cameraFrame.querySelector('[aria-label="Resize camera"]')).toBeTruthy();
+      const thumbnail = fixture.nativeElement.querySelector(
+        'svg[data-frame-preview]',
+      ) as SVGSVGElement;
+      expect(thumbnail.getAttribute('viewBox')).toBe('-135 -100 320 180');
+      expect(thumbnail.querySelector('[data-thumbnail-scene]')?.getAttribute('transform')).toBe(
+        'rotate(-30 25 -10)',
+      );
+
+      (
+        fixture.nativeElement.querySelector('button[aria-label="Play"]') as HTMLButtonElement
+      ).click();
+      fixture.detectChanges();
+
+      const canvas = fixture.nativeElement.querySelector(
+        'svg[aria-label="Scene preview"]',
+      ) as SVGSVGElement;
+      expect(canvas.getAttribute('viewBox')).toBe('-135 -100 320 180');
+      expect(canvas.querySelector('[data-testid="camera-scene"]')?.getAttribute('transform')).toBe(
+        'rotate(-30 25 -10)',
+      );
+      expect(canvas.querySelector('[data-testid="camera-frame"]')).toBeNull();
+
+      (
+        fixture.nativeElement.querySelector('button[aria-label="Pause"]') as HTMLButtonElement
+      ).click();
+      fixture.detectChanges();
+      expect(canvas.querySelector('[data-testid="camera-frame"]')).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('applies rotation only to the selected frame', () => {
     const fixture = TestBed.createComponent(App);
     const app = getEditor(fixture.componentInstance);
@@ -684,6 +768,10 @@ describe('App', () => {
     const viewport = getViewport(fixture.componentInstance);
     app.animationFrames.set([sceneFrame(simpleFigure)]);
     fixture.detectChanges();
+    const thumbnail = fixture.nativeElement.querySelector(
+      'svg[data-frame-preview]',
+    ) as SVGSVGElement;
+    expect(thumbnail.getAttribute('viewBox')).toBe('-320 -180 640 360');
 
     const zoomOut = fixture.nativeElement.querySelector(
       'button[aria-label="Zoom out"]',
@@ -693,6 +781,8 @@ describe('App', () => {
     zoomOut.click();
     zoomOut.click();
     expect(viewport.zoom()).toBe(25);
+    fixture.detectChanges();
+    expect(thumbnail.getAttribute('viewBox')).toBe('-320 -180 640 360');
 
     (
       fixture.nativeElement.querySelector(
@@ -749,6 +839,63 @@ describe('App', () => {
     zoomIn.click();
     zoomIn.click();
     expect(viewport.zoom()).toBe(200);
+    fixture.detectChanges();
+    expect(thumbnail.getAttribute('viewBox')).toBe('-320 -180 640 360');
+  });
+
+  it('controls project FPS, timecode, and playback speed', () => {
+    vi.useFakeTimers();
+    try {
+      const fixture = TestBed.createComponent(App);
+      const app = getEditor(fixture.componentInstance);
+      const viewport = getViewport(fixture.componentInstance);
+      app.animationFrames.set(Array.from({ length: 30 }, () => sceneFrame(simpleFigure)));
+      app.selectFrame(25);
+      viewport.zoom.set(200);
+      viewport.pan.set({ x: 48, y: -24 });
+      viewport.controlMode.set('pan');
+      fixture.detectChanges();
+
+      const fps = fixture.nativeElement.querySelector(
+        'input[aria-label="Animation FPS"]',
+      ) as HTMLInputElement;
+      fps.value = '24';
+      fps.dispatchEvent(new Event('change'));
+      fixture.detectChanges();
+
+      expect(app.fps()).toBe(24);
+      expect(fixture.nativeElement.textContent).toContain('00:00:01:00');
+
+      (
+        fixture.nativeElement.querySelector('button[aria-label="Play"]') as HTMLButtonElement
+      ).click();
+      expect(viewport.isPlaybackPreview()).toBe(true);
+      expect(viewport.zoom()).toBe(100);
+      expect(viewport.pan()).toEqual({ x: 0, y: 0 });
+      expect(viewport.controlMode()).toBe('none');
+      vi.advanceTimersByTime(42);
+      fixture.detectChanges();
+      expect(app.currentFrame()).toBe(26);
+      (
+        fixture.nativeElement.querySelector('button[aria-label="Pause"]') as HTMLButtonElement
+      ).click();
+      expect(viewport.isPlaybackPreview()).toBe(false);
+      expect(viewport.zoom()).toBe(200);
+      expect(viewport.pan()).toEqual({ x: 48, y: -24 });
+      expect(viewport.controlMode()).toBe('pan');
+
+      fps.value = '120';
+      fps.dispatchEvent(new Event('change'));
+      expect(app.fps()).toBe(60);
+      fps.value = '0';
+      fps.dispatchEvent(new Event('change'));
+      expect(app.fps()).toBe(1);
+
+      app.undo();
+      expect(app.fps()).toBe(60);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('applies background color and image to every frame', async () => {
