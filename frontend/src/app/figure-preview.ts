@@ -1,4 +1,5 @@
 import type { StickFigure } from '@framation/engine';
+import type { FigureLayer } from './scene-frame';
 
 export interface PreviewSegment {
   readonly id: string;
@@ -104,4 +105,35 @@ export function createFigurePreview(figure: StickFigure): FigurePreview {
       : joints,
     center: joints[0] ?? { id: '', x: 0, y: 0 },
   };
+}
+
+export function createScenePreview(layers: readonly FigureLayer[]): FigurePreview {
+  const visibleLayers = layers.filter(({ visible }) => visible);
+  if (visibleLayers.length === 0) {
+    return {
+      viewBox: '-320 -180 640 360',
+      segments: [],
+      circles: [],
+      joints: [],
+      editableJoints: [],
+      center: { id: '', x: 0, y: 0 },
+    };
+  }
+
+  const merged: StickFigure = {
+    version: 1,
+    name: 'Scene',
+    joints: visibleLayers.flatMap((layer) =>
+      layer.figure.joints.map((joint) => ({ ...joint, id: `${layer.id}:${joint.id}` })),
+    ),
+    segments: visibleLayers.flatMap((layer) =>
+      layer.figure.segments.map((segment) => ({
+        ...segment,
+        id: `${layer.id}:${segment.id}`,
+        from: `${layer.id}:${segment.from}`,
+        to: `${layer.id}:${segment.to}`,
+      })),
+    ),
+  };
+  return createFigurePreview(merged);
 }
