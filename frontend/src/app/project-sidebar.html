@@ -1,16 +1,26 @@
 <section class="flex min-h-0 flex-1 flex-col border-b border-[#414141]">
   <div class="flex h-8 shrink-0 items-center border-b border-[#414141] px-2.5">
     <h2 class="text-[9px] font-semibold uppercase tracking-wide text-[#9A9A9A]">Project</h2>
+    <button
+      type="button"
+      class="ml-auto flex size-6 items-center justify-center rounded-[2px] text-[#9A9A9A] hover:bg-[#343434] hover:text-[#D6D6D6]"
+      aria-label="New blank animation"
+      title="New blank animation"
+      (click)="blankProjectRequested.emit()"
+    >
+      <svg lucideFilePlusCorner size="14"></svg>
+    </button>
     <label
       for="sidebar-stick-figure-file"
-      class="ml-auto flex size-6 cursor-pointer items-center justify-center rounded-[2px] text-[#9A9A9A] hover:bg-[#343434] hover:text-[#D6D6D6]"
-      title="Import stick figure"
-      ><svg lucidePlus size="15"></svg><span class="sr-only">Import stick figure</span></label
+      class="flex size-6 cursor-pointer items-center justify-center rounded-[2px] text-[#9A9A9A] hover:bg-[#343434] hover:text-[#D6D6D6]"
+      title="Import stick figures"
+      ><svg lucidePlus size="15"></svg><span class="sr-only">Import stick figures</span></label
     >
     <input
       id="sidebar-stick-figure-file"
       class="sr-only"
       type="file"
+      multiple
       accept="application/json,.json,.nodes"
       (change)="selectFile($event)"
     />
@@ -30,12 +40,94 @@
       <svg lucideFolderOpen size="13" class="text-[#C2C2C2]"></svg
       ><span class="truncate">Scene 1</span>
     </div>
-    @if (figure(); as importedFigure) {
-      <div
-        class="flex h-6 items-center gap-1.5 rounded-[2px] px-1.5 pl-6 text-[#9A9A9A] hover:bg-[#343434] hover:text-[#D6D6D6]"
+    <div class="flex h-6 items-center gap-1.5 px-1.5 pl-5 text-[#9A9A9A]">
+      <svg lucideImage size="13"></svg>
+      <span class="min-w-0 flex-1 truncate">{{ background()?.imageName ?? 'Background' }}</span>
+      <label
+        for="scene-background-file"
+        class="flex size-5 cursor-pointer items-center justify-center hover:text-[#D6D6D6]"
+        title="Import background image"
       >
-        <svg lucidePersonStanding size="13"></svg
-        ><span class="truncate">{{ importedFigure.name }}</span>
+        <svg lucideUpload size="12"></svg><span class="sr-only">Import background image</span>
+      </label>
+      <input
+        id="scene-background-file"
+        class="sr-only"
+        type="file"
+        accept="image/*"
+        (change)="selectBackgroundFile($event)"
+      />
+    </div>
+    @for (layer of figures(); track layer.id; let layerIndex = $index) {
+      <div
+        class="flex h-6 cursor-grab items-center pl-5 active:cursor-grabbing"
+        [class.bg-[#39444D]]="selectedFigureId() === layer.id"
+        [class.layer-dragging]="draggedFigureId() === layer.id"
+        [class.layer-drop-target]="
+          dropTargetIndex() === layerIndex && draggedFigureId() !== layer.id
+        "
+        [draggable]="true"
+        (dragstart)="startFigureDrag($event, layer.id)"
+        (dragover)="allowFigureDrop($event, layerIndex)"
+        (drop)="dropFigure($event, layerIndex)"
+        (dragend)="endFigureDrag()"
+      >
+        <span
+          class="flex size-4 shrink-0 items-center justify-center text-[#666666]"
+          [attr.title]="'Drag ' + layer.figure.name + ' to reorder'"
+          aria-hidden="true"
+        >
+          <svg lucideGripVertical size="11"></svg>
+        </span>
+        <button
+          type="button"
+          class="flex min-w-0 flex-1 items-center gap-1.5 text-left text-[#B8B8B8]"
+          [attr.aria-label]="'Select figure ' + layer.figure.name"
+          (click)="figureSelected.emit(layer.id)"
+        >
+          <svg lucidePersonStanding size="13"></svg
+          ><span class="truncate">{{ layer.figure.name }}</span>
+        </button>
+        <button
+          type="button"
+          class="flex size-5 items-center justify-center text-[#777777] hover:text-[#D6D6D6]"
+          [attr.aria-label]="(layer.visible ? 'Hide ' : 'Show ') + layer.figure.name"
+          (click)="figureVisibilityChanged.emit({ id: layer.id, visible: !layer.visible })"
+        >
+          @if (layer.visible) {
+            <svg lucideEye size="12"></svg>
+          } @else {
+            <svg lucideEyeOff size="12"></svg>
+          }
+        </button>
+        <button
+          type="button"
+          class="layer-order-button"
+          [disabled]="layerIndex === 0"
+          [attr.aria-label]="'Move ' + layer.figure.name + ' backward'"
+          title="Move backward"
+          (click)="figureMoved.emit({ layerId: layer.id, toIndex: layerIndex - 1 })"
+        >
+          <svg lucideArrowDown size="11"></svg>
+        </button>
+        <button
+          type="button"
+          class="layer-order-button"
+          [disabled]="layerIndex === figures().length - 1"
+          [attr.aria-label]="'Move ' + layer.figure.name + ' forward'"
+          title="Move forward"
+          (click)="figureMoved.emit({ layerId: layer.id, toIndex: layerIndex + 1 })"
+        >
+          <svg lucideArrowUp size="11"></svg>
+        </button>
+        <button
+          type="button"
+          class="flex size-5 items-center justify-center text-[#777777] hover:text-[#C88C88]"
+          [attr.aria-label]="'Delete figure ' + layer.figure.name"
+          (click)="figureDeleted.emit(layer.id)"
+        >
+          <svg lucideTrash2 size="12"></svg>
+        </button>
       </div>
     }
     <div class="flex h-6 items-center gap-1.5 rounded-[2px] px-1.5 pl-6 text-[#666666]">
@@ -52,13 +144,47 @@
       <svg lucideChevronRight size="13"></svg><span>Scene 1</span
       ><svg lucideEye size="12" class="ml-auto text-[#666666]"></svg>
     </div>
-    @if (figure(); as importedFigure) {
+    @for (layer of figures(); track layer.id; let layerIndex = $index) {
       <div
-        class="flex h-6 items-center gap-1.5 rounded-[2px] bg-[#39444D] px-1.5 pl-5 text-[#E0E0E0]"
+        class="flex h-6 cursor-grab items-center pl-4 active:cursor-grabbing"
+        [class.bg-[#39444D]]="selectedFigureId() === layer.id"
+        [class.layer-dragging]="draggedFigureId() === layer.id"
+        [class.layer-drop-target]="
+          dropTargetIndex() === layerIndex && draggedFigureId() !== layer.id
+        "
+        [draggable]="true"
+        (dragstart)="startFigureDrag($event, layer.id)"
+        (dragover)="allowFigureDrop($event, layerIndex)"
+        (drop)="dropFigure($event, layerIndex)"
+        (dragend)="endFigureDrag()"
       >
-        <svg lucidePersonStanding size="13" class="text-[#C2C2C2]"></svg
-        ><span class="truncate">{{ importedFigure.name }}</span
-        ><svg lucideEye size="12" class="ml-auto text-[#9A9A9A]"></svg>
+        <span
+          class="flex size-4 shrink-0 items-center justify-center text-[#666666]"
+          [attr.title]="'Drag ' + layer.figure.name + ' to reorder'"
+          aria-hidden="true"
+        >
+          <svg lucideGripVertical size="11"></svg>
+        </span>
+        <button
+          type="button"
+          class="flex min-w-0 flex-1 items-center gap-1.5 text-left text-[#D0D0D0]"
+          (click)="figureSelected.emit(layer.id)"
+        >
+          <svg lucidePersonStanding size="13"></svg
+          ><span class="truncate">{{ layer.figure.name }}</span>
+        </button>
+        <button
+          type="button"
+          class="flex size-5 items-center justify-center text-[#777777]"
+          [attr.aria-label]="(layer.visible ? 'Hide ' : 'Show ') + layer.figure.name"
+          (click)="figureVisibilityChanged.emit({ id: layer.id, visible: !layer.visible })"
+        >
+          @if (layer.visible) {
+            <svg lucideEye size="12"></svg>
+          } @else {
+            <svg lucideEyeOff size="12"></svg>
+          }
+        </button>
       </div>
     }
   </div>

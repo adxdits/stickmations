@@ -2,100 +2,146 @@
   class="flex h-7 shrink-0 items-center border-b border-[#414141] bg-[#2B2B2B] px-2 text-[9px] text-[#9A9A9A]"
 >
   <span>View</span><span class="mx-2 text-[#454a52]">/</span><span>Camera</span
+  ><label
+    for="canvas-stick-figure-file"
+    class="ml-auto flex h-5 cursor-pointer items-center gap-1 rounded-[2px] px-1.5 text-[#9A9A9A] hover:bg-[#3A3A3A] hover:text-[#D6D6D6]"
+    title="Add stick figures from this frame"
+    ><svg lucideUpload size="12"></svg><span class="hidden sm:inline">Add figures</span></label
   ><span
-    class="ml-auto rounded-[2px] border border-[#414141] bg-[#232323] px-1.5 py-0.5 font-mono text-[#D6D6D6]"
+    class="ml-1 rounded-[2px] border border-[#414141] bg-[#232323] px-1.5 py-0.5 font-mono text-[#D6D6D6]"
     >{{ zoom() }}%</span
   >
 </div>
 <div class="workspace-grid relative min-h-0 flex-1 overflow-hidden">
-  @if (figure(); as importedFigure) {
-    @if (preview(); as figurePreview) {
-      <svg
-        class="h-full w-full touch-none transition-transform duration-150"
-        [style.transform]="'scale(' + zoom() / 100 + ')'"
-        [attr.viewBox]="viewBox() ?? figurePreview.viewBox"
-        preserveAspectRatio="xMidYMid meet"
-        role="img"
-        [attr.aria-label]="importedFigure.name + ' preview'"
-        (pointermove)="dragControl($event)"
-        (pointerup)="stopDraggingControl()"
-        (pointercancel)="stopDraggingControl()"
-      >
-        @for (segment of figurePreview.segments; track segment.id) {
-          <line
-            [attr.x1]="segment.x1"
-            [attr.y1]="segment.y1"
-            [attr.x2]="segment.x2"
-            [attr.y2]="segment.y2"
-            [attr.stroke]="segment.color"
-            [attr.stroke-width]="segment.width"
-            [attr.stroke-linecap]="segment.rounded ? 'round' : 'butt'"
+  @if (hasFrame()) {
+    @if (preview(); as scenePreview) {
+      <div class="animation-stage" [style.background-color]="background().color">
+        @if (background().imageUrl; as imageUrl) {
+          <img
+            class="pointer-events-none absolute inset-0 h-full w-full select-none"
+            [src]="imageUrl"
+            alt=""
+            [style.object-fit]="background().fit"
+            [style.transform]="
+              'translate(' +
+              background().positionX +
+              'px, ' +
+              background().positionY +
+              'px) scale(' +
+              background().scale / 100 +
+              ')'
+            "
+            draggable="false"
           />
         }
-        @for (circle of figurePreview.circles; track circle.id) {
-          <circle
-            [attr.cx]="circle.cx"
-            [attr.cy]="circle.cy"
-            [attr.r]="circle.radius"
-            [attr.fill]="circle.hollow ? 'none' : circle.color"
-            [attr.stroke]="circle.color"
-            [attr.stroke-width]="circle.hollow ? circle.width : 0"
-          />
-        }
-        @if (controlMode() !== 'none') {
-          <rect
-            [attr.x]="figurePreview.center.x - 6"
-            [attr.y]="figurePreview.center.y - 6"
-            width="12"
-            height="12"
-            fill="#ffffff"
-            stroke="#718FA8"
-            stroke-width="2"
-            role="button"
-            tabindex="0"
-            aria-label="Move figure"
-            (pointerdown)="startDraggingFigure($event)"
-            (keydown)="moveFigureWithKeyboard($event)"
-          />
-        }
-        @if (controlMode() === 'joints') {
-          @for (joint of figurePreview.editableJoints; track joint.id) {
-            @if (joint.id !== figurePreview.center.id) {
-              <circle
-                [attr.cx]="joint.x"
-                [attr.cy]="joint.y"
-                r="4"
+        <svg
+          class="relative h-full w-full touch-none"
+          [class.cursor-grab]="controlMode() === 'pan' && !isPanning()"
+          [class.cursor-grabbing]="isPanning()"
+          [attr.viewBox]="cameraViewBox()"
+          preserveAspectRatio="xMidYMid meet"
+          role="img"
+          aria-label="Scene preview"
+          (pointerdown)="startPanning($event)"
+          (pointermove)="dragControl($event)"
+          (pointerup)="stopDraggingControl()"
+          (pointercancel)="stopDraggingControl()"
+        >
+          @for (segment of scenePreview.segments; track segment.id) {
+            <line
+              [attr.x1]="segment.x1"
+              [attr.y1]="segment.y1"
+              [attr.x2]="segment.x2"
+              [attr.y2]="segment.y2"
+              [attr.stroke]="segment.color"
+              [attr.stroke-width]="segment.width"
+              [attr.stroke-linecap]="segment.rounded ? 'round' : 'butt'"
+            />
+          }
+          @for (circle of scenePreview.circles; track circle.id) {
+            <circle
+              [attr.cx]="circle.cx"
+              [attr.cy]="circle.cy"
+              [attr.r]="circle.radius"
+              [attr.fill]="circle.hollow ? 'none' : circle.color"
+              [attr.stroke]="circle.color"
+              [attr.stroke-width]="circle.hollow ? circle.width : 0"
+            />
+          }
+          @if (selectedPreview(); as figurePreview) {
+            @if (controlMode() === 'joints') {
+              <rect
+                [attr.x]="figurePreview.center.x - 6"
+                [attr.y]="figurePreview.center.y - 6"
+                width="12"
+                height="12"
                 fill="#ffffff"
                 stroke="#718FA8"
-                stroke-width="1.5"
+                stroke-width="2"
                 role="button"
                 tabindex="0"
-                [attr.aria-label]="'Move joint ' + joint.id"
-                (pointerdown)="startDraggingRigJoint($event, joint.id)"
-                (keydown)="moveRigJointWithKeyboard($event, joint.id)"
+                aria-label="Move figure"
+                (pointerdown)="startDraggingFigure($event)"
+                (keydown)="moveFigureWithKeyboard($event)"
               />
             }
+            @if (controlMode() === 'joints') {
+              @for (joint of figurePreview.editableJoints; track joint.id) {
+                @if (joint.id !== figurePreview.center.id) {
+                  <circle
+                    [attr.cx]="joint.x"
+                    [attr.cy]="joint.y"
+                    r="4"
+                    fill="#ffffff"
+                    stroke="#718FA8"
+                    stroke-width="1.5"
+                    role="button"
+                    tabindex="0"
+                    [attr.aria-label]="'Move joint ' + joint.id"
+                    (pointerdown)="startDraggingRigJoint($event, joint.id)"
+                    (keydown)="moveRigJointWithKeyboard($event, joint.id)"
+                  />
+                }
+              }
+            }
           }
-        }
-      </svg>
+        </svg>
+      </div>
     }
   } @else {
     <div class="absolute inset-0 flex items-center justify-center p-6">
-      <label
-        for="canvas-stick-figure-file"
-        class="flex min-h-32 w-full max-w-sm cursor-pointer flex-col items-center justify-center rounded-[2px] border border-dashed border-[#686868] bg-[#A0A0A0]/90 px-5 text-center text-[#2B2B2B] hover:border-[#58758D]"
-        ><svg lucideUpload size="20" class="mb-2 text-[#4F5F6C]"></svg
-        ><span class="text-[12px] font-semibold">Import a stick figure</span
-        ><span class="mt-1 text-[10px] text-[#55585D]"
-          >Choose a Stick Nodes or Framation JSON file</span
-        ></label
+      <div
+        class="flex w-full max-w-sm flex-col border border-[#686868] bg-[#A0A0A0]/90 p-3 text-[#2B2B2B]"
       >
+        <button
+          type="button"
+          class="flex h-12 items-center gap-3 border-b border-[#777777] px-2 text-left hover:bg-[#B3B3B3]"
+          (click)="blankProjectRequested.emit()"
+        >
+          <svg lucideFilePlusCorner size="19" class="text-[#4F5F6C]"></svg>
+          <span
+            ><strong class="block text-[11px]">New blank animation</strong
+            ><span class="text-[9px] text-[#55585D]">Start with an empty white frame</span></span
+          >
+        </button>
+        <label
+          for="canvas-stick-figure-file"
+          class="flex h-12 cursor-pointer items-center gap-3 px-2 text-left hover:bg-[#B3B3B3]"
+        >
+          <svg lucideUpload size="19" class="text-[#4F5F6C]"></svg>
+          <span
+            ><strong class="block text-[11px]">Import stick figures</strong
+            ><span class="text-[9px] text-[#55585D]">Select one or several files</span></span
+          >
+        </label>
+      </div>
     </div>
   }
   <input
     id="canvas-stick-figure-file"
     class="sr-only"
     type="file"
+    multiple
     accept="application/json,.json,.nodes"
     (change)="selectFile($event)"
   />

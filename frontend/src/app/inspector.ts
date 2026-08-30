@@ -1,22 +1,57 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import type { StickFigure } from '@framation/engine';
-import { LucideFolderOpen, LucidePersonStanding } from '@lucide/angular';
-import type { FrameTransform, TransformChange, TransformProperty } from './animation-frame';
+import {
+  LucideFlipHorizontal2,
+  LucideFlipVertical2,
+  LucideFolderOpen,
+  LucidePersonStanding,
+  LucideRotateCcw,
+  LucideRotateCw,
+  LucideX,
+} from '@lucide/angular';
+import type {
+  FigureOperation,
+  FrameTransform,
+  TransformChange,
+  TransformProperty,
+} from './animation-frame';
 import type { ControlMode } from './editor-types';
+import type { BackgroundChange, BackgroundFit, SceneBackground } from './scene-frame';
 
 @Component({
   selector: 'app-inspector',
-  imports: [LucideFolderOpen, LucidePersonStanding],
+  imports: [
+    LucideFlipHorizontal2,
+    LucideFlipVertical2,
+    LucideFolderOpen,
+    LucidePersonStanding,
+    LucideRotateCcw,
+    LucideRotateCw,
+    LucideX,
+  ],
   templateUrl: './inspector.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Inspector {
   readonly figure = input<StickFigure | null>(null);
   readonly transform = input<FrameTransform | null>(null);
+  readonly background = input<SceneBackground | null>(null);
   readonly controlMode = input.required<ControlMode>();
   readonly controlModeChange = output<ControlMode>();
   readonly transformChange = output<TransformChange>();
+  readonly figureOperation = output<FigureOperation>();
+  readonly backgroundColorChange = output<string>();
+  readonly backgroundChange = output<BackgroundChange>();
+  readonly backgroundReset = output<void>();
+  readonly backgroundImageRemoved = output<void>();
   protected readonly tab = signal<'properties' | 'library'>('properties');
+  protected readonly uniformScale = computed(() => {
+    const transform = this.transform();
+    if (!transform) {
+      return 100;
+    }
+    return transform.scaleX === transform.scaleY ? transform.scaleX : '';
+  });
   protected readonly rootPosition = computed(() => {
     const root = this.figure()?.joints[0];
     return { x: Math.round(root?.x ?? 0), y: Math.round(root?.y ?? 0) };
@@ -29,6 +64,27 @@ export class Inspector {
     const value = Number((event.target as HTMLInputElement).value);
     if (Number.isFinite(value)) {
       this.transformChange.emit({ property, value });
+    }
+  }
+
+  protected changeBackgroundColor(event: Event): void {
+    this.backgroundColorChange.emit((event.target as HTMLInputElement).value);
+  }
+
+  protected changeBackgroundFit(event: Event): void {
+    this.backgroundChange.emit({
+      property: 'fit',
+      value: (event.target as HTMLSelectElement).value as BackgroundFit,
+    });
+  }
+
+  protected changeBackgroundNumber(
+    property: 'scale' | 'positionX' | 'positionY',
+    event: Event,
+  ): void {
+    const value = Number((event.target as HTMLInputElement).value);
+    if (Number.isFinite(value)) {
+      this.backgroundChange.emit({ property, value });
     }
   }
 }

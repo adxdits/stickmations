@@ -1,0 +1,209 @@
+<header class="flex h-8 shrink-0 items-center border-b border-[#414141] bg-[#232323] px-2.5">
+  <div class="flex min-w-0 items-center gap-2">
+    <div
+      class="flex size-5 items-center justify-center rounded-[2px] border border-[#4A4A4A] bg-[#333333] text-[#C8C8C8]"
+    >
+      <svg lucideBone size="13" strokeWidth="2.5"></svg>
+    </div>
+    <h1 class="truncate text-[12px] font-semibold text-[#DADADA]">{{ title() }}</h1>
+    <span class="hidden text-[#666666] sm:inline">/</span>
+    <span class="hidden truncate text-[10px] text-[#9A9A9A] sm:inline">{{ projectName() }}</span>
+  </div>
+  <nav
+    class="ml-5 hidden h-full items-stretch text-[10px] text-[#B0B0B0] lg:flex"
+    aria-label="Application menu"
+  >
+    <details class="editor-menu" name="application-menu">
+      <summary>File</summary>
+      <div class="editor-menu-panel w-52">
+        <button type="button" (click)="blankProjectRequested.emit(); closeMenu($event)">
+          <svg lucideFilePlusCorner size="13"></svg><span>New blank animation</span>
+        </button>
+        <label
+          ><svg lucideUpload size="13"></svg><span>Import stick figures…</span
+          ><input
+            type="file"
+            class="sr-only"
+            multiple
+            accept="application/json,.json,.nodes"
+            (change)="selectFiles($event)"
+        /></label>
+        <label
+          ><svg lucideImage size="13"></svg><span>Import background…</span
+          ><input type="file" class="sr-only" accept="image/*" (change)="selectBackground($event)"
+        /></label>
+      </div>
+    </details>
+    <details class="editor-menu" name="application-menu">
+      <summary>Edit</summary>
+      <div class="editor-menu-panel w-48">
+        <button type="button" [disabled]="!canUndo()" (click)="undo.emit(); closeMenu($event)">
+          <svg lucideUndo2 size="13"></svg><span>Undo</span><kbd>⌘Z</kbd>
+        </button>
+        <button type="button" [disabled]="!canRedo()" (click)="redo.emit(); closeMenu($event)">
+          <svg lucideRedo2 size="13"></svg><span>Redo</span><kbd>⇧⌘Z</kbd>
+        </button>
+        <div class="editor-menu-separator"></div>
+        <button
+          type="button"
+          [disabled]="!selectedFigureName()"
+          (click)="selectedFigureDeleted.emit(); closeMenu($event)"
+        >
+          <svg lucideX size="13"></svg><span>Delete selected figure</span>
+        </button>
+      </div>
+    </details>
+    <details class="editor-menu" name="application-menu">
+      <summary>View</summary>
+      <div class="editor-menu-panel w-52">
+        <button type="button" (click)="zoomIn.emit(); closeMenu($event)">
+          <svg lucideZoomIn size="13"></svg><span>Zoom in</span><kbd>{{ zoom() }}%</kbd>
+        </button>
+        <button type="button" (click)="zoomOut.emit(); closeMenu($event)">
+          <svg lucideZoomOut size="13"></svg><span>Zoom out</span>
+        </button>
+        <button type="button" (click)="fitCanvas.emit(); closeMenu($event)">
+          <svg lucideMaximize2 size="13"></svg><span>Fit canvas</span>
+        </button>
+        <button type="button" (click)="controlModeChange.emit('pan'); closeMenu($event)">
+          <svg lucideHand size="13"></svg><span>Hand tool</span>
+        </button>
+        <button type="button" (click)="panRequested.emit({ x: -40, y: 0 }); closeMenu($event)">
+          <svg lucideChevronLeft size="13"></svg><span>Pan left</span>
+        </button>
+        <button type="button" (click)="panRequested.emit({ x: 40, y: 0 }); closeMenu($event)">
+          <svg lucideChevronRight size="13"></svg><span>Pan right</span>
+        </button>
+        <div class="editor-menu-separator"></div>
+        <button
+          type="button"
+          (click)="
+            controlModeChange.emit(controlMode() === 'joints' ? 'none' : 'joints');
+            closeMenu($event)
+          "
+        >
+          <svg lucideBone size="13"></svg
+          ><span>{{
+            controlMode() === 'joints' ? 'Hide joint controls' : 'Show joint controls'
+          }}</span>
+        </button>
+        <div class="editor-menu-separator"></div>
+        <label class="workspace-menu-item"
+          ><input
+            type="checkbox"
+            [checked]="workspace.isVisible('project')"
+            (change)="togglePanel('project', $event)"
+          /><span>Project / Outliner</span></label
+        >
+        <label class="workspace-menu-item"
+          ><input
+            type="checkbox"
+            [checked]="workspace.isVisible('sceneStrip')"
+            (change)="togglePanel('sceneStrip', $event)"
+          /><span>Scene Strip</span></label
+        >
+        <label class="workspace-menu-item"
+          ><input
+            type="checkbox"
+            [checked]="workspace.isVisible('timeline')"
+            (change)="togglePanel('timeline', $event)"
+          /><span>Timeline</span></label
+        >
+        <label class="workspace-menu-item"
+          ><input
+            type="checkbox"
+            [checked]="workspace.isVisible('inspector')"
+            (change)="togglePanel('inspector', $event)"
+          /><span>Properties</span></label
+        >
+        <div class="editor-menu-separator"></div>
+        <button type="button" (click)="workspace.focusCanvas(); closeMenu($event)">
+          <span>Focus Canvas</span>
+        </button>
+        <button type="button" (click)="workspace.reset(); closeMenu($event)">
+          <span>Reset Workspace</span>
+        </button>
+      </div>
+    </details>
+    <details class="editor-menu" name="application-menu">
+      <summary>Animation</summary>
+      <div class="editor-menu-panel w-52">
+        <button
+          type="button"
+          [disabled]="currentFrame() <= 1"
+          (click)="previousFrame.emit(); closeMenu($event)"
+        >
+          <svg lucideChevronLeft size="13"></svg><span>Previous frame</span>
+        </button>
+        <button
+          type="button"
+          [disabled]="currentFrame() >= totalFrames()"
+          (click)="nextFrame.emit(); closeMenu($event)"
+        >
+          <svg lucideChevronRight size="13"></svg><span>Next frame</span>
+        </button>
+        <div class="editor-menu-separator"></div>
+        <button
+          type="button"
+          [disabled]="totalFrames() === 0"
+          (click)="frameAdded.emit(); closeMenu($event)"
+        >
+          <svg lucideCopyPlus size="13"></svg><span>Duplicate frame</span>
+        </button>
+        <button type="button" (click)="blankFrameAdded.emit(); closeMenu($event)">
+          <svg lucideFilePlusCorner size="13"></svg><span>Add blank frame</span>
+        </button>
+        <button
+          type="button"
+          [disabled]="totalFrames() <= 1"
+          (click)="frameDeleted.emit(); closeMenu($event)"
+        >
+          <svg lucideX size="13"></svg><span>Delete frame</span>
+        </button>
+      </div>
+    </details>
+    <details class="editor-menu" name="application-menu">
+      <summary>Help</summary>
+      <div class="editor-menu-panel w-44">
+        <button type="button" (click)="aboutOpen.set(true); closeMenu($event)">
+          <svg lucideInfo size="13"></svg><span>About Framation</span>
+        </button>
+      </div>
+    </details>
+  </nav>
+  <div class="ml-auto flex items-center gap-1">
+    <button type="button" class="menu-bar-icon" aria-label="Save project" title="Save project">
+      <svg lucideSave size="15"></svg></button
+    ><button type="button" class="menu-bar-icon" aria-label="Settings" title="Settings">
+      <svg lucideSettings2 size="15"></svg>
+    </button>
+  </div>
+</header>
+@if (aboutOpen()) {
+  <div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40">
+    <dialog
+      open
+      class="w-80 border border-[#555555] bg-[#2B2B2B] text-[#D6D6D6]"
+      aria-labelledby="about-title"
+      (keydown.escape)="aboutOpen.set(false)"
+    >
+      <header class="flex h-8 items-center border-b border-[#414141] px-2.5">
+        <h2 id="about-title" class="text-[11px] font-semibold">About Framation</h2>
+        <button
+          type="button"
+          class="ml-auto flex size-5 items-center justify-center text-[#9A9A9A] hover:text-white"
+          aria-label="Close About"
+          (click)="aboutOpen.set(false)"
+        >
+          <svg lucideX size="13"></svg>
+        </button>
+      </header>
+      <div class="p-4 text-[10px] text-[#9A9A9A]">
+        <div class="mb-2 flex items-center gap-2 text-[#D6D6D6]">
+          <svg lucideBone size="18"></svg><strong>Framation 0.1.0</strong>
+        </div>
+        <p>Desktop stick-figure animation editor.</p>
+      </div>
+    </dialog>
+  </div>
+}

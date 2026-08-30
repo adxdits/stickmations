@@ -1,0 +1,20 @@
+<div class="flex h-9 shrink-0 items-center border-b border-[#414141] bg-[#2B2B2B] px-1.5">
+  <div class="flex items-center gap-0.5 border-r border-[#414141] pr-1.5">
+    <button type="button" class="canvas-tool-button" aria-label="Undo" title="Undo" [disabled]="!canUndo()" (click)="undo.emit()"><svg lucideUndo2 size="16"></svg></button>
+    <button type="button" class="canvas-tool-button" aria-label="Redo" title="Redo" [disabled]="!canRedo()" (click)="redo.emit()"><svg lucideRedo2 size="16"></svg></button>
+  </div>
+  <fieldset class="ml-1.5 flex items-center gap-0.5">
+    <legend class="sr-only">Canvas tools</legend>
+    <button type="button" class="canvas-mode-button" [class.active-tool]="controlMode() === 'none'" [attr.aria-pressed]="controlMode() === 'none'" aria-label="Select figure" (click)="controlModeChange.emit('none')"><svg lucideMousePointer2 size="15"></svg><span class="hidden sm:inline">Select</span></button>
+    <button type="button" class="canvas-mode-button" [class.active-tool]="controlMode() === 'joints'" [attr.aria-pressed]="controlMode() === 'joints'" aria-label="Edit all joints" (click)="controlModeChange.emit('joints')"><svg lucideBone size="15"></svg><span class="hidden sm:inline">Joints</span></button>
+    <button type="button" class="canvas-mode-button" [class.active-tool]="controlMode() === 'pan'" [attr.aria-pressed]="controlMode() === 'pan'" aria-label="Pan canvas" title="Hand tool" (click)="controlModeChange.emit('pan')"><svg lucideHand size="15"></svg><span class="hidden sm:inline">Hand</span></button>
+  </fieldset>
+  <div class="ml-auto flex items-center gap-0.5">
+    <button type="button" class="canvas-tool-button" aria-label="Pan canvas left" title="Pan left" (click)="panRequested.emit({ x: -40, y: 0 })"><svg lucideChevronLeft size="15"></svg></button>
+    <button type="button" class="canvas-tool-button" aria-label="Pan canvas right" title="Pan right" (click)="panRequested.emit({ x: 40, y: 0 })"><svg lucideChevronRight size="15"></svg></button>
+    <span class="mx-1 h-5 w-px bg-[#414141]"></span>
+    <button type="button" class="canvas-tool-button" aria-label="Zoom out" title="Zoom out" (click)="zoomOut.emit()"><svg lucideZoomOut size="16"></svg></button>
+    <button type="button" class="canvas-tool-button" aria-label="Zoom in" title="Zoom in" (click)="zoomIn.emit()"><svg lucideZoomIn size="16"></svg></button>
+    <button type="button" class="canvas-tool-button" aria-label="Fit canvas" title="Fit canvas" (click)="fitCanvas.emit()"><svg lucideMaximize2 size="16"></svg></button>
+  </div>
+</div>
