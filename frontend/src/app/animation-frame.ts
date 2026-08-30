@@ -1,6 +1,8 @@
 import { rotateFigure, scaleFigure, translateFigure, type StickFigure } from '@framation/engine';
 
-export type TransformProperty = 'positionX' | 'positionY' | 'rotation' | 'scaleX' | 'scaleY';
+export type TransformProperty =
+  'positionX' | 'positionY' | 'rotation' | 'scale' | 'scaleX' | 'scaleY';
+export type FigureOperation = 'rotateLeft' | 'rotateRight' | 'flipX' | 'flipY';
 
 export interface FrameTransform {
   readonly positionX: number;
@@ -8,6 +10,8 @@ export interface FrameTransform {
   readonly rotation: number;
   readonly scaleX: number;
   readonly scaleY: number;
+  readonly flipX: boolean;
+  readonly flipY: boolean;
 }
 
 export interface AnimationFrame {
@@ -30,6 +34,8 @@ export function createAnimationFrame(figure: StickFigure): AnimationFrame {
       rotation: 0,
       scaleX: 100,
       scaleY: 100,
+      flipX: false,
+      flipY: false,
     },
   };
 }
@@ -49,6 +55,22 @@ export function applyTransformChange(
   frame: AnimationFrame,
   change: TransformChange,
 ): AnimationFrame {
+  if (change.property === 'scale') {
+    const value = Math.max(1, change.value);
+    return {
+      figure: scaleFigure(
+        frame.figure,
+        value / frame.transform.scaleX,
+        value / frame.transform.scaleY,
+      ),
+      transform: {
+        ...frame.transform,
+        scaleX: value,
+        scaleY: value,
+      },
+    };
+  }
+
   const currentValue = frame.transform[change.property];
   const value =
     change.property === 'scaleX' || change.property === 'scaleY'
@@ -78,4 +100,34 @@ export function applyTransformChange(
     figure,
     transform: { ...frame.transform, [change.property]: value },
   };
+}
+
+export function applyFigureOperation(
+  frame: AnimationFrame,
+  operation: FigureOperation,
+): AnimationFrame {
+  switch (operation) {
+    case 'rotateLeft':
+      return applyTransformChange(frame, {
+        property: 'rotation',
+        value: frame.transform.rotation + 90,
+      });
+    case 'rotateRight':
+      return applyTransformChange(frame, {
+        property: 'rotation',
+        value: frame.transform.rotation - 90,
+      });
+    case 'flipX':
+      return {
+        ...frame,
+        figure: scaleFigure(frame.figure, -1, 1),
+        transform: { ...frame.transform, flipX: !frame.transform.flipX },
+      };
+    case 'flipY':
+      return {
+        ...frame,
+        figure: scaleFigure(frame.figure, 1, -1),
+        transform: { ...frame.transform, flipY: !frame.transform.flipY },
+      };
+  }
 }

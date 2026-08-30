@@ -1,5 +1,6 @@
 import type { StickFigure } from '@framation/engine';
-import { createFigurePreview } from './figure-preview';
+import { createFigurePreview, createScenePreview } from './figure-preview';
+import { createFigureLayer } from './scene-frame';
 
 describe('createFigurePreview', () => {
   it('keeps the root control and hides static detail nodes', () => {
@@ -32,5 +33,27 @@ describe('createFigurePreview', () => {
     expect(preview.center.id).toBe('root');
     expect(preview.editableJoints.map(({ id }) => id)).toContain('left-hand');
     expect(preview.editableJoints.map(({ id }) => id)).not.toContain('detail');
+  });
+});
+
+describe('createScenePreview', () => {
+  it('renders figures with overlapping source ids as separate layers', () => {
+    const figure: StickFigure = {
+      version: 1,
+      name: 'Figure',
+      joints: [
+        { id: 'root', x: 0, y: 0, radius: 1, color: '#000000' },
+        { id: 'tip', x: 10, y: 0, radius: 1, color: '#000000' },
+      ],
+      segments: [{ id: 'line', from: 'root', to: 'tip', width: 1, color: '#000000' }],
+    };
+
+    const preview = createScenePreview([
+      createFigureLayer('first', figure),
+      createFigureLayer('second', figure),
+    ]);
+
+    expect(preview.segments).toHaveLength(2);
+    expect(new Set(preview.segments.map(({ id }) => id)).size).toBe(2);
   });
 });
