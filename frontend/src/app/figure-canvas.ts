@@ -3,7 +3,13 @@ import { moveJointToward, translateFigure, type StickFigure } from '@framation/e
 import { LucideFilePlusCorner, LucideUpload } from '@lucide/angular';
 import type { ControlMode, PanOffset } from './editor-types';
 import type { FigurePreview } from './figure-preview';
-import { DEFAULT_BACKGROUND, type SceneBackground } from './scene-frame';
+import {
+  DEFAULT_BACKGROUND,
+  type CameraChange,
+  type CameraProperty,
+  type SceneBackground,
+  type SceneCamera,
+} from './scene-frame';
 
 type DragStrategy = 'translate-figure' | 'joint';
 interface DragState {
@@ -21,6 +27,15 @@ interface PanDragState {
   readonly unitsPerPixel: number;
 }
 
+type CameraDragStrategy = 'move' | 'resize' | 'rotate';
+
+interface CameraDragState {
+  readonly strategy: CameraDragStrategy;
+  readonly pointerX: number;
+  readonly pointerY: number;
+  readonly camera: SceneCamera;
+}
+
 @Component({
   selector: 'app-figure-canvas',
   imports: [LucideFilePlusCorner, LucideUpload],
@@ -34,7 +49,9 @@ export class FigureCanvas {
   readonly viewBox = input<string | null>(null);
   readonly hasFrame = input(false);
   readonly background = input<SceneBackground>(DEFAULT_BACKGROUND);
+  readonly camera = input<SceneCamera | null>(null);
   readonly controlMode = input.required<ControlMode>();
+  readonly playbackPreview = input(false);
   readonly zoom = input.required<number>();
   readonly pan = input.required<PanOffset>();
   readonly importError = input<string | null>(null);
@@ -44,8 +61,13 @@ export class FigureCanvas {
   readonly editStarted = output<void>();
   readonly editEnded = output<void>();
   readonly panChange = output<PanOffset>();
+  readonly cameraChange = output<CameraChange>();
   protected readonly isPanning = signal(false);
   protected readonly cameraViewBox = computed(() => {
+    const sceneCamera = this.camera();
+    if (this.playbackPreview() && sceneCamera) {
+      return `${sceneCamera.positionX - sceneCamera.width / 2} ${sceneCamera.positionY - sceneCamera.height / 2} ${sceneCamera.width} ${sceneCamera.height}`;
+    }
     const viewBox = parseViewBox(this.viewBox());
     const zoomScale = 100 / this.zoom();
     const width = viewBox.width * zoomScale;
@@ -58,8 +80,19 @@ export class FigureCanvas {
       height,
     ].join(' ');
   });
+  protected readonly sceneTransform = computed(() => {
+    const camera = this.camera();
+    return this.playbackPreview() && camera && camera.rotation !== 0
+      ? `rotate(${-camera.rotation} ${camera.positionX} ${camera.positionY})`
+      : null;
+  });
+  protected readonly cameraTransform = computed(() => {
+    const camera = this.camera();
+    return camera ? `rotate(${camera.rotation} ${camera.positionX} ${camera.positionY})` : null;
+  });
   private dragState: DragState | null = null;
   private panDragState: PanDragState | null = null;
+  private cameraDragState: CameraDragState | null = null;
 
   protected selectFile(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -76,10 +109,11 @@ export class FigureCanvas {
     this.startDragging(event, 'translate-figure');
   }
   protected stopDraggingControl(): void {
-    if (this.dragState) {
+    if (this.dragState || this.cameraDragState) {
       this.editEnded.emit();
     }
     this.dragState = null;
+    this.cameraDragState = null;
     this.panDragState = null;
     this.isPanning.set(false);
   }
@@ -100,6 +134,11 @@ export class FigureCanvas {
           this.panDragState.panY +
           (event.clientY - this.panDragState.pointerY) * this.panDragState.unitsPerPixel,
       });
+      return;
+    }
+
+    if (this.cameraDragState) {
+      this.dragCamera(event, event.currentTarget as SVGSVGElement);
       return;
     }
 
@@ -147,6 +186,84 @@ export class FigureCanvas {
     event.preventDefault();
   }
 
+  protected startDraggingCamera(event: PointerEvent, strategy: CameraDragStrategy): void {
+    const camera = this.camera();
+    const element = event.currentTarget as SVGGraphicsElement;
+    const svg = element.ownerSVGElement;
+    const position = svg ? this.getPointerPosition(event, svg) : null;
+    if (this.controlMode() !== 'camera' || !camera || !position) {
+      return;
+    }
+    element.setPointerCapture(event.pointerId);
+    this.cameraDragState = {
+      strategy,
+      pointerX: position.x,
+      pointerY: position.y,
+      camera,
+    };
+    this.editStarted.emit();
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  protected moveCameraWithKeyboard(event: KeyboardEvent): void {
+    const offsets: Readonly<Record<string, readonly [number, number]>> = {
+      ArrowLeft: [-5, 0],
+      ArrowRight: [5, 0],
+      ArrowUp: [0, -5],
+      ArrowDown: [0, 5],
+    };
+    const offset = offsets[event.key];
+    const camera = this.camera();
+    if (!offset || !camera) {
+      return;
+    }
+    event.preventDefault();
+    this.editStarted.emit();
+    this.emitCameraChange('positionX', camera.positionX + offset[0]);
+    this.emitCameraChange('positionY', camera.positionY + offset[1]);
+    this.editEnded.emit();
+  }
+
+  protected rotateCameraWithKeyboard(event: KeyboardEvent): void {
+    const offset =
+      event.key === 'ArrowLeft' || event.key === 'ArrowUp'
+        ? -1
+        : event.key === 'ArrowRight' || event.key === 'ArrowDown'
+          ? 1
+          : 0;
+    const camera = this.camera();
+    if (!offset || !camera) {
+      return;
+    }
+    event.preventDefault();
+    this.editStarted.emit();
+    this.emitCameraChange('rotation', camera.rotation + offset * (event.shiftKey ? 15 : 1));
+    this.editEnded.emit();
+  }
+
+  protected resizeCameraWithKeyboard(event: KeyboardEvent): void {
+    const camera = this.camera();
+    if (!camera) {
+      return;
+    }
+    const amount = event.shiftKey ? 50 : 10;
+    const changes: Readonly<Record<string, readonly [CameraProperty, number]>> = {
+      ArrowLeft: ['width', Math.max(32, camera.width - amount)],
+      ArrowRight: ['width', camera.width + amount],
+      ArrowUp: ['height', Math.max(18, camera.height - amount)],
+      ArrowDown: ['height', camera.height + amount],
+    };
+    const change = changes[event.key];
+    if (!change) {
+      return;
+    }
+    event.preventDefault();
+    this.editStarted.emit();
+    this.emitCameraChange(change[0], change[1]);
+    this.editEnded.emit();
+  }
+
   private startDragging(event: PointerEvent, strategy: DragStrategy, targetId?: string): void {
     const element = event.currentTarget as SVGGraphicsElement;
     const position = element.ownerSVGElement
@@ -159,6 +276,40 @@ export class FigureCanvas {
     this.dragState = { strategy, targetId, x: position.x, y: position.y };
     this.editStarted.emit();
     event.preventDefault();
+  }
+
+  private dragCamera(event: PointerEvent, svg: SVGSVGElement): void {
+    const drag = this.cameraDragState;
+    const position = this.getPointerPosition(event, svg);
+    if (!drag || !position) {
+      return;
+    }
+
+    const deltaX = position.x - drag.pointerX;
+    const deltaY = position.y - drag.pointerY;
+    if (drag.strategy === 'move') {
+      this.emitCameraChange('positionX', drag.camera.positionX + deltaX);
+      this.emitCameraChange('positionY', drag.camera.positionY + deltaY);
+      return;
+    }
+    if (drag.strategy === 'rotate') {
+      const angle =
+        (Math.atan2(position.y - drag.camera.positionY, position.x - drag.camera.positionX) * 180) /
+          Math.PI +
+        90;
+      this.emitCameraChange('rotation', angle);
+      return;
+    }
+
+    const radians = (drag.camera.rotation * Math.PI) / 180;
+    const localX = deltaX * Math.cos(radians) + deltaY * Math.sin(radians);
+    const localY = -deltaX * Math.sin(radians) + deltaY * Math.cos(radians);
+    this.emitCameraChange('width', Math.max(32, drag.camera.width + localX * 2));
+    this.emitCameraChange('height', Math.max(18, drag.camera.height + localY * 2));
+  }
+
+  private emitCameraChange(property: CameraProperty, value: number): void {
+    this.cameraChange.emit({ property, value });
   }
 
   private getPointerPosition(

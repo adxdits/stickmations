@@ -68,6 +68,9 @@
         <button type="button" (click)="controlModeChange.emit('pan'); closeMenu($event)">
           <svg lucideHand size="13"></svg><span>Hand tool</span>
         </button>
+        <button type="button" (click)="controlModeChange.emit('camera'); closeMenu($event)">
+          <svg lucideCamera size="13"></svg><span>Camera tool</span>
+        </button>
         <button type="button" (click)="panRequested.emit({ x: -40, y: 0 }); closeMenu($event)">
           <svg lucideChevronLeft size="13"></svg><span>Pan left</span>
         </button>

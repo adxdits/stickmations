@@ -62,6 +62,7 @@
           class="hidden h-[92px] shrink-0 sm:block"
           [previews]="editor.framePreviews()"
           [backgrounds]="editor.frameBackgrounds()"
+          [cameras]="editor.frameCameras()"
           [currentFrame]="editor.currentFrame()"
           (frameSelected)="editor.selectFrame($event)"
           (frameAdded)="editor.addFrame()"
@@ -80,7 +81,9 @@
         [viewBox]="viewport.sceneViewBox()"
         [hasFrame]="editor.animationFrames().length > 0"
         [background]="editor.currentBackground()"
+        [camera]="editor.currentCamera()"
         [controlMode]="viewport.controlMode()"
+        [playbackPreview]="viewport.isPlaybackPreview()"
         [zoom]="viewport.zoom()"
         [pan]="viewport.pan()"
         [importError]="editor.importError()"
@@ -90,6 +93,7 @@
         (editStarted)="editor.beginFrameEdit()"
         (editEnded)="editor.endFrameEdit()"
         (panChange)="viewport.pan.set($event)"
+        (cameraChange)="editor.updateCamera($event)"
       />
       @if (workspace.isVisible('timeline')) {
         <app-timeline
@@ -97,9 +101,14 @@
           [figureName]="editor.importedFigure()?.name ?? 'Figure'"
           [currentFrame]="editor.currentFrame()"
           [totalFrames]="editor.animationFrames().length"
+          [fps]="editor.fps()"
           [transform]="editor.currentTransform()"
+          [camera]="editor.currentCamera()"
           (currentFrameChange)="editor.selectFrame($event)"
+          (fpsChange)="editor.setFps($event)"
+          (playbackChange)="viewport.setPlaybackPreview($event)"
           (transformChange)="editor.updateTransform($event)"
+          (cameraChange)="editor.updateCamera($event)"
         />
       }
     </section>
@@ -110,6 +119,7 @@
         [controlMode]="viewport.controlMode()"
         [transform]="editor.currentTransform()"
         [background]="editor.currentBackground()"
+        [camera]="editor.currentCamera()"
         (controlModeChange)="viewport.controlMode.set($event)"
         (transformChange)="editor.updateTransform($event)"
         (figureOperation)="editor.applySelectedFigureOperation($event)"
@@ -117,6 +127,7 @@
         (backgroundChange)="editor.updateBackgroundTransform($event)"
         (backgroundReset)="editor.resetBackgroundTransform()"
         (backgroundImageRemoved)="editor.clearBackgroundImage()"
+        (cameraChange)="editor.updateCamera($event)"
       />
     }
   </div>

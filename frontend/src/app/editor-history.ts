@@ -6,6 +6,7 @@ export interface EditorSnapshot {
   readonly frames: readonly SceneFrame[];
   readonly currentFrame: number;
   readonly selectedFigureId: string | null;
+  readonly fps: number;
 }
 
 export interface FrameMove {

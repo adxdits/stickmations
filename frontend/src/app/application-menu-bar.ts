@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, input, output, signal } from '@angular/core';
 import {
   LucideBone,
+  LucideCamera,
   LucideChevronLeft,
   LucideChevronRight,
   LucideCopyPlus,
@@ -25,6 +26,7 @@ import { EditorWorkspaceStore, type WorkspacePanel } from './editor-workspace.st
   selector: 'app-application-menu-bar',
   imports: [
     LucideBone,
+    LucideCamera,
     LucideChevronLeft,
     LucideChevronRight,
     LucideCopyPlus,

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import {
   LucideBone,
+  LucideCamera,
   LucideChevronLeft,
   LucideChevronRight,
   LucideHand,
@@ -17,6 +18,7 @@ import type { ControlMode, PanOffset } from './editor-types';
   selector: 'app-canvas-toolbar',
   imports: [
     LucideBone,
+    LucideCamera,
     LucideChevronLeft,
     LucideChevronRight,
     LucideHand,

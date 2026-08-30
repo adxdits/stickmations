@@ -8,6 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import {
+  LucideCamera,
   LucideChevronDown,
   LucideChevronRight,
   LucidePause,
@@ -17,8 +18,9 @@ import {
   LucideSkipForward,
 } from '@lucide/angular';
 import type { FrameTransform, TransformChange, TransformProperty } from './animation-frame';
+import type { CameraChange, CameraProperty, SceneCamera } from './scene-frame';
 
-type TimelineTrack = 'position' | 'rotation' | 'scale';
+type TimelineTrack = 'position' | 'rotation' | 'scale' | 'camera';
 
 const FRAME_WIDTH = 44;
 const MIN_TIMELINE_WIDTH = 720;
@@ -28,6 +30,7 @@ const MIN_TIMELINE_WIDTH = 720;
   imports: [
     LucideChevronDown,
     LucideChevronRight,
+    LucideCamera,
     LucidePause,
     LucidePersonStanding,
     LucidePlay,
@@ -41,12 +44,17 @@ export class Timeline implements OnDestroy {
   readonly figureName = input.required<string>();
   readonly currentFrame = input.required<number>();
   readonly totalFrames = input.required<number>();
+  readonly fps = input.required<number>();
   readonly transform = input<FrameTransform | null>(null);
+  readonly camera = input<SceneCamera | null>(null);
   readonly currentFrameChange = output<number>();
+  readonly fpsChange = output<number>();
+  readonly playbackChange = output<boolean>();
   readonly transformChange = output<TransformChange>();
+  readonly cameraChange = output<CameraChange>();
   protected readonly isPlaying = signal(false);
   protected readonly expandedTracks = signal<ReadonlySet<TimelineTrack>>(new Set(['position']));
-  protected readonly frameLabel = computed(() => this.currentFrame().toString().padStart(2, '0'));
+  protected readonly timecode = computed(() => formatTimecode(this.currentFrame(), this.fps()));
   protected readonly uniformScale = computed(() => {
     const transform = this.transform();
     if (!transform) {
@@ -61,7 +69,7 @@ export class Timeline implements OnDestroy {
   protected readonly timelineWidth = computed(() =>
     Math.max(this.totalFrames() * FRAME_WIDTH, MIN_TIMELINE_WIDTH),
   );
-  private playbackTimer: ReturnType<typeof setInterval> | null = null;
+  private playbackTimer: ReturnType<typeof setTimeout> | null = null;
 
   ngOnDestroy(): void {
     this.stopPlayback();
@@ -72,14 +80,8 @@ export class Timeline implements OnDestroy {
       return;
     }
     this.isPlaying.set(true);
-    this.playbackTimer = setInterval(() => {
-      const totalFrames = this.totalFrames();
-      if (totalFrames > 0) {
-        this.currentFrameChange.emit(
-          this.currentFrame() >= totalFrames ? 1 : this.currentFrame() + 1,
-        );
-      }
-    }, 1000 / 12);
+    this.playbackChange.emit(true);
+    this.scheduleNextFrame();
   }
   protected stepFrame(offset: number): void {
     this.selectFrame(
@@ -93,6 +95,13 @@ export class Timeline implements OnDestroy {
 
   protected selectFrameFromInput(event: Event): void {
     this.selectFrame(Number((event.target as HTMLInputElement).value));
+  }
+
+  protected changeFps(event: Event): void {
+    const value = Number((event.target as HTMLInputElement).value);
+    if (Number.isFinite(value)) {
+      this.fpsChange.emit(value);
+    }
   }
 
   protected framePosition(frame: number): number {
@@ -122,6 +131,13 @@ export class Timeline implements OnDestroy {
     }
   }
 
+  protected changeCamera(property: CameraProperty, event: Event): void {
+    const value = Number((event.target as HTMLInputElement).value);
+    if (Number.isFinite(value)) {
+      this.cameraChange.emit({ property, value });
+    }
+  }
+
   protected scrollHorizontally(event: WheelEvent, viewport: HTMLElement): void {
     if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
       viewport.scrollLeft += event.deltaY;
@@ -129,10 +145,45 @@ export class Timeline implements OnDestroy {
     }
   }
   private stopPlayback(): void {
+    const wasPlaying = this.isPlaying();
     if (this.playbackTimer) {
-      clearInterval(this.playbackTimer);
+      clearTimeout(this.playbackTimer);
       this.playbackTimer = null;
     }
     this.isPlaying.set(false);
+    if (wasPlaying) {
+      this.playbackChange.emit(false);
+    }
   }
+
+  private scheduleNextFrame(): void {
+    if (this.playbackTimer) {
+      clearTimeout(this.playbackTimer);
+    }
+    this.playbackTimer = setTimeout(
+      () => {
+        const totalFrames = this.totalFrames();
+        if (this.isPlaying() && totalFrames > 0) {
+          this.currentFrameChange.emit(
+            this.currentFrame() >= totalFrames ? 1 : this.currentFrame() + 1,
+          );
+          this.scheduleNextFrame();
+        }
+      },
+      1000 / Math.max(this.fps(), 1),
+    );
+  }
+}
+
+function formatTimecode(frameNumber: number, fps: number): string {
+  const safeFps = Math.max(1, Math.round(fps));
+  const elapsedFrames = Math.max(0, frameNumber - 1);
+  const frames = elapsedFrames % safeFps;
+  const elapsedSeconds = Math.floor(elapsedFrames / safeFps);
+  const seconds = elapsedSeconds % 60;
+  const minutes = Math.floor(elapsedSeconds / 60) % 60;
+  const hours = Math.floor(elapsedSeconds / 3600);
+  return [hours, minutes, seconds, frames]
+    .map((value) => value.toString().padStart(2, '0'))
+    .join(':');
 }

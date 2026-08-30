@@ -12,19 +12,23 @@ import { EditorViewportStore } from './editor-viewport.store';
 import { createFigurePreview, createScenePreview } from './figure-preview';
 import {
   addFigureLayer,
+  applyCameraChange,
   applyLayerFigureOperation,
   applyLayerTransformChange,
   cloneSceneFrame,
   createFigureLayer,
+  createSceneCamera,
   createSceneFrame,
   moveFigureLayer,
   removeFigureLayer,
   setFigureLayerVisibility,
   updateFigureLayer,
   type BackgroundChange,
+  type CameraChange,
   type FigureLayer,
   type LayerMove,
   type SceneBackground,
+  type SceneCamera,
   type SceneFrame,
 } from './scene-frame';
 
@@ -37,6 +41,7 @@ const DEFAULT_BACKGROUND: SceneBackground = {
   positionX: 0,
   positionY: 0,
 };
+const DEFAULT_FPS = 12;
 
 @Injectable({ providedIn: 'root' })
 export class EditorDocumentStore {
@@ -46,6 +51,7 @@ export class EditorDocumentStore {
   readonly animationFrames = signal<readonly SceneFrame[]>([]);
   readonly importError = signal<string | null>(null);
   readonly currentFrame = signal(1);
+  readonly fps = signal(DEFAULT_FPS);
   readonly selectedFigureId = signal<string | null>(null);
   readonly canUndo = computed(() => this.undoStack().length > 0);
   readonly canRedo = computed(() => this.redoStack().length > 0);
@@ -70,12 +76,14 @@ export class EditorDocumentStore {
   readonly currentBackground = computed<SceneBackground>(
     () => this.currentScene()?.background ?? DEFAULT_BACKGROUND,
   );
+  readonly currentCamera = computed(() => this.currentScene()?.camera ?? null);
   readonly framePreviews = computed(() =>
     this.animationFrames().map(({ figures }) => createScenePreview(figures)),
   );
   readonly frameBackgrounds = computed(() =>
     this.animationFrames().map(({ background }) => background),
   );
+  readonly frameCameras = computed(() => this.animationFrames().map(({ camera }) => camera));
 
   async importFigure(file: File): Promise<void> {
     try {
@@ -86,8 +94,10 @@ export class EditorDocumentStore {
       };
       const layerId = `figure-${this.nextFigureId++}`;
       if (this.animationFrames().length === 0) {
-        this.animationFrames.set([createSceneFrame(createFigureLayer(layerId, figure))]);
-        this.viewport.reset(createFigurePreview(figure).viewBox);
+        const figurePreview = createFigurePreview(figure);
+        const camera = createSceneCamera(figurePreview.viewBox);
+        this.animationFrames.set([createSceneFrame(createFigureLayer(layerId, figure), camera)]);
+        this.viewport.reset(cameraEditorViewBox(camera));
         this.currentFrame.set(1);
         this.resetHistory();
       } else {
@@ -126,9 +136,11 @@ export class EditorDocumentStore {
   }
 
   createBlankProject(): void {
-    this.animationFrames.set([createSceneFrame()]);
-    this.viewport.reset();
+    const frame = createSceneFrame();
+    this.animationFrames.set([frame]);
+    this.viewport.reset(cameraEditorViewBox(frame.camera));
     this.currentFrame.set(1);
+    this.fps.set(DEFAULT_FPS);
     this.selectedFigureId.set(null);
     this.importError.set(null);
     this.resetHistory();
@@ -208,6 +220,20 @@ export class EditorDocumentStore {
     this.animationFrames.update((frames) =>
       frames.map((frame, index) =>
         index === frameIndex ? applyLayerTransformChange(frame, layerId, change) : frame,
+      ),
+    );
+  }
+
+  updateCamera(change: CameraChange): void {
+    const frameIndex = this.currentFrame() - 1;
+    if (!this.animationFrames()[frameIndex]) {
+      return;
+    }
+
+    this.recordHistory();
+    this.animationFrames.update((frames) =>
+      frames.map((frame, index) =>
+        index === frameIndex ? applyCameraChange(frame, change) : frame,
       ),
     );
   }
@@ -394,6 +420,16 @@ export class EditorDocumentStore {
     }
   }
 
+  setFps(value: number): void {
+    const fps = Math.min(60, Math.max(1, Math.round(value)));
+    if (!Number.isFinite(value) || fps === this.fps()) {
+      return;
+    }
+
+    this.recordHistory();
+    this.fps.set(fps);
+  }
+
   undo(): void {
     const history = this.undoStack();
     const previous = history.at(-1);
@@ -481,6 +517,7 @@ export class EditorDocumentStore {
       frames: this.animationFrames(),
       currentFrame: this.currentFrame(),
       selectedFigureId: this.selectedFigureId(),
+      fps: this.fps(),
     };
   }
 
@@ -488,6 +525,7 @@ export class EditorDocumentStore {
     this.animationFrames.set(snapshot.frames);
     this.currentFrame.set(snapshot.currentFrame);
     this.selectedFigureId.set(snapshot.selectedFigureId);
+    this.fps.set(snapshot.fps);
     this.endFrameEdit();
   }
 
@@ -496,4 +534,10 @@ export class EditorDocumentStore {
     this.redoStack.set([]);
     this.endFrameEdit();
   }
+}
+
+function cameraEditorViewBox(camera: SceneCamera): string {
+  const width = camera.width * 1.2;
+  const height = camera.height * 1.2;
+  return `${camera.positionX - width / 2} ${camera.positionY - height / 2} ${width} ${height}`;
 }

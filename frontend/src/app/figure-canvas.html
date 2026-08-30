@@ -47,63 +47,128 @@
           (pointerup)="stopDraggingControl()"
           (pointercancel)="stopDraggingControl()"
         >
-          @for (segment of scenePreview.segments; track segment.id) {
-            <line
-              [attr.x1]="segment.x1"
-              [attr.y1]="segment.y1"
-              [attr.x2]="segment.x2"
-              [attr.y2]="segment.y2"
-              [attr.stroke]="segment.color"
-              [attr.stroke-width]="segment.width"
-              [attr.stroke-linecap]="segment.rounded ? 'round' : 'butt'"
-            />
-          }
-          @for (circle of scenePreview.circles; track circle.id) {
-            <circle
-              [attr.cx]="circle.cx"
-              [attr.cy]="circle.cy"
-              [attr.r]="circle.radius"
-              [attr.fill]="circle.hollow ? 'none' : circle.color"
-              [attr.stroke]="circle.color"
-              [attr.stroke-width]="circle.hollow ? circle.width : 0"
-            />
-          }
-          @if (selectedPreview(); as figurePreview) {
-            @if (controlMode() === 'joints') {
-              <rect
-                [attr.x]="figurePreview.center.x - 6"
-                [attr.y]="figurePreview.center.y - 6"
-                width="12"
-                height="12"
-                fill="#ffffff"
-                stroke="#718FA8"
-                stroke-width="2"
-                role="button"
-                tabindex="0"
-                aria-label="Move figure"
-                (pointerdown)="startDraggingFigure($event)"
-                (keydown)="moveFigureWithKeyboard($event)"
+          <g [attr.transform]="sceneTransform()" data-testid="camera-scene">
+            @for (segment of scenePreview.segments; track segment.id) {
+              <line
+                [attr.x1]="segment.x1"
+                [attr.y1]="segment.y1"
+                [attr.x2]="segment.x2"
+                [attr.y2]="segment.y2"
+                [attr.stroke]="segment.color"
+                [attr.stroke-width]="segment.width"
+                [attr.stroke-linecap]="segment.rounded ? 'round' : 'butt'"
               />
             }
-            @if (controlMode() === 'joints') {
-              @for (joint of figurePreview.editableJoints; track joint.id) {
-                @if (joint.id !== figurePreview.center.id) {
-                  <circle
-                    [attr.cx]="joint.x"
-                    [attr.cy]="joint.y"
-                    r="4"
+            @for (circle of scenePreview.circles; track circle.id) {
+              <circle
+                [attr.cx]="circle.cx"
+                [attr.cy]="circle.cy"
+                [attr.r]="circle.radius"
+                [attr.fill]="circle.hollow ? 'none' : circle.color"
+                [attr.stroke]="circle.color"
+                [attr.stroke-width]="circle.hollow ? circle.width : 0"
+              />
+            }
+            @if (!playbackPreview()) {
+              @if (selectedPreview(); as figurePreview) {
+                @if (controlMode() === 'joints') {
+                  <rect
+                    [attr.x]="figurePreview.center.x - 6"
+                    [attr.y]="figurePreview.center.y - 6"
+                    width="12"
+                    height="12"
                     fill="#ffffff"
                     stroke="#718FA8"
-                    stroke-width="1.5"
+                    stroke-width="2"
                     role="button"
                     tabindex="0"
-                    [attr.aria-label]="'Move joint ' + joint.id"
-                    (pointerdown)="startDraggingRigJoint($event, joint.id)"
-                    (keydown)="moveRigJointWithKeyboard($event, joint.id)"
+                    aria-label="Move figure"
+                    (pointerdown)="startDraggingFigure($event)"
+                    (keydown)="moveFigureWithKeyboard($event)"
                   />
+                }
+                @if (controlMode() === 'joints') {
+                  @for (joint of figurePreview.editableJoints; track joint.id) {
+                    @if (joint.id !== figurePreview.center.id) {
+                      <circle
+                        [attr.cx]="joint.x"
+                        [attr.cy]="joint.y"
+                        r="4"
+                        fill="#ffffff"
+                        stroke="#718FA8"
+                        stroke-width="1.5"
+                        role="button"
+                        tabindex="0"
+                        [attr.aria-label]="'Move joint ' + joint.id"
+                        (pointerdown)="startDraggingRigJoint($event, joint.id)"
+                        (keydown)="moveRigJointWithKeyboard($event, joint.id)"
+                      />
+                    }
+                  }
                 }
               }
             }
+          </g>
+          @if (!playbackPreview() && camera(); as sceneCamera) {
+            <g [attr.transform]="cameraTransform()" data-testid="camera-frame">
+              <rect
+                [attr.x]="sceneCamera.positionX - sceneCamera.width / 2"
+                [attr.y]="sceneCamera.positionY - sceneCamera.height / 2"
+                [attr.width]="sceneCamera.width"
+                [attr.height]="sceneCamera.height"
+                fill="rgba(113, 143, 168, 0.04)"
+                stroke="#9FC5E0"
+                stroke-width="2"
+                stroke-dasharray="8 5"
+                vector-effect="non-scaling-stroke"
+                role="button"
+                aria-label="Move camera"
+                [attr.tabindex]="controlMode() === 'camera' ? 0 : null"
+                [attr.pointer-events]="controlMode() === 'camera' ? 'all' : 'none'"
+                (pointerdown)="startDraggingCamera($event, 'move')"
+                (keydown)="moveCameraWithKeyboard($event)"
+              />
+              @if (controlMode() === 'camera') {
+                <line
+                  [attr.x1]="sceneCamera.positionX"
+                  [attr.y1]="sceneCamera.positionY - sceneCamera.height / 2"
+                  [attr.x2]="sceneCamera.positionX"
+                  [attr.y2]="sceneCamera.positionY - sceneCamera.height / 2 - 24"
+                  stroke="#9FC5E0"
+                  stroke-width="1.5"
+                  vector-effect="non-scaling-stroke"
+                />
+                <circle
+                  [attr.cx]="sceneCamera.positionX"
+                  [attr.cy]="sceneCamera.positionY - sceneCamera.height / 2 - 24"
+                  r="6"
+                  fill="#232323"
+                  stroke="#9FC5E0"
+                  stroke-width="2"
+                  vector-effect="non-scaling-stroke"
+                  role="button"
+                  tabindex="0"
+                  aria-label="Rotate camera"
+                  (pointerdown)="startDraggingCamera($event, 'rotate')"
+                  (keydown)="rotateCameraWithKeyboard($event)"
+                />
+                <rect
+                  [attr.x]="sceneCamera.positionX + sceneCamera.width / 2 - 6"
+                  [attr.y]="sceneCamera.positionY + sceneCamera.height / 2 - 6"
+                  width="12"
+                  height="12"
+                  fill="#9FC5E0"
+                  stroke="#232323"
+                  stroke-width="1.5"
+                  vector-effect="non-scaling-stroke"
+                  role="button"
+                  tabindex="0"
+                  aria-label="Resize camera"
+                  (pointerdown)="startDraggingCamera($event, 'resize')"
+                  (keydown)="resizeCameraWithKeyboard($event)"
+                />
+              }
+            </g>
           }
         </svg>
       </div>
