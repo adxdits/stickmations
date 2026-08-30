@@ -1,0 +1,56 @@
+<main class="flex h-screen flex-col overflow-hidden bg-[#232323] text-[12px] text-[#D6D6D6]">
+  <app-editor-toolbar
+    class="contents"
+    [title]="title()"
+    [projectName]="importedFigure()?.name ?? 'Untitled project'"
+    [controlMode]="controlMode()"
+    [zoom]="zoom()"
+    (controlModeChange)="controlMode.set($event)"
+    (zoomIn)="increaseZoom()"
+    (fitCanvas)="zoom.set(100)"
+  />
+  <div class="flex min-h-0 flex-1">
+    <app-project-sidebar
+      class="hidden w-56 shrink-0 flex-col border-r border-[#414141] bg-[#2B2B2B] md:flex"
+      [figure]="importedFigure()"
+      (fileSelected)="importFigure($event)"
+    />
+    <section class="flex min-w-0 flex-1 flex-col bg-[#232323]" aria-label="Animation workspace">
+      <app-scene-strip
+        class="hidden h-[92px] shrink-0 sm:block"
+        [preview]="preview()"
+        [currentFrame]="currentFrame()"
+        (frameSelected)="currentFrame.set($event)"
+      />
+      <app-figure-canvas
+        class="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[#232323]"
+        [figure]="importedFigure()"
+        [preview]="preview()"
+        [viewBox]="previewViewBox()"
+        [controlMode]="controlMode()"
+        [zoom]="zoom()"
+        [importError]="importError()"
+        (fileSelected)="importFigure($event)"
+        (figureChange)="importedFigure.set($event)"
+      />
+      <app-timeline
+        class="h-[150px] shrink-0 border-t border-[#414141] bg-[#2B2B2B] sm:h-[190px]"
+        [figureName]="importedFigure()?.name ?? 'Figure'"
+        [currentFrame]="currentFrame()"
+        (currentFrameChange)="currentFrame.set($event)"
+      />
+    </section>
+    <app-inspector
+      class="hidden w-64 shrink-0 flex-col border-l border-[#414141] bg-[#2B2B2B] xl:flex"
+      [figure]="importedFigure()"
+      [controlMode]="controlMode()"
+      (controlModeChange)="controlMode.set($event)"
+    />
+  </div>
+  <footer
+    class="flex h-6 shrink-0 items-center border-t border-[#414141] bg-[#232323] px-2 font-mono text-[9px] text-[#666666]"
+  >
+    <span class="text-[#9A9A9A]">Ready</span
+    ><span class="ml-auto">Frame {{ currentFrame() }} / 60</span>
+  </footer>
+</main>

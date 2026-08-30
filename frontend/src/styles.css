@@ -1,0 +1,84 @@
+@import 'tailwindcss';
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/jetbrains-mono/400.css';
+
+:root {
+  color-scheme: dark;
+  font-family: 'Inter', sans-serif;
+  background: #232323;
+  color: #d6d6d6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+[tabindex='0']:focus-visible {
+  outline: 1px solid #7e9db6;
+  outline-offset: -1px;
+}
+
+.workspace-grid {
+  background-color: #8b8b8b;
+  background-image:
+    linear-gradient(#929292 1px, transparent 1px),
+    linear-gradient(90deg, #929292 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.active-tool {
+  border: 1px solid #58758d;
+  background: #394a58;
+  color: #e2e8ed;
+}
+
+.active-tab {
+  color: #dedede;
+  border-color: #718fa8;
+}
+
+.selected-frame {
+  border-color: #718fa8;
+  background: #39444d;
+}
+
+.timeline-track {
+  background-color: #262626;
+  background-image:
+    linear-gradient(#3c3c3c 1px, transparent 1px),
+    linear-gradient(90deg, #3c3c3c 1px, transparent 1px);
+  background-size:
+    100% 25px,
+    calc(100% / 12) 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

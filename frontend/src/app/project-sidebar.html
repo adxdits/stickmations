@@ -1,0 +1,65 @@
+<section class="flex min-h-0 flex-1 flex-col border-b border-[#414141]">
+  <div class="flex h-8 shrink-0 items-center border-b border-[#414141] px-2.5">
+    <h2 class="text-[9px] font-semibold uppercase tracking-wide text-[#9A9A9A]">Project</h2>
+    <label
+      for="sidebar-stick-figure-file"
+      class="ml-auto flex size-6 cursor-pointer items-center justify-center rounded-[2px] text-[#9A9A9A] hover:bg-[#343434] hover:text-[#D6D6D6]"
+      title="Import stick figure"
+      ><svg lucidePlus size="15"></svg><span class="sr-only">Import stick figure</span></label
+    >
+    <input
+      id="sidebar-stick-figure-file"
+      class="sr-only"
+      type="file"
+      accept="application/json,.json,.nodes"
+      (change)="selectFile($event)"
+    />
+  </div>
+  <div class="px-2 py-1.5">
+    <label
+      class="flex h-6 items-center gap-1.5 rounded-[2px] border border-[#414141] bg-[#232323] px-1.5 text-[#666666]"
+      ><svg lucideSearch size="13"></svg><span class="sr-only">Search assets</span
+      ><input
+        type="search"
+        class="min-w-0 flex-1 bg-transparent text-[10px] text-[#D6D6D6] outline-none placeholder:text-[#666666]"
+        placeholder="Search assets"
+    /></label>
+  </div>
+  <div class="px-1.5">
+    <div class="flex h-6 items-center gap-1.5 rounded-[2px] bg-[#39444D] px-1.5 text-[#E0E0E0]">
+      <svg lucideFolderOpen size="13" class="text-[#C2C2C2]"></svg
+      ><span class="truncate">Scene 1</span>
+    </div>
+    @if (figure(); as importedFigure) {
+      <div
+        class="flex h-6 items-center gap-1.5 rounded-[2px] px-1.5 pl-6 text-[#9A9A9A] hover:bg-[#343434] hover:text-[#D6D6D6]"
+      >
+        <svg lucidePersonStanding size="13"></svg
+        ><span class="truncate">{{ importedFigure.name }}</span>
+      </div>
+    }
+    <div class="flex h-6 items-center gap-1.5 rounded-[2px] px-1.5 pl-6 text-[#666666]">
+      <svg lucideMusic2 size="13"></svg><span>Audio</span>
+    </div>
+  </div>
+</section>
+<section class="flex min-h-0 flex-1 flex-col">
+  <div class="flex h-8 shrink-0 items-center border-b border-[#414141] px-2.5">
+    <h2 class="text-[9px] font-semibold uppercase tracking-wide text-[#9A9A9A]">Outliner</h2>
+  </div>
+  <div class="p-1.5">
+    <div class="flex h-6 items-center gap-1 rounded-[2px] px-1 text-[#D6D6D6]">
+      <svg lucideChevronRight size="13"></svg><span>Scene 1</span
+      ><svg lucideEye size="12" class="ml-auto text-[#666666]"></svg>
+    </div>
+    @if (figure(); as importedFigure) {
+      <div
+        class="flex h-6 items-center gap-1.5 rounded-[2px] bg-[#39444D] px-1.5 pl-5 text-[#E0E0E0]"
+      >
+        <svg lucidePersonStanding size="13" class="text-[#C2C2C2]"></svg
+        ><span class="truncate">{{ importedFigure.name }}</span
+        ><svg lucideEye size="12" class="ml-auto text-[#9A9A9A]"></svg>
+      </div>
+    }
+  </div>
+</section>

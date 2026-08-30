@@ -1,0 +1,78 @@
+<div class="flex h-9 items-center border-b border-[#414141] px-2">
+  <span class="font-mono text-[11px] text-[#C8C8C8]">00:00:00:{{ frameLabel() }}</span>
+  <div class="mx-auto flex items-center gap-1">
+    <button
+      type="button"
+      class="flex size-6 items-center justify-center rounded-[2px] text-[#9A9A9A] hover:bg-[#343434] hover:text-[#D6D6D6]"
+      aria-label="Previous frame"
+      title="Previous frame"
+      (click)="stepFrame(-1)"
+    >
+      <svg lucideSkipBack size="15"></svg></button
+    ><button
+      type="button"
+      class="flex size-7 items-center justify-center rounded-[2px] border border-[#4A4A4A] bg-[#343434] text-[#C8C8C8] hover:bg-[#3C3C3C] hover:text-[#E0E0E0]"
+      [attr.aria-label]="isPlaying() ? 'Pause' : 'Play'"
+      [attr.aria-pressed]="isPlaying()"
+      (click)="togglePlayback()"
+    >
+      @if (isPlaying()) {
+        <svg lucidePause size="16"></svg>
+      } @else {
+        <svg lucidePlay size="16"></svg>
+      }</button
+    ><button
+      type="button"
+      class="flex size-6 items-center justify-center rounded-[2px] text-[#9A9A9A] hover:bg-[#343434] hover:text-[#D6D6D6]"
+      aria-label="Next frame"
+      title="Next frame"
+      (click)="stepFrame(1)"
+    >
+      <svg lucideSkipForward size="15"></svg>
+    </button>
+  </div>
+  <span class="font-mono text-[9px] text-[#666666]">12 FPS</span>
+</div>
+<div class="flex h-[110px] sm:h-[150px]">
+  <div class="w-44 shrink-0 border-r border-[#414141] px-1.5 py-1.5">
+    <div class="flex h-6 items-center gap-1.5 border-b border-[#414141] text-[#D6D6D6]">
+      <svg lucidePersonStanding size="13" class="text-[#AFAFAF]"></svg
+      ><span class="truncate">{{ figureName() }}</span>
+    </div>
+    <div class="ml-5 flex h-6 items-center border-b border-[#414141] text-[9px] text-[#9A9A9A]">
+      Position
+    </div>
+    <div class="ml-5 flex h-6 items-center border-b border-[#414141] text-[9px] text-[#9A9A9A]">
+      Rotation
+    </div>
+    <div class="ml-5 flex h-6 items-center border-b border-[#414141] text-[9px] text-[#9A9A9A]">
+      Scale
+    </div>
+  </div>
+  <div class="min-w-0 flex-1 overflow-hidden">
+    <div
+      class="relative flex h-6 items-end justify-between border-b border-[#414141] px-2 font-mono text-[8px] text-[#666666]"
+    >
+      @for (tick of ticks; track tick) {
+        <span>{{ tick }}</span>
+      }
+    </div>
+    <div class="timeline-track relative h-[86px] sm:h-[126px]">
+      <div
+        class="absolute inset-y-0 w-px bg-[#718FA8]"
+        [style.left.%]="(currentFrame() / 60) * 100"
+      >
+        <span class="absolute -left-1.5 -top-1 size-3 rotate-45 bg-[#718FA8]"></span>
+      </div>
+      @for (frame of keyframes; track frame) {
+        <button
+          type="button"
+          class="absolute top-[43px] size-2 -translate-x-1/2 rotate-45 border border-[#9A9A9A] bg-[#666666] hover:border-[#AFC0CE] hover:bg-[#718FA8]"
+          [style.left.%]="(frame / 60) * 100"
+          [attr.aria-label]="'Keyframe ' + frame"
+          (click)="selectFrame(frame)"
+        ></button>
+      }
+    </div>
+  </div>
+</div>

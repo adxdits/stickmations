@@ -48,9 +48,10 @@ describe('App', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('svg')).toBeTruthy();
-    expect(compiled.querySelectorAll('line')).toHaveLength(1);
-    expect(compiled.querySelectorAll('circle')).toHaveLength(0);
+    const canvas = compiled.querySelector('svg[role="img"]');
+    expect(canvas).toBeTruthy();
+    expect(canvas?.querySelectorAll('line')).toHaveLength(1);
+    expect(canvas?.querySelectorAll('circle')).toHaveLength(0);
   });
 
   it('renders circle nodes from their diameter with an upright Y axis', () => {
@@ -79,7 +80,9 @@ describe('App', () => {
     });
     fixture.detectChanges();
 
-    const circle = fixture.nativeElement.querySelector('svg circle') as SVGCircleElement;
+    const circle = fixture.nativeElement.querySelector(
+      'svg[role="img"] circle',
+    ) as SVGCircleElement;
     expect(circle.getAttribute('cy')).toBe('-50');
     expect(circle.getAttribute('r')).toBe('50');
     expect(circle.getAttribute('fill')).toBe('#ff0000');
@@ -114,15 +117,17 @@ describe('App', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    const mode = compiled.querySelector('select') as HTMLSelectElement;
-    mode.value = 'joints';
-    mode.dispatchEvent(new Event('change'));
+    const jointsTool = compiled.querySelector(
+      'button[aria-label="Edit all joints"]',
+    ) as HTMLButtonElement;
+    jointsTool.click();
     fixture.detectChanges();
 
-    expect(compiled.querySelector('rect[aria-label="Move figure"]')).toBeTruthy();
-    expect(compiled.querySelectorAll('circle[role="button"]')).toHaveLength(5);
+    const canvas = compiled.querySelector('svg[role="img"]') as SVGSVGElement;
+    expect(canvas.querySelector('rect[aria-label="Move figure"]')).toBeTruthy();
+    expect(canvas.querySelectorAll('circle[role="button"]')).toHaveLength(5);
 
-    const center = compiled.querySelector('rect[aria-label="Move figure"]') as SVGRectElement;
+    const center = canvas.querySelector('rect[aria-label="Move figure"]') as SVGRectElement;
     center.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
     fixture.detectChanges();
     expect(center.getAttribute('x')).toBe('-1');
