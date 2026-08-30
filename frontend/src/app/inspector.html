@@ -37,25 +37,51 @@
         Transform
       </h2>
       <div class="grid grid-cols-[52px_1fr_1fr] items-center gap-1.5 text-[9px]">
-        <span class="text-[#9A9A9A]">Position</span
-        ><span
-          class="rounded-[2px] border border-[#414141] bg-[#232323] px-1.5 py-1 font-mono text-[#D6D6D6]"
-          >X&nbsp; {{ rootPosition().x }}</span
-        ><span
-          class="rounded-[2px] border border-[#414141] bg-[#232323] px-1.5 py-1 font-mono text-[#D6D6D6]"
-          >Y&nbsp; {{ rootPosition().y }}</span
-        ><span class="text-[#9A9A9A]">Scale</span
-        ><span
-          class="rounded-[2px] border border-[#414141] bg-[#232323] px-1.5 py-1 font-mono text-[#D6D6D6]"
-          >X&nbsp; 100%</span
-        ><span
-          class="rounded-[2px] border border-[#414141] bg-[#232323] px-1.5 py-1 font-mono text-[#D6D6D6]"
-          >Y&nbsp; 100%</span
-        ><span class="text-[#9A9A9A]">Rotation</span
-        ><span
-          class="col-span-2 rounded-[2px] border border-[#414141] bg-[#232323] px-1.5 py-1 font-mono text-[#D6D6D6]"
-          >0°</span
-        >
+        <span class="text-[#9A9A9A]">Position</span>
+        <label class="property-input"
+          ><span>X</span
+          ><input
+            type="number"
+            aria-label="Position X"
+            [value]="transform()?.positionX ?? rootPosition().x"
+            (input)="changeTransform('positionX', $event)"
+        /></label>
+        <label class="property-input"
+          ><span>Y</span
+          ><input
+            type="number"
+            aria-label="Position Y"
+            [value]="transform()?.positionY ?? rootPosition().y"
+            (input)="changeTransform('positionY', $event)"
+        /></label>
+        <span class="text-[#9A9A9A]">Scale</span>
+        <label class="property-input"
+          ><span>X</span
+          ><input
+            type="number"
+            min="1"
+            aria-label="Scale X"
+            [value]="transform()?.scaleX ?? 100"
+            (input)="changeTransform('scaleX', $event)"
+        /></label>
+        <label class="property-input"
+          ><span>Y</span
+          ><input
+            type="number"
+            min="1"
+            aria-label="Scale Y"
+            [value]="transform()?.scaleY ?? 100"
+            (input)="changeTransform('scaleY', $event)"
+        /></label>
+        <span class="text-[#9A9A9A]">Rotation</span>
+        <label class="property-input col-span-2"
+          ><span>°</span
+          ><input
+            type="number"
+            aria-label="Rotation"
+            [value]="transform()?.rotation ?? 0"
+            (input)="changeTransform('rotation', $event)"
+        /></label>
       </div>
     </section>
     <section class="border-b border-[#414141] p-2.5">
