@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { StickFigure } from './figure.js';
-import { moveJointToward } from './kinematics.js';
+import { moveJointToward, rotateFigure, scaleFigure } from './kinematics.js';
 
 const figure: StickFigure = {
   version: 1,
@@ -23,6 +23,22 @@ const figure: StickFigure = {
 };
 
 describe('figure kinematics', () => {
+  it('rotates a complete figure around its root', () => {
+    const moved = rotateFigure(figure, 90);
+
+    expect(findJoint(moved, 'root')).toEqual(findJoint(figure, 'root'));
+    expect(findJoint(moved, 'shoulder').x).toBeCloseTo(0);
+    expect(findJoint(moved, 'shoulder').y).toBeCloseTo(10);
+  });
+
+  it('scales a complete figure around its root', () => {
+    const moved = scaleFigure(figure, 2, 0.5);
+
+    expect(findJoint(moved, 'root')).toEqual(findJoint(figure, 'root'));
+    expect(findJoint(moved, 'hand')).toMatchObject({ x: 60, y: 0 });
+    expect(findJoint(moved, 'decoration')).toMatchObject({ x: 40, y: 2.5 });
+  });
+
   it('rotates a joint branch around its parent', () => {
     const moved = moveJointToward(figure, 'elbow', { x: 10, y: 10 });
 

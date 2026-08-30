@@ -7,6 +7,11 @@ export type {
   FigureSegment,
   StickFigure,
 } from './domain/figure.js';
-export { moveJointToward, translateFigure } from './domain/kinematics.js';
+export {
+  moveJointToward,
+  rotateFigure,
+  scaleFigure,
+  translateFigure,
+} from './domain/kinematics.js';
 export { parseStickNodesFile } from './domain/stick-nodes-import.js';
 export { InvalidStickFigureError } from './domain/validation.js';

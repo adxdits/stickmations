@@ -18,6 +18,52 @@ export function translateFigure(
   );
 }
 
+export function rotateFigure(
+  figure: StickFigure,
+  angleDegrees: number,
+): StickFigure {
+  const pivot = figure.joints[0];
+  if (!pivot) {
+    return figure;
+  }
+
+  const angle = (angleDegrees * Math.PI) / 180;
+  const cosine = Math.cos(angle);
+  const sine = Math.sin(angle);
+  return {
+    ...figure,
+    joints: figure.joints.map((joint) => {
+      const offsetX = joint.x - pivot.x;
+      const offsetY = joint.y - pivot.y;
+      return {
+        ...joint,
+        x: pivot.x + offsetX * cosine - offsetY * sine,
+        y: pivot.y + offsetX * sine + offsetY * cosine,
+      };
+    }),
+  };
+}
+
+export function scaleFigure(
+  figure: StickFigure,
+  scaleX: number,
+  scaleY: number,
+): StickFigure {
+  const pivot = figure.joints[0];
+  if (!pivot) {
+    return figure;
+  }
+
+  return {
+    ...figure,
+    joints: figure.joints.map((joint) => ({
+      ...joint,
+      x: pivot.x + (joint.x - pivot.x) * scaleX,
+      y: pivot.y + (joint.y - pivot.y) * scaleY,
+    })),
+  };
+}
+
 function translateJointBranch(
   figure: StickFigure,
   jointId: string,
