@@ -1,0 +1,107 @@
+<header class="flex h-8 shrink-0 items-center border-b border-[#414141] bg-[#232323] px-2.5">
+  <div class="flex min-w-0 items-center gap-2">
+    <div
+      class="flex size-5 items-center justify-center rounded-[2px] border border-[#4A4A4A] bg-[#333333] text-[#C8C8C8]"
+    >
+      <svg lucideBone size="13" strokeWidth="2.5"></svg>
+    </div>
+    <h1 class="truncate text-[12px] font-semibold text-[#DADADA]">{{ title() }}</h1>
+    <span class="hidden text-[#666666] sm:inline">/</span>
+    <span class="hidden truncate text-[10px] text-[#9A9A9A] sm:inline">{{ projectName() }}</span>
+  </div>
+  <nav
+    class="ml-6 hidden items-center gap-4 text-[10px] text-[#9A9A9A] lg:flex"
+    aria-label="Application menu"
+  >
+    <button type="button" class="hover:text-[#D6D6D6]">File</button
+    ><button type="button" class="hover:text-[#D6D6D6]">Edit</button
+    ><button type="button" class="hover:text-[#D6D6D6]">View</button
+    ><button type="button" class="hover:text-[#D6D6D6]">Animation</button
+    ><button type="button" class="hover:text-[#D6D6D6]">Help</button>
+  </nav>
+  <div class="ml-auto flex items-center gap-1">
+    <button
+      type="button"
+      class="flex size-6 items-center justify-center rounded-[2px] text-[#9A9A9A] hover:bg-[#343434] hover:text-[#D6D6D6]"
+      aria-label="Save project"
+      title="Save project"
+    >
+      <svg lucideSave size="15"></svg>
+    </button>
+    <button
+      type="button"
+      class="flex size-6 items-center justify-center rounded-[2px] text-[#9A9A9A] hover:bg-[#343434] hover:text-[#D6D6D6]"
+      aria-label="Settings"
+      title="Settings"
+    >
+      <svg lucideSettings2 size="15"></svg>
+    </button>
+  </div>
+</header>
+<div class="flex h-9 shrink-0 items-center border-b border-[#414141] bg-[#2B2B2B] px-1.5">
+  <div class="flex items-center gap-0.5 border-r border-[#414141] pr-1.5">
+    <button
+      type="button"
+      class="flex size-7 items-center justify-center rounded-[2px] text-[#9A9A9A] hover:bg-[#343434] hover:text-[#D6D6D6]"
+      aria-label="Undo"
+      title="Undo"
+    >
+      <svg lucideUndo2 size="16"></svg>
+    </button>
+    <button
+      type="button"
+      class="flex size-7 items-center justify-center rounded-[2px] text-[#666666] hover:bg-[#343434] hover:text-[#9A9A9A]"
+      aria-label="Redo"
+      title="Redo"
+    >
+      <svg lucideRedo2 size="16"></svg>
+    </button>
+  </div>
+  <fieldset class="ml-1.5 flex items-center gap-0.5">
+    <legend class="sr-only">Canvas tools</legend>
+    <button
+      type="button"
+      class="flex h-7 items-center gap-1.5 rounded-[2px] border border-transparent px-2 text-[#9A9A9A] hover:bg-[#343434] hover:text-[#D6D6D6]"
+      [class.active-tool]="controlMode() === 'none'"
+      [attr.aria-pressed]="controlMode() === 'none'"
+      aria-label="Select figure"
+      (click)="controlModeChange.emit('none')"
+    >
+      <svg lucideMousePointer2 size="15"></svg><span class="hidden sm:inline">Select</span>
+    </button>
+    <button
+      type="button"
+      class="flex h-7 items-center gap-1.5 rounded-[2px] border border-transparent px-2 text-[#9A9A9A] hover:bg-[#343434] hover:text-[#D6D6D6]"
+      [class.active-tool]="controlMode() === 'joints'"
+      [attr.aria-pressed]="controlMode() === 'joints'"
+      aria-label="Edit all joints"
+      (click)="controlModeChange.emit('joints')"
+    >
+      <svg lucideBone size="15"></svg><span class="hidden sm:inline">Joints</span>
+    </button>
+  </fieldset>
+  <div class="ml-auto flex items-center gap-1">
+    <span
+      class="hidden rounded-[2px] border border-[#414141] bg-[#232323] px-2 py-1 text-[9px] text-[#9A9A9A] sm:inline"
+      >Global</span
+    >
+    <button
+      type="button"
+      class="flex size-7 items-center justify-center rounded-[2px] text-[#9A9A9A] hover:bg-[#343434] hover:text-[#D6D6D6]"
+      aria-label="Zoom in"
+      title="Zoom in"
+      (click)="zoomIn.emit()"
+    >
+      <svg lucideZoomIn size="16"></svg>
+    </button>
+    <button
+      type="button"
+      class="flex size-7 items-center justify-center rounded-[2px] text-[#9A9A9A] hover:bg-[#343434] hover:text-[#D6D6D6]"
+      aria-label="Fit canvas"
+      title="Fit canvas"
+      (click)="fitCanvas.emit()"
+    >
+      <svg lucideMaximize2 size="16"></svg>
+    </button>
+  </div>
+</div>

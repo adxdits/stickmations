@@ -1,0 +1,110 @@
+<div
+  class="flex h-7 shrink-0 items-center border-b border-[#414141] bg-[#2B2B2B] px-2 text-[9px] text-[#9A9A9A]"
+>
+  <span>View</span><span class="mx-2 text-[#454a52]">/</span><span>Camera</span
+  ><span
+    class="ml-auto rounded-[2px] border border-[#414141] bg-[#232323] px-1.5 py-0.5 font-mono text-[#D6D6D6]"
+    >{{ zoom() }}%</span
+  >
+</div>
+<div class="workspace-grid relative min-h-0 flex-1 overflow-hidden">
+  @if (figure(); as importedFigure) {
+    @if (preview(); as figurePreview) {
+      <svg
+        class="h-full w-full touch-none transition-transform duration-150"
+        [style.transform]="'scale(' + zoom() / 100 + ')'"
+        [attr.viewBox]="viewBox() ?? figurePreview.viewBox"
+        preserveAspectRatio="xMidYMid meet"
+        role="img"
+        [attr.aria-label]="importedFigure.name + ' preview'"
+        (pointermove)="dragControl($event)"
+        (pointerup)="stopDraggingControl()"
+        (pointercancel)="stopDraggingControl()"
+      >
+        @for (segment of figurePreview.segments; track segment.id) {
+          <line
+            [attr.x1]="segment.x1"
+            [attr.y1]="segment.y1"
+            [attr.x2]="segment.x2"
+            [attr.y2]="segment.y2"
+            [attr.stroke]="segment.color"
+            [attr.stroke-width]="segment.width"
+            [attr.stroke-linecap]="segment.rounded ? 'round' : 'butt'"
+          />
+        }
+        @for (circle of figurePreview.circles; track circle.id) {
+          <circle
+            [attr.cx]="circle.cx"
+            [attr.cy]="circle.cy"
+            [attr.r]="circle.radius"
+            [attr.fill]="circle.hollow ? 'none' : circle.color"
+            [attr.stroke]="circle.color"
+            [attr.stroke-width]="circle.hollow ? circle.width : 0"
+          />
+        }
+        @if (controlMode() !== 'none') {
+          <rect
+            [attr.x]="figurePreview.center.x - 6"
+            [attr.y]="figurePreview.center.y - 6"
+            width="12"
+            height="12"
+            fill="#ffffff"
+            stroke="#718FA8"
+            stroke-width="2"
+            role="button"
+            tabindex="0"
+            aria-label="Move figure"
+            (pointerdown)="startDraggingFigure($event)"
+            (keydown)="moveFigureWithKeyboard($event)"
+          />
+        }
+        @if (controlMode() === 'joints') {
+          @for (joint of figurePreview.editableJoints; track joint.id) {
+            @if (joint.id !== figurePreview.center.id) {
+              <circle
+                [attr.cx]="joint.x"
+                [attr.cy]="joint.y"
+                r="4"
+                fill="#ffffff"
+                stroke="#718FA8"
+                stroke-width="1.5"
+                role="button"
+                tabindex="0"
+                [attr.aria-label]="'Move joint ' + joint.id"
+                (pointerdown)="startDraggingRigJoint($event, joint.id)"
+                (keydown)="moveRigJointWithKeyboard($event, joint.id)"
+              />
+            }
+          }
+        }
+      </svg>
+    }
+  } @else {
+    <div class="absolute inset-0 flex items-center justify-center p-6">
+      <label
+        for="canvas-stick-figure-file"
+        class="flex min-h-32 w-full max-w-sm cursor-pointer flex-col items-center justify-center rounded-[2px] border border-dashed border-[#686868] bg-[#A0A0A0]/90 px-5 text-center text-[#2B2B2B] hover:border-[#58758D]"
+        ><svg lucideUpload size="20" class="mb-2 text-[#4F5F6C]"></svg
+        ><span class="text-[12px] font-semibold">Import a stick figure</span
+        ><span class="mt-1 text-[10px] text-[#55585D]"
+          >Choose a Stick Nodes or Framation JSON file</span
+        ></label
+      >
+    </div>
+  }
+  <input
+    id="canvas-stick-figure-file"
+    class="sr-only"
+    type="file"
+    accept="application/json,.json,.nodes"
+    (change)="selectFile($event)"
+  />
+  @if (importError(); as error) {
+    <p
+      class="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-[2px] border border-[#8F4A45] bg-[#3B2423] px-3 py-2 text-[#E8C3C0]"
+      role="alert"
+    >
+      {{ error }}
+    </p>
+  }
+</div>

@@ -1,0 +1,88 @@
+<div class="flex h-8 shrink-0 border-b border-[#414141]">
+  <button
+    type="button"
+    class="flex-1 border-b border-transparent text-[9px] font-semibold uppercase tracking-wide text-[#666666] hover:text-[#9A9A9A]"
+    [class.active-tab]="tab() === 'properties'"
+    [attr.aria-pressed]="tab() === 'properties'"
+    (click)="tab.set('properties')"
+  >
+    Properties</button
+  ><button
+    type="button"
+    class="flex-1 border-b border-transparent text-[9px] font-semibold uppercase tracking-wide text-[#666666] hover:text-[#9A9A9A]"
+    [class.active-tab]="tab() === 'library'"
+    [attr.aria-pressed]="tab() === 'library'"
+    (click)="tab.set('library')"
+  >
+    Library
+  </button>
+</div>
+@if (tab() === 'properties') {
+  <div class="min-h-0 flex-1 overflow-y-auto">
+    <div class="flex items-center gap-2 border-b border-[#414141] px-3 py-2.5">
+      <div
+        class="flex size-8 items-center justify-center rounded-[2px] border border-[#4A4A4A] bg-[#333333] text-[#B8B8B8]"
+      >
+        <svg lucidePersonStanding size="17"></svg>
+      </div>
+      <div class="min-w-0">
+        <div class="truncate text-[11px] font-medium text-[#D6D6D6]">
+          {{ figure()?.name ?? 'No figure selected' }}
+        </div>
+        <div class="mt-0.5 text-[9px] text-[#666666]">Stick figure</div>
+      </div>
+    </div>
+    <section class="border-b border-[#414141] p-2.5">
+      <h2 class="mb-2 text-[9px] font-semibold uppercase tracking-wide text-[#9A9A9A]">
+        Transform
+      </h2>
+      <div class="grid grid-cols-[52px_1fr_1fr] items-center gap-1.5 text-[9px]">
+        <span class="text-[#9A9A9A]">Position</span
+        ><span
+          class="rounded-[2px] border border-[#414141] bg-[#232323] px-1.5 py-1 font-mono text-[#D6D6D6]"
+          >X&nbsp; {{ rootPosition().x }}</span
+        ><span
+          class="rounded-[2px] border border-[#414141] bg-[#232323] px-1.5 py-1 font-mono text-[#D6D6D6]"
+          >Y&nbsp; {{ rootPosition().y }}</span
+        ><span class="text-[#9A9A9A]">Scale</span
+        ><span
+          class="rounded-[2px] border border-[#414141] bg-[#232323] px-1.5 py-1 font-mono text-[#D6D6D6]"
+          >X&nbsp; 100%</span
+        ><span
+          class="rounded-[2px] border border-[#414141] bg-[#232323] px-1.5 py-1 font-mono text-[#D6D6D6]"
+          >Y&nbsp; 100%</span
+        ><span class="text-[#9A9A9A]">Rotation</span
+        ><span
+          class="col-span-2 rounded-[2px] border border-[#414141] bg-[#232323] px-1.5 py-1 font-mono text-[#D6D6D6]"
+          >0°</span
+        >
+      </div>
+    </section>
+    <section class="border-b border-[#414141] p-2.5">
+      <h2 class="mb-2 text-[9px] font-semibold uppercase tracking-wide text-[#9A9A9A]">Info</h2>
+      <div class="space-y-2 text-[9px]">
+        <div class="flex justify-between">
+          <span class="text-[#9A9A9A]">Joints</span
+          ><span class="font-mono text-[#D6D6D6]">{{ figure()?.joints?.length ?? 0 }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-[#9A9A9A]">Segments</span
+          ><span class="font-mono text-[#D6D6D6]">{{ figure()?.segments?.length ?? 0 }}</span>
+        </div>
+        <label class="flex items-center justify-between"
+          ><span class="text-[#9A9A9A]">Show controls</span
+          ><input
+            type="checkbox"
+            class="accent-[#718FA8]"
+            [checked]="controlMode() === 'joints'"
+            (change)="toggleControls()"
+        /></label>
+      </div>
+    </section>
+  </div>
+} @else {
+  <div class="flex flex-1 flex-col items-center justify-center px-5 text-center text-[#666666]">
+    <svg lucideFolderOpen size="24" class="mb-3"></svg
+    ><span class="text-[11px]">Imported figures will appear here.</span>
+  </div>
+}
