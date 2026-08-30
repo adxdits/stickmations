@@ -4,20 +4,88 @@
   >
     Scene 1
   </div>
+  <div
+    class="flex w-7 shrink-0 flex-col items-center justify-center gap-0.5 border-r border-[#414141]"
+  >
+    <button
+      type="button"
+      class="frame-strip-tool"
+      aria-label="Previous scene frame"
+      title="Previous frame"
+      [disabled]="currentFrame() <= 1"
+      (click)="previousFrame.emit()"
+    >
+      <svg lucideChevronLeft size="13"></svg>
+    </button>
+    <button
+      type="button"
+      class="frame-strip-tool"
+      aria-label="Next scene frame"
+      title="Next frame"
+      [disabled]="currentFrame() >= previews().length"
+      (click)="nextFrame.emit()"
+    >
+      <svg lucideChevronRight size="13"></svg>
+    </button>
+    <button
+      type="button"
+      class="frame-strip-tool"
+      aria-label="Delete frame"
+      title="Delete frame"
+      [disabled]="previews().length <= 1"
+      (click)="frameDeleted.emit()"
+    >
+      <svg lucideTrash2 size="12"></svg>
+    </button>
+  </div>
   <div class="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto px-2 py-1.5">
     @for (thumbnail of previews(); track $index; let frameIndex = $index) {
       <button
         type="button"
-        class="relative h-[68px] w-[76px] shrink-0 overflow-hidden rounded-[2px] border bg-[#333333] text-left"
+        class="relative h-[68px] w-[76px] shrink-0 cursor-grab overflow-hidden rounded-[2px] border bg-[#333333] text-left active:cursor-grabbing"
         [class.selected-frame]="currentFrame() === frameIndex + 1"
         [class.border-[#414141]]="currentFrame() !== frameIndex + 1"
+        [class.opacity-50]="draggedFrame() === frameIndex"
+        [draggable]="true"
         [attr.aria-label]="'Go to scene frame ' + (frameIndex + 1)"
         (click)="frameSelected.emit(frameIndex + 1)"
+        (dragstart)="startFrameDrag($event, frameIndex)"
+        (dragover)="allowFrameDrop($event)"
+        (drop)="dropFrame($event, frameIndex)"
+        (dragend)="draggedFrame.set(null)"
       >
-        <span class="absolute left-1 top-1 font-mono text-[8px] text-[#9A9A9A]">{{
+        <span
+          class="absolute inset-1 overflow-hidden"
+          [style.background-color]="backgrounds()[frameIndex].color"
+        >
+          @if (backgrounds()[frameIndex].imageUrl; as imageUrl) {
+            <img
+              class="absolute inset-0 h-full w-full"
+              [src]="imageUrl"
+              alt=""
+              [style.object-fit]="backgrounds()[frameIndex].fit"
+              [style.transform]="
+                'translate(' +
+                backgrounds()[frameIndex].positionX / 8 +
+                'px, ' +
+                backgrounds()[frameIndex].positionY / 8 +
+                'px) scale(' +
+                backgrounds()[frameIndex].scale / 100 +
+                ')'
+              "
+              draggable="false"
+            />
+          }
+        </span>
+        <span class="absolute left-1 top-1 z-10 font-mono text-[8px] text-[#555555]">{{
           frameIndex + 1
         }}</span>
-        <svg class="size-full p-2" [attr.viewBox]="thumbnail.viewBox" aria-hidden="true">
+        <svg
+          lucideGripVertical
+          size="11"
+          class="pointer-events-none absolute right-0.5 top-0.5 z-10 text-[#777777]"
+        ></svg>
+        <svg class="relative size-full p-2" [attr.viewBox]="thumbnail.viewBox" aria-hidden="true">
           @for (segment of thumbnail.segments; track segment.id) {
             <line
               [attr.x1]="segment.x1"
@@ -42,6 +110,15 @@
         </svg>
       </button>
     }
+    <button
+      type="button"
+      class="flex h-[68px] w-12 shrink-0 items-center justify-center rounded-[2px] border border-[#4A4A4A] text-[#777777] hover:border-[#718FA8] hover:text-[#B8C8D5]"
+      aria-label="Add blank frame"
+      title="Add blank frame"
+      (click)="blankFrameAdded.emit()"
+    >
+      <svg lucideFilePlusCorner size="17"></svg>
+    </button>
     <button
       type="button"
       class="flex h-[68px] w-12 shrink-0 items-center justify-center rounded-[2px] border border-dashed border-[#4A4A4A] text-[#666666] hover:border-[#718FA8] hover:text-[#B8C8D5]"

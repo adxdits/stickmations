@@ -73,6 +73,17 @@
             [value]="transform()?.scaleY ?? 100"
             (input)="changeTransform('scaleY', $event)"
         /></label>
+        <span class="text-[#9A9A9A]">Uniform</span>
+        <label class="property-input col-span-2"
+          ><span>%</span
+          ><input
+            type="number"
+            min="1"
+            placeholder="Mixed"
+            aria-label="Uniform scale"
+            [value]="uniformScale()"
+            (input)="changeTransform('scale', $event)"
+        /></label>
         <span class="text-[#9A9A9A]">Rotation</span>
         <label class="property-input col-span-2"
           ><span>°</span
@@ -82,6 +93,139 @@
             [value]="transform()?.rotation ?? 0"
             (input)="changeTransform('rotation', $event)"
         /></label>
+      </div>
+      <div class="mt-2 grid grid-cols-4 gap-1">
+        <button
+          type="button"
+          class="inspector-tool-button"
+          aria-label="Rotate figure left"
+          title="Rotate left 90°"
+          [disabled]="!figure()"
+          (click)="figureOperation.emit('rotateLeft')"
+        >
+          <svg lucideRotateCcw size="13"></svg>
+        </button>
+        <button
+          type="button"
+          class="inspector-tool-button"
+          aria-label="Rotate figure right"
+          title="Rotate right 90°"
+          [disabled]="!figure()"
+          (click)="figureOperation.emit('rotateRight')"
+        >
+          <svg lucideRotateCw size="13"></svg>
+        </button>
+        <button
+          type="button"
+          class="inspector-tool-button"
+          aria-label="Flip figure X"
+          title="Flip X"
+          [disabled]="!figure()"
+          [attr.aria-pressed]="transform()?.flipX ?? false"
+          [class.bg-[#465866]]="transform()?.flipX"
+          (click)="figureOperation.emit('flipX')"
+        >
+          <svg lucideFlipHorizontal2 size="13"></svg>
+        </button>
+        <button
+          type="button"
+          class="inspector-tool-button"
+          aria-label="Flip figure Y"
+          title="Flip Y"
+          [disabled]="!figure()"
+          [attr.aria-pressed]="transform()?.flipY ?? false"
+          [class.bg-[#465866]]="transform()?.flipY"
+          (click)="figureOperation.emit('flipY')"
+        >
+          <svg lucideFlipVertical2 size="13"></svg>
+        </button>
+      </div>
+    </section>
+    <section class="border-b border-[#414141] p-2.5">
+      <h2 class="mb-2 text-[9px] font-semibold uppercase tracking-wide text-[#9A9A9A]">
+        Background
+      </h2>
+      <div class="space-y-2 text-[9px]">
+        <label class="flex items-center justify-between gap-2 text-[#9A9A9A]">
+          <span>Color</span>
+          <input
+            type="color"
+            class="h-5 w-12 cursor-pointer border border-[#414141] bg-[#232323]"
+            aria-label="Background color"
+            [value]="background()?.color ?? '#ffffff'"
+            (input)="changeBackgroundColor($event)"
+          />
+        </label>
+        <label class="flex items-center justify-between gap-2 text-[#9A9A9A]">
+          <span>Fit</span>
+          <select
+            class="h-5 w-28 border border-[#414141] bg-[#232323] px-1 font-mono text-[8px] text-[#D6D6D6]"
+            aria-label="Background fit"
+            [value]="background()?.fit ?? 'cover'"
+            [disabled]="!background()?.imageUrl"
+            (change)="changeBackgroundFit($event)"
+          >
+            <option value="cover">Cover</option>
+            <option value="contain">Contain</option>
+            <option value="fill">Stretch</option>
+          </select>
+        </label>
+        <div class="grid grid-cols-[52px_1fr_1fr] items-center gap-1.5">
+          <span class="text-[#9A9A9A]">Scale</span>
+          <label class="property-input col-span-2"
+            ><span>%</span
+            ><input
+              type="number"
+              min="10"
+              max="500"
+              aria-label="Background scale"
+              [value]="background()?.scale ?? 100"
+              [disabled]="!background()?.imageUrl"
+              (input)="changeBackgroundNumber('scale', $event)"
+          /></label>
+          <span class="text-[#9A9A9A]">Offset</span>
+          <label class="property-input"
+            ><span>X</span
+            ><input
+              type="number"
+              aria-label="Background position X"
+              [value]="background()?.positionX ?? 0"
+              [disabled]="!background()?.imageUrl"
+              (input)="changeBackgroundNumber('positionX', $event)"
+          /></label>
+          <label class="property-input"
+            ><span>Y</span
+            ><input
+              type="number"
+              aria-label="Background position Y"
+              [value]="background()?.positionY ?? 0"
+              [disabled]="!background()?.imageUrl"
+              (input)="changeBackgroundNumber('positionY', $event)"
+          /></label>
+        </div>
+        <div class="flex items-center gap-2 text-[#9A9A9A]">
+          <span class="min-w-0 flex-1 truncate">{{ background()?.imageName ?? 'No image' }}</span>
+          @if (background()?.imageUrl) {
+            <button
+              type="button"
+              class="h-5 border border-[#414141] bg-[#303030] px-1.5 text-[8px] hover:bg-[#3C3C3C] hover:text-[#D6D6D6]"
+              (click)="backgroundReset.emit()"
+            >
+              Reset
+            </button>
+          }
+          @if (background()?.imageUrl) {
+            <button
+              type="button"
+              class="flex size-5 items-center justify-center hover:text-[#D6D6D6]"
+              aria-label="Remove background image"
+              title="Remove background image"
+              (click)="backgroundImageRemoved.emit()"
+            >
+              <svg lucideX size="12"></svg>
+            </button>
+          }
+        </div>
       </div>
     </section>
     <section class="border-b border-[#414141] p-2.5">

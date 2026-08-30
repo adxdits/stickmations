@@ -227,6 +227,22 @@
     </div>
     @if (isTrackExpanded('scale')) {
       <div class="timeline-subrow">
+        <div class="timeline-sublabel sticky left-0 z-20 gap-2 pr-1">
+          <span class="flex-1">Uniform</span>
+          <label class="timeline-value timeline-value-wide"
+            ><span>%</span
+            ><input
+              type="number"
+              min="1"
+              placeholder="Mixed"
+              aria-label="Timeline uniform scale"
+              [value]="uniformScale()"
+              (input)="changeTransform('scale', $event)"
+          /></label>
+        </div>
+        <div class="timeline-cells" [style.width.px]="timelineWidth()"></div>
+      </div>
+      <div class="timeline-subrow">
         <div class="timeline-sublabel sticky left-0 z-20">X Scale</div>
         <div class="timeline-cells" [style.width.px]="timelineWidth()"></div>
       </div>

@@ -47,6 +47,13 @@ export class Timeline implements OnDestroy {
   protected readonly isPlaying = signal(false);
   protected readonly expandedTracks = signal<ReadonlySet<TimelineTrack>>(new Set(['position']));
   protected readonly frameLabel = computed(() => this.currentFrame().toString().padStart(2, '0'));
+  protected readonly uniformScale = computed(() => {
+    const transform = this.transform();
+    if (!transform) {
+      return 100;
+    }
+    return transform.scaleX === transform.scaleY ? transform.scaleX : '';
+  });
   protected readonly frameNumbers = computed(() =>
     Array.from({ length: this.totalFrames() }, (_, index) => index + 1),
   );
