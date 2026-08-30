@@ -39,14 +39,18 @@
         [figureName]="importedFigure()?.name ?? 'Figure'"
         [currentFrame]="currentFrame()"
         [totalFrames]="animationFrames().length"
+        [transform]="currentTransform()"
         (currentFrameChange)="currentFrame.set($event)"
+        (transformChange)="updateTransform($event)"
       />
     </section>
     <app-inspector
       class="hidden w-64 shrink-0 flex-col border-l border-[#414141] bg-[#2B2B2B] xl:flex"
       [figure]="importedFigure()"
       [controlMode]="controlMode()"
+      [transform]="currentTransform()"
       (controlModeChange)="controlMode.set($event)"
+      (transformChange)="updateTransform($event)"
     />
   </div>
   <footer

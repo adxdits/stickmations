@@ -1,10 +1,11 @@
 import type { WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { StickFigure } from '@framation/engine';
+import { createAnimationFrame, type AnimationFrame } from './animation-frame';
 import { App } from './app';
 
 type TestApp = {
-  animationFrames: WritableSignal<readonly StickFigure[]>;
+  animationFrames: WritableSignal<readonly AnimationFrame[]>;
   currentFrame: WritableSignal<number>;
   updateCurrentFrame: (figure: StickFigure) => void;
 };
@@ -52,7 +53,7 @@ describe('App', () => {
   it('should render an imported figure as SVG', () => {
     const fixture = TestBed.createComponent(App);
     const app = fixture.componentInstance as unknown as TestApp;
-    app.animationFrames.set([simpleFigure]);
+    app.animationFrames.set([createAnimationFrame(simpleFigure)]);
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
@@ -66,7 +67,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     const app = fixture.componentInstance as unknown as TestApp;
     app.animationFrames.set([
-      {
+      createAnimationFrame({
         version: 1,
         name: 'Circle figure',
         joints: [
@@ -84,7 +85,7 @@ describe('App', () => {
             hollow: false,
           },
         ],
-      },
+      }),
     ]);
     fixture.detectChanges();
 
@@ -100,7 +101,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     const app = fixture.componentInstance as unknown as TestApp;
     app.animationFrames.set([
-      {
+      createAnimationFrame({
         version: 1,
         name: 'Controllable figure',
         joints: [
@@ -127,7 +128,7 @@ describe('App', () => {
           { id: 'left-leg', from: 'root', to: 'left-foot', width: 4, color: '#000000' },
           { id: 'right-leg', from: 'root', to: 'right-foot', width: 4, color: '#000000' },
         ],
-      },
+      }),
     ]);
     fixture.detectChanges();
 
@@ -151,7 +152,7 @@ describe('App', () => {
   it('adds and edits an independent frame snapshot', () => {
     const fixture = TestBed.createComponent(App);
     const app = fixture.componentInstance as unknown as TestApp;
-    app.animationFrames.set([simpleFigure]);
+    app.animationFrames.set([createAnimationFrame(simpleFigure)]);
     fixture.detectChanges();
 
     const addFrame = fixture.nativeElement.querySelector(
@@ -163,7 +164,7 @@ describe('App', () => {
     expect(app.animationFrames()).toHaveLength(2);
     expect(app.currentFrame()).toBe(2);
 
-    const secondFrame = app.animationFrames()[1]!;
+    const secondFrame = app.animationFrames()[1]!.figure;
     app.updateCurrentFrame({
       ...secondFrame,
       joints: secondFrame.joints.map((joint) =>
@@ -177,8 +178,49 @@ describe('App', () => {
     firstFrameButton.click();
 
     expect(app.currentFrame()).toBe(1);
-    expect(app.animationFrames()[0]?.joints[0]?.x).toBe(0);
-    expect(app.animationFrames()[1]?.joints[0]?.x).toBe(25);
+    expect(app.animationFrames()[0]?.figure.joints[0]?.x).toBe(0);
+    expect(app.animationFrames()[1]?.figure.joints[0]?.x).toBe(25);
     expect(app.animationFrames()[0]).not.toBe(app.animationFrames()[1]);
+  });
+
+  it('applies rotation only to the selected frame', () => {
+    const fixture = TestBed.createComponent(App);
+    const app = fixture.componentInstance as unknown as TestApp;
+    app.animationFrames.set([
+      createAnimationFrame(simpleFigure),
+      createAnimationFrame(simpleFigure),
+    ]);
+    app.currentFrame.set(2);
+    fixture.detectChanges();
+
+    const rotation = fixture.nativeElement.querySelector(
+      'input[aria-label="Timeline rotation"]',
+    ) as HTMLInputElement;
+    rotation.value = '90';
+    rotation.dispatchEvent(new Event('input'));
+
+    expect(app.animationFrames()[0]?.figure.joints[1]).toMatchObject({ x: 100, y: 50 });
+    expect(app.animationFrames()[1]?.figure.joints[1]?.x).toBeCloseTo(-50);
+    expect(app.animationFrames()[1]?.figure.joints[1]?.y).toBeCloseTo(100);
+    expect(app.animationFrames()[1]?.transform.rotation).toBe(90);
+  });
+
+  it('scrubs to a frame with the timeline slider', () => {
+    const fixture = TestBed.createComponent(App);
+    const app = fixture.componentInstance as unknown as TestApp;
+    app.animationFrames.set([
+      createAnimationFrame(simpleFigure),
+      createAnimationFrame(simpleFigure),
+      createAnimationFrame(simpleFigure),
+    ]);
+    fixture.detectChanges();
+
+    const scrubber = fixture.nativeElement.querySelector(
+      'input[aria-label="Current frame"]',
+    ) as HTMLInputElement;
+    scrubber.value = '3';
+    scrubber.dispatchEvent(new Event('input'));
+
+    expect(app.currentFrame()).toBe(3);
   });
 });
