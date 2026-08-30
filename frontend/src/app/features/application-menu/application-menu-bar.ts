@@ -19,8 +19,8 @@ import {
   LucideZoomIn,
   LucideZoomOut,
 } from '@lucide/angular';
-import type { ControlMode, PanOffset } from './editor-types';
-import { EditorWorkspaceStore, type WorkspacePanel } from './editor-workspace.store';
+import type { ControlMode, PanOffset } from '../../shared/editor-types';
+import { EditorWorkspaceStore, type WorkspacePanel } from '../../state/editor-workspace.store';
 
 @Component({
   selector: 'app-application-menu-bar',

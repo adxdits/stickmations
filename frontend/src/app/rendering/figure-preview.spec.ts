@@ -1,6 +1,6 @@
 import type { StickFigure } from '@framation/engine';
+import { createFigureLayer } from '../domain/scene-frame';
 import { createFigurePreview, createScenePreview } from './figure-preview';
-import { createFigureLayer } from './scene-frame';
 
 describe('createFigurePreview', () => {
   it('keeps the root control and hides static detail nodes', () => {

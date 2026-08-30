@@ -1,8 +1,8 @@
 import { Injectable, signal } from '@angular/core';
 import type { ControlMode, PanOffset } from './editor-types';
 import type { SceneCamera } from './scene-frame';
+import { DEFAULT_VIEW_BOX, parseViewBox, rotatedCameraSize } from './shared/view-box';
 
-const DEFAULT_VIEW_BOX = '-320 -180 640 360';
 const MIN_ZOOM = 10;
 const MAX_ZOOM = 800;
 
@@ -67,15 +67,13 @@ export class EditorViewportStore {
 
   fitCamera(camera: SceneCamera): void {
     const scene = parseViewBox(this.sceneViewBox());
-    const radians = (camera.rotation * Math.PI) / 180;
-    const rotatedWidth =
-      Math.abs(camera.width * Math.cos(radians)) + Math.abs(camera.height * Math.sin(radians));
-    const rotatedHeight =
-      Math.abs(camera.width * Math.sin(radians)) + Math.abs(camera.height * Math.cos(radians));
+    const cameraSize = rotatedCameraSize(camera);
     const margin = 1.1;
     this.setZoom(
-      Math.min(scene.width / (rotatedWidth * margin), scene.height / (rotatedHeight * margin)) *
-        100,
+      Math.min(
+        scene.width / (cameraSize.width * margin),
+        scene.height / (cameraSize.height * margin),
+      ) * 100,
     );
     this.pan.set({
       x: scene.x + scene.width / 2 - camera.positionX,
@@ -117,17 +115,4 @@ export class EditorViewportStore {
   }
 
   private savedCamera: SavedCamera | null = null;
-}
-
-function parseViewBox(value: string): Readonly<{
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}> {
-  const [x, y, width, height] = value.split(/\s+/).map(Number);
-  if ([x, y, width, height].every(Number.isFinite) && width! > 0 && height! > 0) {
-    return { x: x!, y: y!, width: width!, height: height! };
-  }
-  return { x: -320, y: -180, width: 640, height: 360 };
 }

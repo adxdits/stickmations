@@ -1,0 +1,62 @@
+<section class="border-b border-[#414141] p-2.5">
+  <div class="mb-2 flex items-center justify-between">
+    <h2 class="text-[9px] font-semibold uppercase tracking-wide text-[#9A9A9A]">Camera</h2>
+    <button
+      type="button"
+      class="inspector-tool-button px-1.5"
+      aria-label="Edit camera on canvas"
+      [attr.aria-pressed]="controlMode() === 'camera'"
+      [class.bg-[#465866]]="controlMode() === 'camera'"
+      (click)="toggleEditing()"
+    >
+      <svg lucideCamera size="13"></svg><span class="ml-1">Edit</span>
+    </button>
+  </div>
+  <div class="grid grid-cols-[52px_1fr_1fr] items-center gap-1.5 text-[9px]">
+    <span class="text-[#9A9A9A]">Position</span>
+    <label class="property-input"
+      ><span>X</span
+      ><input
+        type="number"
+        aria-label="Camera position X"
+        [value]="camera()?.positionX ?? 0"
+        (input)="changeCamera('positionX', $event)"
+    /></label>
+    <label class="property-input"
+      ><span>Y</span
+      ><input
+        type="number"
+        aria-label="Camera position Y"
+        [value]="camera()?.positionY ?? 0"
+        (input)="changeCamera('positionY', $event)"
+    /></label>
+    <span class="text-[#9A9A9A]">Size</span>
+    <label class="property-input"
+      ><span>W</span
+      ><input
+        type="number"
+        min="1"
+        aria-label="Camera width"
+        [value]="camera()?.width ?? 640"
+        (input)="changeCamera('width', $event)"
+    /></label>
+    <label class="property-input"
+      ><span>H</span
+      ><input
+        type="number"
+        min="1"
+        aria-label="Camera height"
+        [value]="camera()?.height ?? 360"
+        (input)="changeCamera('height', $event)"
+    /></label>
+    <span class="text-[#9A9A9A]">Rotation</span>
+    <label class="property-input col-span-2"
+      ><span>°</span
+      ><input
+        type="number"
+        aria-label="Camera rotation"
+        [value]="camera()?.rotation ?? 0"
+        (input)="changeCamera('rotation', $event)"
+    /></label>
+  </div>
+</section>

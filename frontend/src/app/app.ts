@@ -1,15 +1,16 @@
 import { DOCUMENT } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { ApplicationMenuBar } from './application-menu-bar';
-import { CanvasToolbar } from './canvas-toolbar';
-import { EditorDocumentStore } from './editor-document.store';
-import { EditorViewportStore } from './editor-viewport.store';
-import { EditorWorkspaceStore } from './editor-workspace.store';
-import { FigureCanvas } from './figure-canvas';
-import { Inspector } from './inspector';
-import { ProjectSidebar } from './project-sidebar';
-import { SceneStrip } from './scene-strip';
-import { Timeline } from './timeline';
+import { ApplicationMenuBar } from './features/application-menu/application-menu-bar';
+import { CanvasToolbar } from './features/canvas/canvas-toolbar';
+import { FigureCanvas } from './features/canvas/figure-canvas';
+import { Inspector } from './features/inspector/inspector';
+import { ProjectSidebar } from './features/project/project-sidebar';
+import { SceneStrip } from './features/scene-strip/scene-strip';
+import { Timeline } from './features/timeline/timeline';
+import { isEditableTarget } from './shared/dom-events';
+import { EditorDocumentStore } from './state/editor-document.store';
+import { EditorViewportStore } from './state/editor-viewport.store';
+import { EditorWorkspaceStore } from './state/editor-workspace.store';
 
 @Component({
   selector: 'app-root',
@@ -86,13 +87,4 @@ export class App {
         break;
     }
   }
-}
-
-function isEditableTarget(target: EventTarget | null): boolean {
-  return (
-    target instanceof HTMLInputElement ||
-    target instanceof HTMLTextAreaElement ||
-    target instanceof HTMLSelectElement ||
-    (target instanceof HTMLElement && target.isContentEditable)
-  );
 }

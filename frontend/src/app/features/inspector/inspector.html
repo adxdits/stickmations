@@ -32,68 +32,12 @@
         <div class="mt-0.5 text-[9px] text-[#666666]">Stick figure</div>
       </div>
     </div>
-    <section class="border-b border-[#414141] p-2.5">
-      <div class="mb-2 flex items-center justify-between">
-        <h2 class="text-[9px] font-semibold uppercase tracking-wide text-[#9A9A9A]">Camera</h2>
-        <button
-          type="button"
-          class="inspector-tool-button px-1.5"
-          aria-label="Edit camera on canvas"
-          [attr.aria-pressed]="controlMode() === 'camera'"
-          [class.bg-[#465866]]="controlMode() === 'camera'"
-          (click)="controlModeChange.emit(controlMode() === 'camera' ? 'none' : 'camera')"
-        >
-          <svg lucideCamera size="13"></svg><span class="ml-1">Edit</span>
-        </button>
-      </div>
-      <div class="grid grid-cols-[52px_1fr_1fr] items-center gap-1.5 text-[9px]">
-        <span class="text-[#9A9A9A]">Position</span>
-        <label class="property-input"
-          ><span>X</span
-          ><input
-            type="number"
-            aria-label="Camera position X"
-            [value]="camera()?.positionX ?? 0"
-            (input)="changeCamera('positionX', $event)"
-        /></label>
-        <label class="property-input"
-          ><span>Y</span
-          ><input
-            type="number"
-            aria-label="Camera position Y"
-            [value]="camera()?.positionY ?? 0"
-            (input)="changeCamera('positionY', $event)"
-        /></label>
-        <span class="text-[#9A9A9A]">Size</span>
-        <label class="property-input"
-          ><span>W</span
-          ><input
-            type="number"
-            min="1"
-            aria-label="Camera width"
-            [value]="camera()?.width ?? 640"
-            (input)="changeCamera('width', $event)"
-        /></label>
-        <label class="property-input"
-          ><span>H</span
-          ><input
-            type="number"
-            min="1"
-            aria-label="Camera height"
-            [value]="camera()?.height ?? 360"
-            (input)="changeCamera('height', $event)"
-        /></label>
-        <span class="text-[#9A9A9A]">Rotation</span>
-        <label class="property-input col-span-2"
-          ><span>°</span
-          ><input
-            type="number"
-            aria-label="Camera rotation"
-            [value]="camera()?.rotation ?? 0"
-            (input)="changeCamera('rotation', $event)"
-        /></label>
-      </div>
-    </section>
+    <app-camera-properties
+      [camera]="camera()"
+      [controlMode]="controlMode()"
+      (controlModeChange)="controlModeChange.emit($event)"
+      (cameraChange)="cameraChange.emit($event)"
+    />
     <section class="border-b border-[#414141] p-2.5">
       <h2 class="mb-2 text-[9px] font-semibold uppercase tracking-wide text-[#9A9A9A]">
         Transform
@@ -203,93 +147,13 @@
         </button>
       </div>
     </section>
-    <section class="border-b border-[#414141] p-2.5">
-      <h2 class="mb-2 text-[9px] font-semibold uppercase tracking-wide text-[#9A9A9A]">
-        Background
-      </h2>
-      <div class="space-y-2 text-[9px]">
-        <label class="flex items-center justify-between gap-2 text-[#9A9A9A]">
-          <span>Color</span>
-          <input
-            type="color"
-            class="h-5 w-12 cursor-pointer border border-[#414141] bg-[#232323]"
-            aria-label="Background color"
-            [value]="background()?.color ?? '#ffffff'"
-            (input)="changeBackgroundColor($event)"
-          />
-        </label>
-        <label class="flex items-center justify-between gap-2 text-[#9A9A9A]">
-          <span>Fit</span>
-          <select
-            class="h-5 w-28 border border-[#414141] bg-[#232323] px-1 font-mono text-[8px] text-[#D6D6D6]"
-            aria-label="Background fit"
-            [value]="background()?.fit ?? 'cover'"
-            [disabled]="!background()?.imageUrl"
-            (change)="changeBackgroundFit($event)"
-          >
-            <option value="cover">Cover</option>
-            <option value="contain">Contain</option>
-            <option value="fill">Stretch</option>
-          </select>
-        </label>
-        <div class="grid grid-cols-[52px_1fr_1fr] items-center gap-1.5">
-          <span class="text-[#9A9A9A]">Scale</span>
-          <label class="property-input col-span-2"
-            ><span>%</span
-            ><input
-              type="number"
-              min="10"
-              max="500"
-              aria-label="Background scale"
-              [value]="background()?.scale ?? 100"
-              [disabled]="!background()?.imageUrl"
-              (input)="changeBackgroundNumber('scale', $event)"
-          /></label>
-          <span class="text-[#9A9A9A]">Offset</span>
-          <label class="property-input"
-            ><span>X</span
-            ><input
-              type="number"
-              aria-label="Background position X"
-              [value]="background()?.positionX ?? 0"
-              [disabled]="!background()?.imageUrl"
-              (input)="changeBackgroundNumber('positionX', $event)"
-          /></label>
-          <label class="property-input"
-            ><span>Y</span
-            ><input
-              type="number"
-              aria-label="Background position Y"
-              [value]="background()?.positionY ?? 0"
-              [disabled]="!background()?.imageUrl"
-              (input)="changeBackgroundNumber('positionY', $event)"
-          /></label>
-        </div>
-        <div class="flex items-center gap-2 text-[#9A9A9A]">
-          <span class="min-w-0 flex-1 truncate">{{ background()?.imageName ?? 'No image' }}</span>
-          @if (background()?.imageUrl) {
-            <button
-              type="button"
-              class="h-5 border border-[#414141] bg-[#303030] px-1.5 text-[8px] hover:bg-[#3C3C3C] hover:text-[#D6D6D6]"
-              (click)="backgroundReset.emit()"
-            >
-              Reset
-            </button>
-          }
-          @if (background()?.imageUrl) {
-            <button
-              type="button"
-              class="flex size-5 items-center justify-center hover:text-[#D6D6D6]"
-              aria-label="Remove background image"
-              title="Remove background image"
-              (click)="backgroundImageRemoved.emit()"
-            >
-              <svg lucideX size="12"></svg>
-            </button>
-          }
-        </div>
-      </div>
-    </section>
+    <app-background-properties
+      [background]="background()"
+      (backgroundColorChange)="backgroundColorChange.emit($event)"
+      (backgroundChange)="backgroundChange.emit($event)"
+      (backgroundReset)="backgroundReset.emit()"
+      (imageRemoved)="backgroundImageRemoved.emit()"
+    />
     <section class="border-b border-[#414141] p-2.5">
       <h2 class="mb-2 text-[9px] font-semibold uppercase tracking-wide text-[#9A9A9A]">Info</h2>
       <div class="space-y-2 text-[9px]">
