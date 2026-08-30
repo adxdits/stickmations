@@ -1,0 +1,83 @@
+<section class="border-b border-[#414141] p-2.5">
+  <h2 class="mb-2 text-[9px] font-semibold uppercase tracking-wide text-[#9A9A9A]">Background</h2>
+  <div class="space-y-2 text-[9px]">
+    <label class="flex items-center justify-between gap-2 text-[#9A9A9A]">
+      <span>Color</span>
+      <input
+        type="color"
+        class="h-5 w-12 cursor-pointer border border-[#414141] bg-[#232323]"
+        aria-label="Background color"
+        [value]="background()?.color ?? '#ffffff'"
+        (input)="changeColor($event)"
+      />
+    </label>
+    <label class="flex items-center justify-between gap-2 text-[#9A9A9A]">
+      <span>Fit</span>
+      <select
+        class="h-5 w-28 border border-[#414141] bg-[#232323] px-1 font-mono text-[8px] text-[#D6D6D6]"
+        aria-label="Background fit"
+        [value]="background()?.fit ?? 'cover'"
+        [disabled]="!background()?.imageUrl"
+        (change)="changeFit($event)"
+      >
+        <option value="cover">Cover</option>
+        <option value="contain">Contain</option>
+        <option value="fill">Stretch</option>
+      </select>
+    </label>
+    <div class="grid grid-cols-[52px_1fr_1fr] items-center gap-1.5">
+      <span class="text-[#9A9A9A]">Scale</span>
+      <label class="property-input col-span-2"
+        ><span>%</span
+        ><input
+          type="number"
+          min="10"
+          max="500"
+          aria-label="Background scale"
+          [value]="background()?.scale ?? 100"
+          [disabled]="!background()?.imageUrl"
+          (input)="changeNumber('scale', $event)"
+      /></label>
+      <span class="text-[#9A9A9A]">Offset</span>
+      <label class="property-input"
+        ><span>X</span
+        ><input
+          type="number"
+          aria-label="Background position X"
+          [value]="background()?.positionX ?? 0"
+          [disabled]="!background()?.imageUrl"
+          (input)="changeNumber('positionX', $event)"
+      /></label>
+      <label class="property-input"
+        ><span>Y</span
+        ><input
+          type="number"
+          aria-label="Background position Y"
+          [value]="background()?.positionY ?? 0"
+          [disabled]="!background()?.imageUrl"
+          (input)="changeNumber('positionY', $event)"
+      /></label>
+    </div>
+    <div class="flex items-center gap-2 text-[#9A9A9A]">
+      <span class="min-w-0 flex-1 truncate">{{ background()?.imageName ?? 'No image' }}</span>
+      @if (background()?.imageUrl) {
+        <button
+          type="button"
+          class="h-5 border border-[#414141] bg-[#303030] px-1.5 text-[8px] hover:bg-[#3C3C3C] hover:text-[#D6D6D6]"
+          (click)="backgroundReset.emit()"
+        >
+          Reset
+        </button>
+        <button
+          type="button"
+          class="flex size-5 items-center justify-center hover:text-[#D6D6D6]"
+          aria-label="Remove background image"
+          title="Remove background image"
+          (click)="imageRemoved.emit()"
+        >
+          <svg lucideX size="12"></svg>
+        </button>
+      }
+    </div>
+  </div>
+</section>

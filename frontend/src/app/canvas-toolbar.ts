@@ -19,6 +19,7 @@ import {
   LucideZoomOut,
 } from '@lucide/angular';
 import type { ControlMode, PanOffset } from './editor-types';
+import { inputNumber } from './shared/dom-events';
 
 @Component({
   selector: 'app-canvas-toolbar',
@@ -65,6 +66,9 @@ export class CanvasToolbar {
   readonly panRequested = output<PanOffset>();
 
   protected changeZoom(event: Event): void {
-    this.zoomChange.emit(Number((event.target as HTMLInputElement).value));
+    const value = inputNumber(event);
+    if (value !== null) {
+      this.zoomChange.emit(value);
+    }
   }
 }

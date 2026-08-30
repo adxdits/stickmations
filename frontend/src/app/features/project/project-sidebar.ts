@@ -16,7 +16,7 @@ import {
   LucideTrash2,
   LucideUpload,
 } from '@lucide/angular';
-import type { FigureLayer, LayerMove, SceneBackground } from './scene-frame';
+import type { FigureLayer, LayerMove, SceneBackground } from '../../domain/scene-frame';
 
 export interface FigureVisibilityChange {
   readonly id: string;

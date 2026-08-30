@@ -1,5 +1,5 @@
 import type { StickFigure } from '@framation/engine';
-import type { FigureLayer } from './scene-frame';
+import type { FigureLayer } from '../domain/scene-frame';
 
 export interface PreviewSegment {
   readonly id: string;

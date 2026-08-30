@@ -1,42 +1,41 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import type { StickFigure } from '@framation/engine';
 import {
-  LucideCamera,
   LucideFlipHorizontal2,
   LucideFlipVertical2,
   LucideFolderOpen,
   LucidePersonStanding,
   LucideRotateCcw,
   LucideRotateCw,
-  LucideX,
 } from '@lucide/angular';
 import type {
   FigureOperation,
   FrameTransform,
   TransformChange,
   TransformProperty,
-} from './animation-frame';
-import type { ControlMode } from './editor-types';
+} from '../../domain/animation-frame';
 import type {
   BackgroundChange,
-  BackgroundFit,
   CameraChange,
-  CameraProperty,
   SceneBackground,
   SceneCamera,
-} from './scene-frame';
+} from '../../domain/scene-frame';
+import { inputNumber } from '../../shared/dom-events';
+import type { ControlMode } from '../../shared/editor-types';
+import { BackgroundProperties } from './background-properties';
+import { CameraProperties } from './camera-properties';
 
 @Component({
   selector: 'app-inspector',
   imports: [
+    BackgroundProperties,
+    CameraProperties,
     LucideFlipHorizontal2,
     LucideFlipVertical2,
-    LucideCamera,
     LucideFolderOpen,
     LucidePersonStanding,
     LucideRotateCcw,
     LucideRotateCw,
-    LucideX,
   ],
   templateUrl: './inspector.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -72,37 +71,9 @@ export class Inspector {
   }
 
   protected changeTransform(property: TransformProperty, event: Event): void {
-    const value = Number((event.target as HTMLInputElement).value);
-    if (Number.isFinite(value)) {
+    const value = inputNumber(event);
+    if (value !== null) {
       this.transformChange.emit({ property, value });
-    }
-  }
-
-  protected changeBackgroundColor(event: Event): void {
-    this.backgroundColorChange.emit((event.target as HTMLInputElement).value);
-  }
-
-  protected changeCamera(property: CameraProperty, event: Event): void {
-    const value = Number((event.target as HTMLInputElement).value);
-    if (Number.isFinite(value)) {
-      this.cameraChange.emit({ property, value });
-    }
-  }
-
-  protected changeBackgroundFit(event: Event): void {
-    this.backgroundChange.emit({
-      property: 'fit',
-      value: (event.target as HTMLSelectElement).value as BackgroundFit,
-    });
-  }
-
-  protected changeBackgroundNumber(
-    property: 'scale' | 'positionX' | 'positionY',
-    event: Event,
-  ): void {
-    const value = Number((event.target as HTMLInputElement).value);
-    if (Number.isFinite(value)) {
-      this.backgroundChange.emit({ property, value });
     }
   }
 }

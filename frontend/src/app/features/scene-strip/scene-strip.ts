@@ -7,9 +7,10 @@ import {
   LucidePlus,
   LucideTrash2,
 } from '@lucide/angular';
-import type { FrameMove } from './editor-history';
-import type { FigurePreview } from './figure-preview';
-import type { SceneBackground, SceneCamera } from './scene-frame';
+import type { FrameMove } from '../../domain/editor-history';
+import type { SceneBackground, SceneCamera } from '../../domain/scene-frame';
+import type { FigurePreview } from '../../rendering/figure-preview';
+import { cameraSceneTransform, cameraViewBox } from '../../shared/view-box';
 
 @Component({
   selector: 'app-scene-strip',
@@ -38,15 +39,8 @@ export class SceneStrip {
   readonly nextFrame = output<void>();
   protected readonly draggedFrame = signal<number | null>(null);
 
-  protected cameraViewBox(camera: SceneCamera): string {
-    return `${camera.positionX - camera.width / 2} ${camera.positionY - camera.height / 2} ${camera.width} ${camera.height}`;
-  }
-
-  protected cameraTransform(camera: SceneCamera): string | null {
-    return camera.rotation === 0
-      ? null
-      : `rotate(${-camera.rotation} ${camera.positionX} ${camera.positionY})`;
-  }
+  protected readonly cameraViewBox = cameraViewBox;
+  protected readonly cameraTransform = cameraSceneTransform;
 
   protected startFrameDrag(event: DragEvent, frameIndex: number): void {
     this.draggedFrame.set(frameIndex);

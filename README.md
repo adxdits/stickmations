@@ -47,6 +47,8 @@ Palette for the same workflows.
 - `desktop/` - Electron main process and isolated preload boundary.
 
 Dependencies point inward: `engine/` knows nothing about Angular or Electron.
+See [Frontend architecture](docs/frontend-architecture.md) for the editor's feature, state,
+domain, rendering, and testing boundaries.
 
 ## License
 

@@ -17,10 +17,14 @@ import {
   LucideSkipBack,
   LucideSkipForward,
 } from '@lucide/angular';
-import type { FrameTransform, TransformChange, TransformProperty } from './animation-frame';
-import type { CameraChange, CameraProperty, SceneCamera } from './scene-frame';
-
-type TimelineTrack = 'position' | 'rotation' | 'scale' | 'camera';
+import type { FrameTransform, TransformChange } from '../../domain/animation-frame';
+import type { CameraChange, SceneCamera } from '../../domain/scene-frame';
+import { inputNumber } from '../../shared/dom-events';
+import {
+  createTimelineTracks,
+  type TimelineTrackId,
+  type TimelineTrackInput,
+} from './timeline-track';
 
 const FRAME_WIDTH = 44;
 const MIN_TIMELINE_WIDTH = 720;
@@ -54,15 +58,9 @@ export class Timeline implements OnDestroy {
   readonly transformChange = output<TransformChange>();
   readonly cameraChange = output<CameraChange>();
   protected readonly isPlaying = signal(false);
-  protected readonly expandedTracks = signal<ReadonlySet<TimelineTrack>>(new Set(['position']));
+  protected readonly expandedTracks = signal<ReadonlySet<TimelineTrackId>>(new Set(['position']));
   protected readonly timecode = computed(() => formatTimecode(this.currentFrame(), this.fps()));
-  protected readonly uniformScale = computed(() => {
-    const transform = this.transform();
-    if (!transform) {
-      return 100;
-    }
-    return transform.scaleX === transform.scaleY ? transform.scaleX : '';
-  });
+  protected readonly tracks = computed(() => createTimelineTracks(this.transform(), this.camera()));
   protected readonly frameNumbers = computed(() =>
     Array.from({ length: this.totalFrames() }, (_, index) => index + 1),
   );
@@ -99,8 +97,8 @@ export class Timeline implements OnDestroy {
   }
 
   protected changeFps(event: Event): void {
-    const value = Number((event.target as HTMLInputElement).value);
-    if (Number.isFinite(value)) {
+    const value = inputNumber(event);
+    if (value !== null) {
       this.fpsChange.emit(value);
     }
   }
@@ -109,7 +107,7 @@ export class Timeline implements OnDestroy {
     return (frame - 1) * FRAME_WIDTH + FRAME_WIDTH / 2;
   }
 
-  protected toggleTrack(track: TimelineTrack): void {
+  protected toggleTrack(track: TimelineTrackId): void {
     this.expandedTracks.update((tracks) => {
       const next = new Set(tracks);
       if (next.has(track)) {
@@ -121,21 +119,19 @@ export class Timeline implements OnDestroy {
     });
   }
 
-  protected isTrackExpanded(track: TimelineTrack): boolean {
+  protected isTrackExpanded(track: TimelineTrackId): boolean {
     return this.expandedTracks().has(track);
   }
 
-  protected changeTransform(property: TransformProperty, event: Event): void {
-    const value = Number((event.target as HTMLInputElement).value);
-    if (Number.isFinite(value)) {
-      this.transformChange.emit({ property, value });
+  protected changeTrackValue(input: TimelineTrackInput, event: Event): void {
+    const value = inputNumber(event);
+    if (value === null) {
+      return;
     }
-  }
-
-  protected changeCamera(property: CameraProperty, event: Event): void {
-    const value = Number((event.target as HTMLInputElement).value);
-    if (Number.isFinite(value)) {
-      this.cameraChange.emit({ property, value });
+    if (input.target === 'transform') {
+      this.transformChange.emit({ property: input.property, value });
+    } else {
+      this.cameraChange.emit({ property: input.property, value });
     }
   }
 
