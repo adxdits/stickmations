@@ -13,7 +13,7 @@ export const DEFAULT_FPS = 12;
 
 @Injectable({ providedIn: 'root' })
 export class EditorDocumentState {
-  readonly title = signal('Framation');
+  readonly title = signal('Stickmations');
   readonly animationFrames = signal<readonly SceneFrame[]>([]);
   readonly importError = signal<string | null>(null);
   readonly currentFrame = signal(1);

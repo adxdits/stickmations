@@ -5,10 +5,20 @@ import { Mp4ExportManager } from './mp4-export.js';
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 const developmentServerUrl = process.env['FRAMATION_DEV_SERVER_URL'];
+const appName = 'Stickmations';
+const appId = 'com.stickmations.app';
+const appIcon = app.isPackaged
+  ? join(process.resourcesPath, 'branding/icon.png')
+  : join(currentDirectory, '../../build/icon.png');
 const mp4Exports = new Mp4ExportManager();
+
+app.setName(appName);
+app.setAppUserModelId(appId);
 
 function createWindow(): void {
   const window = new BrowserWindow({
+    title: appName,
+    icon: appIcon,
     width: 1440,
     height: 900,
     minWidth: 960,
@@ -36,6 +46,7 @@ function createWindow(): void {
 
 mp4Exports.register();
 await app.whenReady();
+app.dock?.setIcon(appIcon);
 createWindow();
 
 app.on('activate', () => {

@@ -181,29 +181,50 @@
       </div>
     }
   } @else {
-    <div class="absolute inset-0 flex items-center justify-center p-6">
+    <div class="absolute inset-0 flex items-center justify-center overflow-hidden p-6">
+      <img
+        ngSrc="assets/background_app.png"
+        fill
+        priority
+        alt=""
+        class="pointer-events-none object-cover object-center"
+      />
+      <div class="pointer-events-none absolute inset-0 bg-black/25"></div>
       <div
-        class="flex w-full max-w-sm flex-col border border-[#686868] bg-[#A0A0A0]/90 p-3 text-[#2B2B2B]"
+        class="relative flex w-full max-w-sm flex-col border border-[#555D66] bg-[#22272D]/95 p-3 text-[#D6D6D6] shadow-xl"
       >
+        <div class="flex items-center gap-2 border-b border-[#4A5057] px-2 pb-3">
+          <img
+            ngSrc="assets/app_logo.png"
+            width="32"
+            height="32"
+            alt=""
+            class="size-8 rounded-[6px] object-cover"
+          />
+          <div>
+            <strong class="block text-[12px]">Stickmations</strong>
+            <span class="text-[9px] text-[#929AA2]">Create a new animation</span>
+          </div>
+        </div>
         <button
           type="button"
-          class="flex h-12 items-center gap-3 border-b border-[#777777] px-2 text-left hover:bg-[#B3B3B3]"
+          class="mt-1 flex h-12 items-center gap-3 border-b border-[#414850] px-2 text-left hover:bg-[#303840]"
           (click)="blankProjectRequested.emit()"
         >
-          <svg lucideFilePlusCorner size="19" class="text-[#4F5F6C]"></svg>
+          <svg lucideFilePlusCorner size="19" class="text-[#9FC5E0]"></svg>
           <span
             ><strong class="block text-[11px]">New blank animation</strong
-            ><span class="text-[9px] text-[#55585D]">Start with an empty white frame</span></span
+            ><span class="text-[9px] text-[#929AA2]">Start with an empty white frame</span></span
           >
         </button>
         <label
           for="canvas-stick-figure-file"
-          class="flex h-12 cursor-pointer items-center gap-3 px-2 text-left hover:bg-[#B3B3B3]"
+          class="flex h-12 cursor-pointer items-center gap-3 px-2 text-left hover:bg-[#303840]"
         >
-          <svg lucideUpload size="19" class="text-[#4F5F6C]"></svg>
+          <svg lucideUpload size="19" class="text-[#9FC5E0]"></svg>
           <span
             ><strong class="block text-[11px]">Import stick figures</strong
-            ><span class="text-[9px] text-[#55585D]">Select one or several files</span></span
+            ><span class="text-[9px] text-[#929AA2]">Select one or several files</span></span
           >
         </label>
       </div>

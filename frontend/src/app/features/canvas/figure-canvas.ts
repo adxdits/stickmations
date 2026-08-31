@@ -1,3 +1,4 @@
+import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { moveJointToward, translateFigure, type StickFigure } from '@framation/engine';
 import { LucideFilePlusCorner, LucideUpload } from '@lucide/angular';
@@ -25,7 +26,7 @@ import {
 
 @Component({
   selector: 'app-figure-canvas',
-  imports: [LucideFilePlusCorner, LucideUpload],
+  imports: [NgOptimizedImage, LucideFilePlusCorner, LucideUpload],
   templateUrl: './figure-canvas.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {

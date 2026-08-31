@@ -1,3 +1,4 @@
+import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, input, output, signal } from '@angular/core';
 import {
   LucideBone,
@@ -26,6 +27,7 @@ import { EditorWorkspaceStore, type WorkspacePanel } from '../../state/editor-wo
 @Component({
   selector: 'app-application-menu-bar',
   imports: [
+    NgOptimizedImage,
     LucideBone,
     LucideCamera,
     LucideChevronLeft,

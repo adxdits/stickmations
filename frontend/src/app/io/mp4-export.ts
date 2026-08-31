@@ -91,7 +91,7 @@ export class Mp4ExportService {
     }
     const desktop = window.framationDesktop;
     if (!desktop) {
-      this.fail('MP4 export is only available in the Framation desktop app.', frameCount);
+      this.fail('MP4 export is only available in the Stickmations desktop app.', frameCount);
       return null;
     }
     if (frameCount === 0) {

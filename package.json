@@ -1,5 +1,5 @@
 {
-  "name": "framation",
+  "name": "stickmations",
   "version": "0.1.0",
   "private": true,
   "description": "Desktop 2D stick-figure animation software.",
@@ -21,8 +21,8 @@
     "dist": "npm run build && electron-builder --win"
   },
   "build": {
-    "appId": "com.framation.app",
-    "productName": "Framation",
+    "appId": "com.stickmations.app",
+    "productName": "Stickmations",
     "copyright": "Copyright (c) 2026 adxdits",
     "directories": {
       "output": "release",
@@ -36,6 +36,10 @@
     ],
     "extraResources": [
       {
+        "from": "build/icon.png",
+        "to": "branding/icon.png"
+      },
+      {
         "from": "node_modules/ffmpeg-static",
         "to": "ffmpeg-static",
         "filter": [
@@ -48,7 +52,11 @@
         ]
       }
     ],
+    "mac": {
+      "icon": "build/icon.icns"
+    },
     "win": {
+      "icon": "build/icon.ico",
       "target": [
         {
           "target": "nsis",
@@ -63,6 +71,9 @@
           ]
         }
       ]
+    },
+    "linux": {
+      "icon": "build/icon.png"
     },
     "nsis": {
       "oneClick": false,

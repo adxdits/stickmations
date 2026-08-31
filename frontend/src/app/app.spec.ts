@@ -24,7 +24,9 @@ describe('App shell', () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Framation');
+    expect(compiled.querySelector('h1')?.textContent).toContain('Stickmations');
+    expect(compiled.querySelector('header img[src*="app_logo.png"]')).toBeTruthy();
+    expect(compiled.querySelector('img[src*="background_app.png"]')).toBeTruthy();
   });
 
   it('should render a stick-figure file input', () => {
@@ -65,7 +67,9 @@ describe('App shell', () => {
 
     menu(fixture.nativeElement, 'Help').querySelector<HTMLButtonElement>('button')?.click();
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('dialog')).toBeTruthy();
+    const about = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
+    expect(about.textContent).toContain('About Stickmations');
+    expect(about.querySelector('img[src*="app_logo.png"]')).toBeTruthy();
   });
 
   it('keeps figure transforms contextual and customizes the workspace', () => {
