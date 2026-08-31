@@ -25,7 +25,7 @@ describe('App shell', () => {
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('h1')?.textContent).toContain('Stickmations');
-    expect(compiled.querySelector('header img[src*="app_logo.png"]')).toBeTruthy();
+    expect(compiled.querySelector('header img[src*="app_logo_40.png"]')).toBeTruthy();
     expect(compiled.querySelector('img[src*="background_app.png"]')).toBeTruthy();
   });
 
@@ -69,7 +69,7 @@ describe('App shell', () => {
     fixture.detectChanges();
     const about = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
     expect(about.textContent).toContain('About Stickmations');
-    expect(about.querySelector('img[src*="app_logo.png"]')).toBeTruthy();
+    expect(about.querySelector('img[src*="app_logo_64.png"]')).toBeTruthy();
   });
 
   it('keeps figure transforms contextual and customizes the workspace', () => {

@@ -43,8 +43,14 @@ Palette for the same workflows.
 ## Architecture
 
 - `engine/` - Framework-free figure import, domain model, and kinematics.
-- `frontend/` - Angular editor UI and SVG figure preview.
+- `frontend/src/app/` - Angular editor core and SVG figure preview loaded by Electron.
+- `frontend/src/website/download-site/` - Public download page loaded in a normal browser.
+- `frontend/src/website/components/` - Shared sections used by the download page.
 - `desktop/` - Electron main process and isolated preload boundary.
+
+The frontend bootstrap chooses between the editor core and download website by
+checking for the isolated Electron preload bridge. This keeps the public site
+separate without duplicating the Angular workspace or brand assets.
 
 Dependencies point inward: `engine/` knows nothing about Angular or Electron.
 See [Frontend architecture](docs/frontend-architecture.md) for the editor's feature, state,

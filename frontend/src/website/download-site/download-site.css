@@ -1,0 +1,100 @@
+@import '@fontsource-variable/archivo';
+
+:host {
+  --site-paper: #111315;
+  --site-surface: #181b1e;
+  --site-surface-raised: #22262a;
+  --site-ink: #eceeed;
+  --site-muted: #9ca4a8;
+  --site-line: #30353a;
+  --site-line-strong: #495158;
+  --site-hero-shade: #0b0d0f;
+  --site-on-dark: #f1f2f1;
+  --site-action: #4e5960;
+  --site-action-border: #68747b;
+  --site-action-hover: #626f77;
+  --site-on-action: #f4f5f4;
+  --site-disabled: #292d30;
+  --site-disabled-border: #41474c;
+  --site-disabled-text: #9aa1a5;
+  --site-warning: #e0be77;
+  --site-warning-border: #655639;
+  --site-warning-surface: #2a251b;
+  --site-shadow: 0 24px 70px color-mix(in srgb, var(--site-hero-shade) 55%, transparent);
+  --font-display: 'Archivo Variable', sans-serif;
+  --font-code: 'JetBrains Mono', monospace;
+  --type-display: 5.5rem;
+  --type-heading: 3.25rem;
+  --type-section-title: 1.5rem;
+  --type-subheading: 1.125rem;
+  --type-body: 0.9375rem;
+  --type-small: 0.8125rem;
+  --type-label: 0.6875rem;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+  --section-space: 4rem;
+  --site-header-height: 4rem;
+  --site-content-width: 1280px;
+  --site-gutter: clamp(1.25rem, 4vw, 4rem);
+  --control-height: 3.25rem;
+  --control-height-small: 2.25rem;
+  --radius-small: 4px;
+  --radius-medium: 6px;
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  display: block;
+  height: 100dvh;
+  overflow-y: auto;
+  background: var(--site-paper);
+  color: var(--site-ink);
+  font-family: var(--font-display);
+  scroll-behavior: smooth;
+}
+
+main {
+  min-width: 0;
+}
+
+footer {
+  display: flex;
+  min-height: 84px;
+  padding: var(--space-5) var(--site-gutter);
+  border-top: 1px solid var(--site-line);
+  color: var(--site-muted);
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-code);
+  font-size: var(--type-label);
+  text-transform: uppercase;
+}
+
+@media (max-width: 700px) {
+  :host {
+    --type-display: 3rem;
+    --type-heading: 2.25rem;
+    --section-space: 5rem;
+  }
+
+  footer {
+    text-align: center;
+  }
+}
+
+@media (max-width: 380px) {
+  :host {
+    --type-display: 2.45rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    scroll-behavior: auto;
+  }
+}

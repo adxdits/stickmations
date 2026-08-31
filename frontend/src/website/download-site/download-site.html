@@ -1,0 +1,10 @@
+<app-site-header [config]="config" />
+<main>
+  <app-download-hero [config]="config" />
+  <app-release-section [config]="config" />
+  <app-feature-section [config]="config" />
+  <app-about-creator [creator]="config.creator" />
+</main>
+<footer>
+  <span>{{ config.copyright }}</span>
+</footer>

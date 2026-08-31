@@ -1,0 +1,34 @@
+<section id="features" class="feature-section" aria-labelledby="features-title">
+  <h2 id="features-title">Features</h2>
+
+  <div class="feature-list">
+    @for (feature of config().features; track feature.title) {
+      <div class="feature-row">
+        <strong>{{ feature.title }}</strong>
+        <span>{{ feature.description }}</span>
+      </div>
+    }
+  </div>
+
+  <div class="resource-section">
+    <div>
+      <h3>Stick figure libraries</h3>
+      <p class="compatibility">
+        Stickmations imports <code>.nodes</code>. Pivot <code>.stk</code> import is not supported
+        yet.
+      </p>
+    </div>
+
+    <div class="resource-links">
+      @for (resource of config().figureResources; track resource.name) {
+        <a class="resource-link" [href]="resource.url" target="_blank" rel="noopener noreferrer">
+          <span>
+            <strong>{{ resource.name }}</strong>
+            <small>{{ resource.description }}</small>
+          </span>
+          <svg lucideExternalLink size="18" aria-hidden="true"></svg>
+        </a>
+      }
+    </div>
+  </div>
+</section>
