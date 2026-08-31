@@ -2,14 +2,14 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Framation: Dev",
+      "label": "Stickmations: Dev",
       "type": "shell",
       "command": "source \"$HOME/.nvm/nvm.sh\" && nvm use 22.12.0 && npm run dev",
       "isBackground": true,
       "problemMatcher": []
     },
     {
-      "label": "Framation: Check",
+      "label": "Stickmations: Check",
       "type": "npm",
       "script": "check",
       "group": {

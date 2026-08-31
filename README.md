@@ -1,6 +1,6 @@
-# Framation
+# Stickmations
 
-Framation is a desktop 2D stick-figure animation software.
+Stickmations is desktop 2D stick-figure animation software.
 
 ## Prerequisites
 
@@ -37,7 +37,7 @@ Useful commands:
 | `npm run check`     | Build, test and type-check every workspace |
 
 VS Code recommends the Angular, EditorConfig, ESLint, and Prettier
-extensions. Run the `Framation: Dev` or `Framation: Check` task from the Command
+extensions. Run the `Stickmations: Dev` or `Stickmations: Check` task from the Command
 Palette for the same workflows.
 
 ## Architecture
@@ -52,11 +52,11 @@ domain, rendering, and testing boundaries.
 
 ## License
 
-Framation is source-available and is not currently open source. The source may
+Stickmations is source-available and is not currently open source. The source may
 be viewed and used according to the Business Source License 1.1 (BUSL-1.1).
 Production or commercial use of the licensed source requires compliance with
 BUSL-1.1 or a commercial license from the licensor.
 
 The license is currently BUSL-1.1 and is scheduled to change to the Apache
-License 2.0 on 2029-08-22. Do not describe Framation as "open source" while
+License 2.0 on 2029-08-22. Do not describe Stickmations as "open source" while
 BUSL-1.1 applies. See [LICENSE](LICENSE) for the complete license terms.

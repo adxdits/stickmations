@@ -1,10 +1,13 @@
 <header class="flex h-8 shrink-0 items-center border-b border-[#414141] bg-[#232323] px-2.5">
   <div class="flex min-w-0 items-center gap-2">
-    <div
-      class="flex size-5 items-center justify-center rounded-[2px] border border-[#4A4A4A] bg-[#333333] text-[#C8C8C8]"
-    >
-      <svg lucideBone size="13" strokeWidth="2.5"></svg>
-    </div>
+    <img
+      ngSrc="assets/app_logo.png"
+      width="20"
+      height="20"
+      alt=""
+      priority
+      class="size-5 rounded-[4px] object-cover"
+    />
     <h1 class="truncate text-[12px] font-semibold text-[#DADADA]">{{ title() }}</h1>
     <span class="hidden text-[#666666] sm:inline">/</span>
     <span class="hidden truncate text-[10px] text-[#9A9A9A] sm:inline">{{ projectName() }}</span>
@@ -177,7 +180,7 @@
       <summary>Help</summary>
       <div class="editor-menu-panel w-44">
         <button type="button" (click)="aboutOpen.set(true); closeMenu($event)">
-          <svg lucideInfo size="13"></svg><span>About Framation</span>
+          <svg lucideInfo size="13"></svg><span>About Stickmations</span>
         </button>
       </div>
     </details>
@@ -208,7 +211,7 @@
       (keydown.escape)="aboutOpen.set(false)"
     >
       <header class="flex h-8 items-center border-b border-[#414141] px-2.5">
-        <h2 id="about-title" class="text-[11px] font-semibold">About Framation</h2>
+        <h2 id="about-title" class="text-[11px] font-semibold">About Stickmations</h2>
         <button
           type="button"
           class="ml-auto flex size-5 items-center justify-center text-[#9A9A9A] hover:text-white"
@@ -220,7 +223,13 @@
       </header>
       <div class="p-4 text-[10px] text-[#9A9A9A]">
         <div class="mb-2 flex items-center gap-2 text-[#D6D6D6]">
-          <svg lucideBone size="18"></svg><strong>Framation 0.1.0</strong>
+          <img
+            ngSrc="assets/app_logo.png"
+            width="32"
+            height="32"
+            alt=""
+            class="size-8 rounded-[6px] object-cover"
+          /><strong>Stickmations 0.1.0</strong>
         </div>
         <p>Desktop stick-figure animation editor.</p>
       </div>
