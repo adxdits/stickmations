@@ -11,6 +11,7 @@
       [currentFrame]="editor.currentFrame()"
       [totalFrames]="editor.animationFrames().length"
       [selectedFigureName]="editor.importedFigure()?.name ?? null"
+      [canExportMp4]="canExportMp4()"
       (controlModeChange)="viewport.controlMode.set($event)"
       (undo)="editor.undo()"
       (redo)="editor.redo()"
@@ -27,6 +28,7 @@
       (frameDeleted)="editor.deleteFrame()"
       (previousFrame)="editor.selectRelativeFrame(-1)"
       (nextFrame)="editor.selectRelativeFrame(1)"
+      (mp4ExportRequested)="exportMp4()"
     />
   }
   <app-canvas-toolbar
@@ -153,5 +155,13 @@
         >Frame {{ editor.currentFrame() }} / {{ editor.animationFrames().length || 1 }}</span
       >
     </footer>
+  }
+  @if (mp4Export.state().phase !== 'idle') {
+    <app-mp4-export-dialog
+      [state]="mp4Export.state()"
+      [fps]="editor.fps()"
+      (cancelRequested)="mp4Export.cancel()"
+      (dismissRequested)="mp4Export.dismiss()"
+    />
   }
 </main>

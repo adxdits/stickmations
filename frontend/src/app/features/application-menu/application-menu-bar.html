@@ -32,6 +32,14 @@
           ><svg lucideImage size="13"></svg><span>Import background…</span
           ><input type="file" class="sr-only" accept="image/*" (change)="selectBackground($event)"
         /></label>
+        <div class="editor-menu-separator"></div>
+        <button
+          type="button"
+          [disabled]="!canExportMp4()"
+          (click)="mp4ExportRequested.emit(); closeMenu($event)"
+        >
+          <svg lucideDownload size="13"></svg><span>Export MP4…</span><kbd>⌘E</kbd>
+        </button>
       </div>
     </details>
     <details class="editor-menu" name="application-menu">
@@ -175,7 +183,16 @@
     </details>
   </nav>
   <div class="ml-auto flex items-center gap-1">
-    <button type="button" class="menu-bar-icon" aria-label="Save project" title="Save project">
+    <button
+      type="button"
+      class="menu-bar-icon"
+      aria-label="Export MP4"
+      title="Export MP4"
+      [disabled]="!canExportMp4()"
+      (click)="mp4ExportRequested.emit()"
+    >
+      <svg lucideDownload size="15"></svg></button
+    ><button type="button" class="menu-bar-icon" aria-label="Save project" title="Save project">
       <svg lucideSave size="15"></svg></button
     ><button type="button" class="menu-bar-icon" aria-label="Settings" title="Settings">
       <svg lucideSettings2 size="15"></svg>

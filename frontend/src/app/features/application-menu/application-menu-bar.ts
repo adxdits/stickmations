@@ -5,6 +5,7 @@ import {
   LucideChevronLeft,
   LucideChevronRight,
   LucideCopyPlus,
+  LucideDownload,
   LucideFilePlusCorner,
   LucideHand,
   LucideImage,
@@ -30,6 +31,7 @@ import { EditorWorkspaceStore, type WorkspacePanel } from '../../state/editor-wo
     LucideChevronLeft,
     LucideChevronRight,
     LucideCopyPlus,
+    LucideDownload,
     LucideFilePlusCorner,
     LucideHand,
     LucideImage,
@@ -58,6 +60,7 @@ export class ApplicationMenuBar {
   readonly currentFrame = input.required<number>();
   readonly totalFrames = input.required<number>();
   readonly selectedFigureName = input<string | null>(null);
+  readonly canExportMp4 = input(false);
   readonly controlModeChange = output<ControlMode>();
   readonly undo = output<void>();
   readonly redo = output<void>();
@@ -74,6 +77,7 @@ export class ApplicationMenuBar {
   readonly frameDeleted = output<void>();
   readonly previousFrame = output<void>();
   readonly nextFrame = output<void>();
+  readonly mp4ExportRequested = output<void>();
   protected readonly aboutOpen = signal(false);
 
   protected togglePanel(panel: WorkspacePanel, event: Event): void {
