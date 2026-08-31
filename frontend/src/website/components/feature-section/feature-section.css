@@ -1,0 +1,121 @@
+:host {
+  display: block;
+  border-top: 1px solid var(--site-line);
+  background: var(--site-surface);
+}
+
+.feature-section {
+  width: min(100%, var(--site-content-width));
+  margin-inline: auto;
+  padding: var(--section-space) var(--site-gutter);
+}
+
+h2 {
+  margin: 0 0 var(--space-5);
+  color: var(--site-ink);
+  font-size: var(--type-section-title);
+  line-height: 1.2;
+}
+
+.feature-list {
+  border-top: 1px solid var(--site-line-strong);
+}
+
+.feature-row {
+  display: grid;
+  min-height: 64px;
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--site-line);
+  align-items: center;
+  grid-template-columns: minmax(180px, 0.45fr) minmax(0, 1fr);
+  gap: var(--space-5);
+}
+
+h3 {
+  margin: 0;
+  color: var(--site-ink);
+  font-size: var(--type-subheading);
+}
+
+.feature-row strong {
+  color: var(--site-ink);
+  font-size: var(--type-body);
+}
+
+.feature-row span,
+.compatibility {
+  margin: 0;
+  color: var(--site-muted);
+  font-size: var(--type-body);
+  line-height: 1.55;
+}
+
+.resource-section {
+  display: grid;
+  padding-top: var(--space-6);
+  grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.2fr);
+  gap: var(--space-7);
+}
+
+.compatibility {
+  max-width: 430px;
+  margin-top: var(--space-2);
+}
+
+code {
+  color: var(--site-ink);
+  font-family: var(--font-code);
+}
+
+.resource-links {
+  border-top: 1px solid var(--site-line-strong);
+}
+
+.resource-link {
+  display: flex;
+  min-height: 76px;
+  padding-inline: var(--space-3);
+  border-bottom: 1px solid var(--site-line);
+  color: var(--site-ink);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  text-decoration: none;
+}
+
+.resource-link:hover,
+.resource-link:focus-visible {
+  background: var(--site-surface-raised);
+}
+
+.resource-link span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.resource-link small {
+  color: var(--site-muted);
+  font-size: var(--type-small);
+}
+
+.resource-link svg {
+  flex: 0 0 auto;
+  color: var(--site-muted);
+}
+
+@media (max-width: 700px) {
+  .resource-section {
+    padding-top: var(--space-6);
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  .feature-row {
+    min-height: 0;
+    padding-block: var(--space-4);
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
+  }
+}

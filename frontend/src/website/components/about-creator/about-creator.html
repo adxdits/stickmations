@@ -1,0 +1,22 @@
+<section id="about" class="about-section" aria-labelledby="about-title">
+  <div>
+    <p class="section-label">About</p>
+    <h2 id="about-title">{{ creator().name }}</h2>
+    <p class="description">{{ creator().description }}</p>
+  </div>
+
+  <nav aria-label="Adam Almounayar links">
+    <a [href]="creator().linkedinUrl" target="_blank" rel="noopener noreferrer">
+      <span>LinkedIn</span>
+      <svg lucideExternalLink size="18" aria-hidden="true"></svg>
+    </a>
+    <a [href]="creator().githubUrl" target="_blank" rel="noopener noreferrer">
+      <span>GitHub</span>
+      <svg lucideExternalLink size="18" aria-hidden="true"></svg>
+    </a>
+    <a [href]="'mailto:' + creator().email">
+      <span>{{ creator().email }}</span>
+      <svg lucideMail size="18" aria-hidden="true"></svg>
+    </a>
+  </nav>
+</section>
