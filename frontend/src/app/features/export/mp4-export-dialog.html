@@ -1,0 +1,93 @@
+<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+  <dialog
+    open
+    class="w-full max-w-[420px] border border-[#555555] bg-[#2B2B2B] text-[#D6D6D6] shadow-xl"
+    aria-labelledby="mp4-export-title"
+    aria-describedby="mp4-export-status"
+  >
+    <header class="flex h-9 items-center border-b border-[#414141] px-3">
+      <svg lucideFilm size="15" class="mr-2 text-[#9FC5E0]"></svg>
+      <h2 id="mp4-export-title" class="text-[11px] font-semibold">Export MP4</h2>
+      @if (state().phase === 'complete' || state().phase === 'error') {
+        <button
+          type="button"
+          class="ml-auto flex size-6 items-center justify-center text-[#9A9A9A] hover:text-white"
+          aria-label="Close export status"
+          (click)="dismissRequested.emit()"
+        >
+          <svg lucideX size="14"></svg>
+        </button>
+      }
+    </header>
+
+    <div class="p-4">
+      <div class="flex items-start gap-3">
+        @if (state().phase === 'complete') {
+          <svg lucideCircleCheck size="22" class="mt-0.5 shrink-0 text-[#85B98B]"></svg>
+        } @else if (state().phase === 'error') {
+          <svg lucideTriangleAlert size="22" class="mt-0.5 shrink-0 text-[#D88B83]"></svg>
+        } @else {
+          <svg lucideFilm size="22" class="mt-0.5 shrink-0 text-[#9FC5E0]"></svg>
+        }
+        <div class="min-w-0 flex-1">
+          <p id="mp4-export-status" class="text-[11px] font-medium" aria-live="polite">
+            {{ status() }}
+          </p>
+          <p class="mt-1 text-[9px] text-[#8F8F8F]">1920 × 1080 · {{ fps() }} FPS · H.264</p>
+
+          @if (
+            state().phase === 'preparing' ||
+            state().phase === 'rendering' ||
+            state().phase === 'encoding'
+          ) {
+            <progress
+              class="mp4-export-progress"
+              aria-label="MP4 export progress"
+              max="100"
+              [value]="progress()"
+            ></progress>
+          }
+
+          @if (state().phase === 'complete') {
+            <p
+              class="mt-3 break-all text-[9px] leading-4 text-[#A8A8A8]"
+              [title]="state().outputPath"
+            >
+              {{ state().outputPath }}
+            </p>
+          } @else if (state().phase === 'error') {
+            <p class="mt-3 break-words text-[9px] leading-4 text-[#E1AAA5]" role="alert">
+              {{ state().error }}
+            </p>
+          }
+        </div>
+      </div>
+    </div>
+
+    <footer class="flex h-11 items-center justify-end gap-2 border-t border-[#414141] px-3">
+      @if (
+        state().phase === 'preparing' ||
+        state().phase === 'rendering' ||
+        state().phase === 'encoding'
+      ) {
+        <button
+          type="button"
+          class="h-6 min-w-16 border border-[#555555] bg-[#343434] px-3 text-[10px] hover:bg-[#414141]"
+          autofocus
+          (click)="cancelRequested.emit()"
+        >
+          Cancel
+        </button>
+      } @else {
+        <button
+          type="button"
+          class="h-6 min-w-16 border border-[#58758D] bg-[#394A58] px-3 text-[10px] hover:bg-[#455A69]"
+          autofocus
+          (click)="dismissRequested.emit()"
+        >
+          Done
+        </button>
+      }
+    </footer>
+  </dialog>
+</div>
