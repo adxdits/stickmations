@@ -34,6 +34,20 @@
       "frontend/dist/frontend/browser/**/*",
       "package.json"
     ],
+    "extraResources": [
+      {
+        "from": "node_modules/ffmpeg-static",
+        "to": "ffmpeg-static",
+        "filter": [
+          "ffmpeg",
+          "ffmpeg.exe",
+          "LICENSE",
+          "ffmpeg.LICENSE",
+          "ffmpeg.README",
+          "package.json"
+        ]
+      }
+    ],
     "win": {
       "target": [
         {

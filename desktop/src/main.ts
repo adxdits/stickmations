@@ -1,9 +1,11 @@
 import { app, BrowserWindow } from 'electron';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { Mp4ExportManager } from './mp4-export.js';
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 const developmentServerUrl = process.env['FRAMATION_DEV_SERVER_URL'];
+const mp4Exports = new Mp4ExportManager();
 
 function createWindow(): void {
   const window = new BrowserWindow({
@@ -16,7 +18,7 @@ function createWindow(): void {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
-      preload: join(currentDirectory, 'preload.js'),
+      preload: join(currentDirectory, 'preload.cjs'),
     },
   });
 
@@ -27,8 +29,12 @@ function createWindow(): void {
       join(currentDirectory, '../../frontend/dist/frontend/browser/index.html'),
     );
   }
+
+  const senderId = window.webContents.id;
+  window.on('closed', () => void mp4Exports.cancelForSender(senderId));
 }
 
+mp4Exports.register();
 await app.whenReady();
 createWindow();
 
@@ -43,3 +49,5 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
+
+app.on('before-quit', () => void mp4Exports.dispose());
