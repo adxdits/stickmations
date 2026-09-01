@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { App } from './app';
-import type { FramationDesktopApi } from './io/desktop-api';
+import type { StickmationsDesktopApi } from './io/desktop-api';
 import { configureAppTestBed, getEditor, menu } from './testing/app-test-harness';
 
 describe('App project save', () => {
@@ -15,12 +15,12 @@ describe('App project save', () => {
     writeProjectChunk.mockResolvedValue(undefined);
     completeProjectSave.mockResolvedValue({ path: '/Users/test/Untitled project.stickmation' });
     cancelProjectSave.mockResolvedValue(undefined);
-    window.framationDesktop = desktopApi();
+    window.stickmationsDesktop = desktopApi();
     await configureAppTestBed();
   });
 
   afterEach(() => {
-    delete window.framationDesktop;
+    delete window.stickmationsDesktop;
     TestBed.resetTestingModule();
     vi.clearAllMocks();
   });
@@ -83,7 +83,7 @@ describe('App project save', () => {
     );
   });
 
-  function desktopApi(): FramationDesktopApi {
+  function desktopApi(): StickmationsDesktopApi {
     return {
       startMp4Export: vi.fn(),
       writeMp4Frame: vi.fn(),

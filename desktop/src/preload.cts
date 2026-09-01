@@ -24,7 +24,7 @@ const PROJECT_SAVE_CHANNELS = {
   cancel: "project-save:cancel",
 } as const;
 
-contextBridge.exposeInMainWorld("framationDesktop", {
+contextBridge.exposeInMainWorld("stickmationsDesktop", {
   platform: process.platform,
   versions: {
     chrome: process.versions.chrome,

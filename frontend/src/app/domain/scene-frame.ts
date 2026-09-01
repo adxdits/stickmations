@@ -1,4 +1,4 @@
-import type { StickFigure } from '@framation/engine';
+import type { StickFigure } from '@stickmations/engine';
 import { cloneAnimationFrame, createAnimationFrame, type AnimationFrame } from './animation-frame';
 
 export interface FigureLayer extends AnimationFrame {

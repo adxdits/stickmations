@@ -5,7 +5,7 @@ import { Mp4ExportManager } from './mp4-export.js';
 import { ProjectSaveManager } from './project-save.js';
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
-const developmentServerUrl = process.env['FRAMATION_DEV_SERVER_URL'];
+const developmentServerUrl = process.env['STICKMATIONS_DEV_SERVER_URL'];
 const appName = 'Stickmations';
 const appId = 'com.stickmations.app';
 const appIcon = app.isPackaged

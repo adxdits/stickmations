@@ -14,7 +14,7 @@ export interface StartProjectSaveOptions {
 export type StartProjectSaveResult =
   Readonly<{ status: 'ready'; sessionId: string }> | Readonly<{ status: 'cancelled' }>;
 
-export interface FramationDesktopApi {
+export interface StickmationsDesktopApi {
   startMp4Export(options: StartMp4ExportOptions): Promise<StartMp4ExportResult>;
   writeMp4Frame(sessionId: string, frame: Uint8Array): Promise<void>;
   completeMp4Export(sessionId: string): Promise<Readonly<{ path: string }>>;
@@ -27,6 +27,6 @@ export interface FramationDesktopApi {
 
 declare global {
   interface Window {
-    framationDesktop?: FramationDesktopApi;
+    stickmationsDesktop?: StickmationsDesktopApi;
   }
 }

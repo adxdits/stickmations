@@ -1,4 +1,4 @@
-import { parseStickFigureJson, parseStickNodesFile, type StickFigure } from '@framation/engine';
+import { parseStickFigureJson, parseStickNodesFile, type StickFigure } from '@stickmations/engine';
 import { requireSafeBackgroundImageDataUrl } from './background-image';
 
 export const MAX_BACKGROUND_IMAGE_BYTES = 64 * 1024 * 1024;

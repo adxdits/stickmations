@@ -27,7 +27,7 @@ app shell -> features -> state/rendering/shared/domain
                     state -> io/rendering/shared/domain
                 rendering -> domain
                    shared -> domain (geometry types only)
-                   domain -> @framation/engine
+                   domain -> @stickmations/engine
 ```
 
 `domain`, `rendering`, `io`, and `shared` must not import Angular state or UI features.

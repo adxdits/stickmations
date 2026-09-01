@@ -1,4 +1,4 @@
-import { rotateFigure, scaleFigure, translateFigure, type StickFigure } from '@framation/engine';
+import { rotateFigure, scaleFigure, translateFigure, type StickFigure } from '@stickmations/engine';
 
 export type TransformProperty =
   'positionX' | 'positionY' | 'rotation' | 'scale' | 'scaleX' | 'scaleY';

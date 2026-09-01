@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import type { StickFigure } from '@framation/engine';
+import type { StickFigure } from '@stickmations/engine';
 import type { FigureOperation, TransformChange } from '../domain/animation-frame';
 import { reorderFrames, type EditorSnapshot, type FrameMove } from '../domain/editor-history';
 import {

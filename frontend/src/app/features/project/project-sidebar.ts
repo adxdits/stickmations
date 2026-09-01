@@ -77,7 +77,7 @@ export class ProjectSidebar {
 
   protected startFigureDrag(event: DragEvent, layerId: string): void {
     this.draggedFigureId.set(layerId);
-    event.dataTransfer?.setData('application/x-framation-layer', layerId);
+    event.dataTransfer?.setData('application/x-stickmations-layer', layerId);
     event.dataTransfer?.setData('text/plain', layerId);
     if (event.dataTransfer) {
       event.dataTransfer.effectAllowed = 'move';
@@ -96,7 +96,7 @@ export class ProjectSidebar {
     event.preventDefault();
     const layerId =
       this.draggedFigureId() ??
-      event.dataTransfer?.getData('application/x-framation-layer') ??
+      event.dataTransfer?.getData('application/x-stickmations-layer') ??
       event.dataTransfer?.getData('text/plain');
     if (layerId) {
       this.figureMoved.emit({ layerId, toIndex });

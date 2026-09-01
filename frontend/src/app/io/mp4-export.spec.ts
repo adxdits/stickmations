@@ -9,7 +9,7 @@ describe('Mp4ExportService', () => {
   beforeEach(() => {
     renderVideoFramePng.mockReset();
     renderVideoFramePng.mockResolvedValue(new Uint8Array([137, 80, 78, 71]));
-    delete window.framationDesktop;
+    delete window.stickmationsDesktop;
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [{ provide: VIDEO_FRAME_RENDERER, useValue: renderVideoFramePng }],
@@ -18,7 +18,7 @@ describe('Mp4ExportService', () => {
 
   it('renders and streams every frame before completing the MP4', async () => {
     const desktop = desktopApi();
-    window.framationDesktop = desktop;
+    window.stickmationsDesktop = desktop;
     const service = TestBed.inject(Mp4ExportService);
     const frames = [createSceneFrame(), createSceneFrame()];
 
@@ -44,7 +44,7 @@ describe('Mp4ExportService', () => {
   it('returns to idle when the native save dialog is cancelled', async () => {
     const desktop = desktopApi();
     desktop.startMp4Export.mockResolvedValue({ status: 'cancelled' });
-    window.framationDesktop = desktop;
+    window.stickmationsDesktop = desktop;
     const service = TestBed.inject(Mp4ExportService);
 
     await service.export([createSceneFrame()], 12, 'Animation');
@@ -56,7 +56,7 @@ describe('Mp4ExportService', () => {
   it('reports encoder failures and cancels the active session', async () => {
     const desktop = desktopApi();
     desktop.writeMp4Frame.mockRejectedValue(new Error('Encoder stopped.'));
-    window.framationDesktop = desktop;
+    window.stickmationsDesktop = desktop;
     const service = TestBed.inject(Mp4ExportService);
 
     await service.export([createSceneFrame()], 12, 'Animation');
@@ -74,7 +74,7 @@ describe('Mp4ExportService', () => {
       }),
     );
     const desktop = desktopApi();
-    window.framationDesktop = desktop;
+    window.stickmationsDesktop = desktop;
     const service = TestBed.inject(Mp4ExportService);
     const exporting = service.export([createSceneFrame()], 12, 'Animation');
     await vi.waitFor(() => expect(service.state().phase).toBe('rendering'));
@@ -96,7 +96,7 @@ describe('Mp4ExportService', () => {
         finishWriting = resolve;
       }),
     );
-    window.framationDesktop = desktop;
+    window.stickmationsDesktop = desktop;
     const service = TestBed.inject(Mp4ExportService);
     const exporting = service.export([createSceneFrame()], 12, 'Animation');
     await vi.waitFor(() => expect(desktop.writeMp4Frame).toHaveBeenCalled());

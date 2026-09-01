@@ -15,7 +15,7 @@ describe('App MP4 export', () => {
     writeMp4Frame.mockResolvedValue(undefined);
     completeMp4Export.mockResolvedValue({ path: '/Users/test/Untitled animation.mp4' });
     cancelMp4Export.mockResolvedValue(undefined);
-    window.framationDesktop = {
+    window.stickmationsDesktop = {
       startMp4Export,
       writeMp4Frame,
       completeMp4Export,
@@ -33,7 +33,7 @@ describe('App MP4 export', () => {
   });
 
   afterEach(() => {
-    delete window.framationDesktop;
+    delete window.stickmationsDesktop;
     TestBed.resetTestingModule();
     vi.clearAllMocks();
   });

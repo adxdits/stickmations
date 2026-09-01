@@ -1,6 +1,6 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
-import { moveJointToward, translateFigure, type StickFigure } from '@framation/engine';
+import { moveJointToward, translateFigure, type StickFigure } from '@stickmations/engine';
 import { LucideFilePlusCorner, LucideUpload } from '@lucide/angular';
 import {
   DEFAULT_BACKGROUND,
