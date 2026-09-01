@@ -1,28 +1,17 @@
+import { spawnSync } from 'node:child_process';
 import { readdir, stat } from 'node:fs/promises';
 import { basename, join } from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { expectedArtifactSuffixes } from './release-artifacts.mjs';
 
 const [platform, architecture] = process.argv.slice(2);
-const expectedExtensions = {
-  mac: ['.dmg', '.zip'],
-  win: ['-setup.exe', '-portable.exe'],
-  linux: ['.AppImage', '.deb'],
-};
-
-if (!(platform in expectedExtensions) || !architecture) {
-  throw new Error(
-    'Usage: npm run verify:release -- <mac|win|linux> <architecture>',
-  );
-}
+const expectedSuffixes = expectedArtifactSuffixes(platform, architecture);
 
 const releaseDirectory = join(process.cwd(), 'release');
 const files = await listFiles(releaseDirectory);
 const releaseFiles = files.map((file) => basename(file));
 
-for (const suffix of expectedExtensions[platform]) {
-  const artifact = releaseFiles.find(
-    (file) => file.includes(`-${architecture}`) && file.endsWith(suffix),
-  );
+for (const suffix of expectedSuffixes) {
+  const artifact = releaseFiles.find((file) => file.endsWith(suffix));
   if (!artifact) {
     throw new Error(
       `Missing ${platform}/${architecture} release artifact ending in ${suffix}.`,
