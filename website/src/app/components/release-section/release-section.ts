@@ -1,11 +1,11 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { LucideDownload, LucideTriangleAlert } from '@lucide/angular';
+import { LucideDownload } from '@lucide/angular';
 import type { DownloadSiteConfig } from '../../download-site.config';
 
 @Component({
   selector: 'app-release-section',
-  imports: [NgOptimizedImage, LucideDownload, LucideTriangleAlert],
+  imports: [NgOptimizedImage, LucideDownload],
   templateUrl: './release-section.html',
   styleUrl: './release-section.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

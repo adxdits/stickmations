@@ -5,18 +5,125 @@
     <p class="description">{{ creator().description }}</p>
   </div>
 
-  <nav aria-label="Adam Almounayar links">
-    <a [href]="creator().linkedinUrl" target="_blank" rel="noopener noreferrer">
-      <span>LinkedIn</span>
-      <svg lucideExternalLink size="18" aria-hidden="true"></svg>
-    </a>
-    <a [href]="creator().githubUrl" target="_blank" rel="noopener noreferrer">
-      <span>GitHub</span>
-      <svg lucideExternalLink size="18" aria-hidden="true"></svg>
-    </a>
-    <a [href]="'mailto:' + creator().email">
-      <span>{{ creator().email }}</span>
-      <svg lucideMail size="18" aria-hidden="true"></svg>
-    </a>
-  </nav>
+  <div class="link-groups">
+    <section aria-labelledby="community-title">
+      <h3 id="community-title" class="link-heading">Community &amp; support</h3>
+      <nav
+        class="link-list community-links"
+        aria-label="Stickmations community and support"
+      >
+        <a
+          [href]="creator().discordUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <svg
+            class="link-icon"
+            lucideMessagesSquare
+            size="18"
+            aria-hidden="true"
+          ></svg>
+          <span class="link-copy">
+            <strong>Join Discord</strong>
+            <small>Chat with the community</small>
+          </span>
+          <svg
+            class="external-icon"
+            lucideExternalLink
+            size="16"
+            aria-hidden="true"
+          ></svg>
+        </a>
+        <a
+          [href]="creator().redditUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <svg
+            class="link-icon"
+            lucideMessageCircle
+            size="18"
+            aria-hidden="true"
+          ></svg>
+          <span class="link-copy">
+            <strong>Reddit community</strong>
+            <small>r/StickmationsOfficial</small>
+          </span>
+          <svg
+            class="external-icon"
+            lucideExternalLink
+            size="16"
+            aria-hidden="true"
+          ></svg>
+        </a>
+        <a
+          [href]="creator().supportUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <svg
+            class="link-icon"
+            lucideCoffee
+            size="18"
+            aria-hidden="true"
+          ></svg>
+          <span class="link-copy">
+            <strong>Support development</strong>
+            <small>Buy Me a Coffee</small>
+          </span>
+          <svg
+            class="external-icon"
+            lucideExternalLink
+            size="16"
+            aria-hidden="true"
+          ></svg>
+        </a>
+        <a
+          [href]="
+            'mailto:' +
+            creator().email +
+            '?subject=Stickmations%20contact%20or%20bug%20report'
+          "
+        >
+          <svg class="link-icon" lucideBug size="18" aria-hidden="true"></svg>
+          <span class="link-copy">
+            <strong>Contact or report a bug</strong>
+            <small>{{ creator().email }}</small>
+          </span>
+        </a>
+      </nav>
+    </section>
+
+    <section aria-labelledby="creator-links-title">
+      <h3 id="creator-links-title" class="link-heading">Find the creator</h3>
+      <nav class="link-list creator-links" aria-label="Adam Almounayar links">
+        <a
+          [href]="creator().linkedinUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="link-copy"><strong>LinkedIn</strong></span>
+          <svg
+            class="external-icon"
+            lucideExternalLink
+            size="16"
+            aria-hidden="true"
+          ></svg>
+        </a>
+        <a
+          [href]="creator().githubUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="link-copy"><strong>GitHub</strong></span>
+          <svg
+            class="external-icon"
+            lucideExternalLink
+            size="16"
+            aria-hidden="true"
+          ></svg>
+        </a>
+      </nav>
+    </section>
+  </div>
 </section>

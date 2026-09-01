@@ -65,11 +65,46 @@ describe('App shell', () => {
     fixture.detectChanges();
     expect(controls?.textContent).toContain('Hide joint controls');
 
-    menu(fixture.nativeElement, 'Help').querySelector<HTMLButtonElement>('button')?.click();
+    const root = fixture.nativeElement as HTMLElement;
+    expect(
+      menu(root, 'Help').querySelector<HTMLAnchorElement>(
+        "a[href='https://stickmations.com/#news']",
+      )?.textContent,
+    ).toContain("What's new");
+    expect(
+      root.querySelector<HTMLAnchorElement>('a[aria-label="What\'s new"]')?.getAttribute('href'),
+    ).toBe('https://stickmations.com/#news');
+    menu(root, 'Help').querySelector<HTMLButtonElement>('button')?.click();
     fixture.detectChanges();
-    const about = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
+    const help = root.querySelector('dialog') as HTMLDialogElement;
+    expect(help.textContent).toContain('Help');
+    expect(help.textContent).toContain('adamalmounayar@hotmail.com');
+    expect(
+      [...help.querySelectorAll<HTMLAnchorElement>('a')].map((link) => link.getAttribute('href')),
+    ).toEqual([
+      'mailto:adamalmounayar@hotmail.com?subject=Stickmations%20contact%20or%20bug%20report',
+      'https://buymeacoffee.com/adxdits',
+    ]);
+    expect(help.classList).toContain('relative');
+    expect(help.classList).toContain('m-0');
+    expect(help.parentElement?.classList).toContain('items-center');
+
+    help.querySelector<HTMLButtonElement>('button[aria-label="Close Help"]')?.click();
+    fixture.detectChanges();
+    menu(root, 'About Us').querySelector<HTMLButtonElement>('button')?.click();
+    fixture.detectChanges();
+    const about = root.querySelector('dialog') as HTMLDialogElement;
     expect(about.textContent).toContain('About Stickmations');
     expect(about.querySelector('img[src*="app_logo_64.png"]')).toBeTruthy();
+    expect(
+      [...about.querySelectorAll<HTMLAnchorElement>('a')].map((link) => link.getAttribute('href')),
+    ).toEqual([
+      'https://discord.gg/5YQTaaC5W',
+      'https://www.reddit.com/r/StickmationsOfficial/',
+      'https://stickmations.com/',
+    ]);
+    expect(root.querySelector('button[aria-label="Help and bug reports"]')).toBeTruthy();
+    expect(root.querySelector('button[aria-label="About Stickmations"]')).toBeTruthy();
   });
 
   it('keeps figure transforms contextual and customizes the workspace', () => {

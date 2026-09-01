@@ -198,7 +198,23 @@
     <details class="editor-menu" name="application-menu">
       <summary>Help</summary>
       <div class="editor-menu-panel w-44">
-        <button type="button" (click)="aboutOpen.set(true); closeMenu($event)">
+        <button type="button" (click)="informationOpen.set('help'); closeMenu($event)">
+          <svg lucideCircleHelp size="13"></svg><span>Help &amp; bug reports</span>
+        </button>
+        <a
+          [href]="links.news"
+          target="_blank"
+          rel="noopener noreferrer"
+          (click)="closeMenu($event)"
+        >
+          <svg lucideNewspaper size="13"></svg><span>What's new</span>
+        </a>
+      </div>
+    </details>
+    <details class="editor-menu" name="application-menu">
+      <summary>About Us</summary>
+      <div class="editor-menu-panel w-44">
+        <button type="button" (click)="informationOpen.set('about'); closeMenu($event)">
           <svg lucideInfo size="13"></svg><span>About Stickmations</span>
         </button>
       </div>
@@ -223,42 +239,34 @@
       (click)="projectSaveRequested.emit()"
     >
       <svg lucideSave size="15"></svg></button
-    ><button type="button" class="menu-bar-icon" aria-label="Settings" title="Settings">
-      <svg lucideSettings2 size="15"></svg>
+    ><a
+      class="menu-bar-icon"
+      aria-label="What's new"
+      title="What's new"
+      [href]="links.news"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <svg lucideNewspaper size="15"></svg></a
+    ><button
+      type="button"
+      class="menu-bar-icon"
+      aria-label="Help and bug reports"
+      title="Help and bug reports"
+      (click)="informationOpen.set('help')"
+    >
+      <svg lucideCircleHelp size="15"></svg></button
+    ><button
+      type="button"
+      class="menu-bar-icon"
+      aria-label="About Stickmations"
+      title="About Stickmations"
+      (click)="informationOpen.set('about')"
+    >
+      <svg lucideInfo size="15"></svg>
     </button>
   </div>
 </header>
-@if (aboutOpen()) {
-  <div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40">
-    <dialog
-      open
-      class="w-80 border border-[#555555] bg-[#2B2B2B] text-[#D6D6D6]"
-      aria-labelledby="about-title"
-      (keydown.escape)="aboutOpen.set(false)"
-    >
-      <header class="flex h-8 items-center border-b border-[#414141] px-2.5">
-        <h2 id="about-title" class="text-[11px] font-semibold">About Stickmations</h2>
-        <button
-          type="button"
-          class="ml-auto flex size-5 items-center justify-center text-[#9A9A9A] hover:text-white"
-          aria-label="Close About"
-          (click)="aboutOpen.set(false)"
-        >
-          <svg lucideX size="13"></svg>
-        </button>
-      </header>
-      <div class="p-4 text-[10px] text-[#9A9A9A]">
-        <div class="mb-2 flex items-center gap-2 text-[#D6D6D6]">
-          <img
-            ngSrc="assets/app_logo_64.png"
-            width="32"
-            height="32"
-            alt=""
-            class="size-8 rounded-[6px] object-cover"
-          /><strong>Stickmations 0.1.0</strong>
-        </div>
-        <p>Desktop stick-figure animation editor.</p>
-      </div>
-    </dialog>
-  </div>
+@if (informationOpen(); as view) {
+  <app-application-info-dialog [view]="view" (closed)="informationOpen.set(null)" />
 }
