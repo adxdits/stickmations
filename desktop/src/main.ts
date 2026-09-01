@@ -16,8 +16,8 @@ const projectSaves = new ProjectSaveManager();
 const externalLinks = new Set([
   'https://discord.gg/5YQTaaC5W',
   'https://www.reddit.com/r/StickmationsOfficial/',
-  'https://stickmations.com/',
-  'https://stickmations.com/#news',
+  'https://adxdits.github.io/stickmations/',
+  'https://adxdits.github.io/stickmations/#news',
   'https://buymeacoffee.com/adxdits',
   'mailto:adamalmounayar@hotmail.com?subject=Stickmations%20contact%20or%20bug%20report',
 ]);

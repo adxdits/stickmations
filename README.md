@@ -66,8 +66,8 @@ macOS and Windows artifacts are currently unsigned, so those operating systems m
 unverified-developer warning until code-signing certificates are configured.
 
 The public website deploys separately through `.github/workflows/deploy-website.yml` whenever
-website files reach `main`. GitHub Pages serves the generated site at `stickmations.com`; the
-repository's Pages settings and DNS records must both use that custom domain.
+website files reach `main`. GitHub Pages serves the generated site for free at
+`https://adxdits.github.io/stickmations/`.
 
 ## Architecture
 

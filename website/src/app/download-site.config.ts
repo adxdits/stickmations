@@ -14,7 +14,6 @@ export interface PlatformRelease {
 export interface DesktopRelease {
   readonly version: string;
   readonly releaseNotesUrl: string;
-  readonly checksumUrl: string;
   readonly platforms: readonly PlatformRelease[];
 }
 
@@ -75,14 +74,13 @@ export const DOWNLOAD_SITE_CONFIG: DownloadSiteConfig = {
   release: {
     version: '0.1.0',
     releaseNotesUrl: RELEASE_URL,
-    checksumUrl: `${RELEASE_DOWNLOAD_URL}/SHA256SUMS.txt`,
     platforms: [
       {
         name: 'Windows',
         requirement: 'Windows 10 or 11 · x64',
         assets: [
           {
-            label: 'Installer',
+            label: 'Install',
             format: 'EXE',
             url: `${RELEASE_DOWNLOAD_URL}/Stickmations-0.1.0-windows-x64-setup.exe`,
             recommended: true,
