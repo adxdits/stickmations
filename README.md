@@ -65,6 +65,10 @@ Run `npm run check` before tagging, then push the tag to start
 macOS and Windows artifacts are currently unsigned, so those operating systems may show an
 unverified-developer warning until code-signing certificates are configured.
 
+The public website deploys separately through `.github/workflows/deploy-website.yml` whenever
+website files reach `main`. GitHub Pages serves the generated site at `stickmations.com`; the
+repository's Pages settings and DNS records must both use that custom domain.
+
 ## Architecture
 
 - `engine/` - Framework-free figure import, domain model, and kinematics.

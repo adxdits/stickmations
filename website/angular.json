@@ -24,7 +24,8 @@
                 "glob": "**/*",
                 "input": "src/assets",
                 "output": "assets"
-              }
+              },
+              "src/CNAME"
             ],
             "styles": ["src/styles.css"]
           },
