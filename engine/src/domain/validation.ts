@@ -59,6 +59,19 @@ export function optionalPositiveNumber(
   return number;
 }
 
+export function optionalBoolean(
+  value: unknown,
+  property: string,
+): boolean | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (typeof value !== 'boolean') {
+    throw new InvalidStickFigureError(`${property} must be true or false.`);
+  }
+  return value;
+}
+
 export function optionalString(
   value: unknown,
   fallback: string,

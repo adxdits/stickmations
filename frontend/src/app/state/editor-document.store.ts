@@ -29,6 +29,7 @@ export class EditorDocumentStore {
   private readonly project = inject(EditorProjectStore);
 
   readonly title = this.document.title;
+  readonly projectName = this.document.projectName;
   readonly animationFrames = this.document.animationFrames;
   readonly importError = this.document.importError;
   readonly currentFrame = this.document.currentFrame;
@@ -54,6 +55,10 @@ export class EditorDocumentStore {
 
   async importFigures(files: readonly File[]): Promise<void> {
     await this.project.importFigures(files);
+  }
+
+  async importProject(file: File): Promise<void> {
+    await this.project.importProject(file);
   }
 
   createBlankProject(): void {

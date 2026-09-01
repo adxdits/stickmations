@@ -23,6 +23,14 @@
           <svg lucideFilePlusCorner size="13"></svg><span>New blank animation</span>
         </button>
         <label
+          ><svg lucideUpload size="13"></svg><span>Import existing project…</span
+          ><input
+            type="file"
+            class="sr-only"
+            accept=".stickmation,application/gzip"
+            (change)="selectProject($event)"
+        /></label>
+        <label
           ><svg lucideUpload size="13"></svg><span>Import stick figures…</span
           ><input
             type="file"
@@ -33,9 +41,20 @@
         /></label>
         <label
           ><svg lucideImage size="13"></svg><span>Import background…</span
-          ><input type="file" class="sr-only" accept="image/*" (change)="selectBackground($event)"
+          ><input
+            type="file"
+            class="sr-only"
+            accept=".png,.jpg,.jpeg,.gif,.webp,.avif,.bmp,.ico"
+            (change)="selectBackground($event)"
         /></label>
         <div class="editor-menu-separator"></div>
+        <button
+          type="button"
+          [disabled]="!canSaveProject()"
+          (click)="projectSaveRequested.emit(); closeMenu($event)"
+        >
+          <svg lucideSave size="13"></svg><span>Save project…</span><kbd>⌘S</kbd>
+        </button>
         <button
           type="button"
           [disabled]="!canExportMp4()"
@@ -195,7 +214,14 @@
       (click)="mp4ExportRequested.emit()"
     >
       <svg lucideDownload size="15"></svg></button
-    ><button type="button" class="menu-bar-icon" aria-label="Save project" title="Save project">
+    ><button
+      type="button"
+      class="menu-bar-icon"
+      aria-label="Save project"
+      title="Save project"
+      [disabled]="!canSaveProject()"
+      (click)="projectSaveRequested.emit()"
+    >
       <svg lucideSave size="15"></svg></button
     ><button type="button" class="menu-bar-icon" aria-label="Settings" title="Settings">
       <svg lucideSettings2 size="15"></svg>

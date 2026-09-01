@@ -2,6 +2,7 @@ import { app, BrowserWindow } from 'electron';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Mp4ExportManager } from './mp4-export.js';
+import { ProjectSaveManager } from './project-save.js';
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 const developmentServerUrl = process.env['FRAMATION_DEV_SERVER_URL'];
@@ -11,6 +12,7 @@ const appIcon = app.isPackaged
   ? join(process.resourcesPath, 'branding/icon.png')
   : join(currentDirectory, '../../build/icon.png');
 const mp4Exports = new Mp4ExportManager();
+const projectSaves = new ProjectSaveManager();
 
 app.setName(appName);
 app.setAppUserModelId(appId);
@@ -41,10 +43,16 @@ function createWindow(): void {
   }
 
   const senderId = window.webContents.id;
-  window.on('closed', () => void mp4Exports.cancelForSender(senderId));
+  window.on('closed', () => {
+    void Promise.all([
+      mp4Exports.cancelForSender(senderId),
+      projectSaves.cancelForSender(senderId),
+    ]);
+  });
 }
 
 mp4Exports.register();
+projectSaves.register();
 await app.whenReady();
 app.dock?.setIcon(appIcon);
 createWindow();
@@ -61,4 +69,6 @@ app.on('window-all-closed', () => {
   }
 });
 
-app.on('before-quit', () => void mp4Exports.dispose());
+app.on('before-quit', () => {
+  void Promise.all([mp4Exports.dispose(), projectSaves.dispose()]);
+});

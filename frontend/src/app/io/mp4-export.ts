@@ -1,6 +1,7 @@
 import { computed, inject, Injectable, InjectionToken, signal } from '@angular/core';
 import type { SceneFrame } from '../domain/scene-frame';
 import { renderVideoFramePng } from '../rendering/video-frame-renderer';
+import type { FramationDesktopApi } from './desktop-api';
 
 export type Mp4ExportPhase = 'idle' | 'preparing' | 'rendering' | 'encoding' | 'complete' | 'error';
 
@@ -10,28 +11,6 @@ export interface Mp4ExportState {
   readonly totalFrames: number;
   readonly outputPath: string | null;
   readonly error: string | null;
-}
-
-interface StartMp4ExportOptions {
-  readonly suggestedName: string;
-  readonly fps: number;
-  readonly frameCount: number;
-}
-
-type StartMp4ExportResult =
-  Readonly<{ status: 'ready'; sessionId: string }> | Readonly<{ status: 'cancelled' }>;
-
-interface FramationDesktopApi {
-  startMp4Export(options: StartMp4ExportOptions): Promise<StartMp4ExportResult>;
-  writeMp4Frame(sessionId: string, frame: Uint8Array): Promise<void>;
-  completeMp4Export(sessionId: string): Promise<Readonly<{ path: string }>>;
-  cancelMp4Export(sessionId: string): Promise<void>;
-}
-
-declare global {
-  interface Window {
-    framationDesktop?: FramationDesktopApi;
-  }
 }
 
 const IDLE_STATE: Mp4ExportState = {

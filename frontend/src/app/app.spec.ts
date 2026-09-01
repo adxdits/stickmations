@@ -33,7 +33,7 @@ describe('App shell', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    const input = compiled.querySelector<HTMLInputElement>('input[type="file"]');
+    const input = compiled.querySelector<HTMLInputElement>('input[type="file"][multiple]');
 
     expect(input).toBeTruthy();
     expect(input?.accept).toContain('.nodes');
