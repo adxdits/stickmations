@@ -1,6 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import type { StickmationsDesktopApi, StartProjectSaveResult } from './desktop-api';
+import type { StartProjectSaveResult, StickmationsDesktopApi } from './desktop-api';
 import { PROJECT_FILE_EXTENSION, serializeProjectFile, type ProjectSnapshot } from './project-file';
 
 export type ProjectSavePhase = 'idle' | 'saving' | 'complete' | 'error';
