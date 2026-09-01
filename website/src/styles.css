@@ -1,0 +1,26 @@
+@import "@fontsource/jetbrains-mono/400.css";
+
+:root {
+  color-scheme: dark;
+  background: #111315;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  min-width: 320px;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}

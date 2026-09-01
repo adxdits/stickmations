@@ -1,6 +1,8 @@
 # Frontend architecture
 
 The Angular editor is organized by ownership under `frontend/src/app`:
+The public download site is a separate Angular workspace under `website/` and does not
+participate in the editor's dependency graph.
 
 ```text
 app/

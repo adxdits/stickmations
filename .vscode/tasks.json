@@ -1,22 +1,30 @@
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "Stickmations: Dev",
-      "type": "shell",
-      "command": "source \"$HOME/.nvm/nvm.sh\" && nvm use 22.12.0 && npm run dev",
-      "isBackground": true,
-      "problemMatcher": []
-    },
-    {
-      "label": "Stickmations: Check",
-      "type": "npm",
-      "script": "check",
-      "group": {
-        "kind": "test",
-        "isDefault": true
-      },
-      "problemMatcher": []
-    }
-  ]
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Stickmations: Dev",
+			"type": "shell",
+			"command": "source \"$HOME/.nvm/nvm.sh\" && nvm use 22.12.0 && npm run dev",
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Stickmations: Check",
+			"type": "npm",
+			"script": "check",
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Stickmations: Website",
+			"type": "shell",
+			"command": "source \"$HOME/.nvm/nvm.sh\" && nvm use 22.12.0 && npm run start --workspace @framation/website -- --port 4300",
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
 }

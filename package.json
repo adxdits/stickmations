@@ -8,13 +8,15 @@
   "workspaces": [
     "engine",
     "desktop",
-    "frontend"
+    "frontend",
+    "website"
   ],
   "scripts": {
     "dev": "npm run build --workspace @framation/engine && concurrently --kill-others-on-fail --names engine,frontend,desktop \"npm run watch --workspace @framation/engine\" \"npm run start --workspace @framation/frontend\" \"npm run dev --workspace @framation/desktop\"",
+    "dev:website": "npm run start --workspace @framation/website",
     "start": "npm run build && npm run launch --workspace @framation/desktop",
     "build": "npm run build --workspaces --if-present",
-    "test": "npm run test --workspace @framation/engine && npm run test --workspace @framation/frontend -- --watch=false",
+    "test": "npm run test --workspace @framation/engine && npm run test --workspace @framation/frontend -- --watch=false && npm run test --workspace @framation/website -- --watch=false",
     "typecheck": "npm run typecheck --workspace @framation/engine && npm run typecheck --workspace @framation/desktop",
     "check": "npm run build && npm run test && npm run typecheck",
     "pack": "npm run build && electron-builder --dir",

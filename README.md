@@ -25,16 +25,22 @@ npm run dev
 ```
 
 This starts the Angular development server and opens it in Electron. Use
-`npm start` to build both workspaces and launch the production build.
+`npm start` to build all workspaces and launch the production desktop build.
+The public website has its own development server:
+
+```bash
+npm run dev:website
+```
 
 Useful commands:
 
-| Command             | Purpose                                    |
-| ------------------- | ------------------------------------------ |
-| `npm run build`     | Build the engine, Electron and Angular     |
-| `npm test`          | Run engine and Angular unit tests once     |
-| `npm run typecheck` | Type-check the engine and Electron sources |
-| `npm run check`     | Build, test and type-check every workspace |
+| Command               | Purpose                                     |
+| --------------------- | ------------------------------------------- |
+| `npm run dev:website` | Serve only the public download website      |
+| `npm run build`       | Build every workspace                       |
+| `npm test`            | Run engine, editor, and website tests once  |
+| `npm run typecheck`   | Type-check the engine and Electron sources  |
+| `npm run check`       | Build, test, and type-check every workspace |
 
 VS Code recommends the Angular, EditorConfig, ESLint, and Prettier
 extensions. Run the `Stickmations: Dev` or `Stickmations: Check` task from the Command
@@ -43,14 +49,12 @@ Palette for the same workflows.
 ## Architecture
 
 - `engine/` - Framework-free figure import, domain model, and kinematics.
-- `frontend/src/app/` - Angular editor core and SVG figure preview loaded by Electron.
-- `frontend/src/website/download-site/` - Public download page loaded in a normal browser.
-- `frontend/src/website/components/` - Shared sections used by the download page.
+- `frontend/` - Angular editor application loaded by Electron.
+- `website/` - Independent Angular application for the public download website.
 - `desktop/` - Electron main process and isolated preload boundary.
 
-The frontend bootstrap chooses between the editor core and download website by
-checking for the isolated Electron preload bridge. This keeps the public site
-separate without duplicating the Angular workspace or brand assets.
+The editor and public website have separate entry points, Angular configuration,
+dependencies, assets, builds, and tests. Neither application imports the other.
 
 Dependencies point inward: `engine/` knows nothing about Angular or Electron.
 See [Frontend architecture](docs/frontend-architecture.md) for the editor's feature, state,
