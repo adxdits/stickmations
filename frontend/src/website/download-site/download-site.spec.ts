@@ -31,6 +31,9 @@ describe('DownloadSite', () => {
     expect(root.textContent).toContain('Both editions import stick figures from .nodes files.');
     expect(root.querySelector('img[src*="editor_preview.webp"]')).toBeTruthy();
 
+    expect(root.querySelector('#features-title')?.textContent).toBe('Features');
+    expect(root.querySelector('#about-title')?.textContent).toBe('About');
+
     const resources = [...root.querySelectorAll<HTMLAnchorElement>('.resource-link')];
     expect(resources.map(({ href }) => href)).toEqual([
       'https://sticknodes.com/stickfigures/',
