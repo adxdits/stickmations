@@ -13,7 +13,7 @@
 }
 
 h2 {
-  margin: 0 0 var(--space-5);
+  margin: 0;
   color: var(--site-ink);
   font-size: var(--type-heading);
   font-variation-settings: "wdth" 108;
@@ -40,61 +40,59 @@ h2 {
   height: auto;
 }
 
-.editions {
-  border-top: 1px solid var(--site-line-strong);
-}
-
-.editions article {
-  display: grid;
-  min-height: 76px;
-  border-bottom: 1px solid var(--site-line);
-  align-items: center;
-  grid-template-columns: 1fr auto;
+.release-heading {
+  display: flex;
+  margin-bottom: var(--space-5);
+  align-items: end;
+  justify-content: space-between;
   gap: var(--space-4);
 }
 
-.editions h3 {
-  margin: 0;
-  color: var(--site-ink);
-  font-size: var(--type-subheading);
-}
-
-.edition-copy {
-  display: flex;
-  align-items: flex-start;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.edition-heading {
-  display: flex;
-  align-items: baseline;
-}
-
-.edition-heading {
-  gap: var(--space-3);
-  flex-wrap: wrap;
-}
-
-.edition-status {
-  margin: 0;
+.release-heading p,
+.platform-copy p {
+  margin: var(--space-1) 0 0;
   color: var(--site-muted);
   font-family: var(--font-code);
   font-size: var(--type-label);
 }
 
-.edition-action {
-  display: flex;
-  align-items: flex-end;
-  flex-direction: column;
+.release-heading a,
+.release-links a {
+  color: var(--site-ink);
+  font-size: var(--type-label);
+}
+
+.platforms {
+  border-top: 1px solid var(--site-line-strong);
+}
+
+.platform-release {
+  display: grid;
+  min-height: 96px;
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--site-line);
+  align-items: start;
+  grid-template-columns: minmax(100px, 0.35fr) minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+.platform-release h3 {
+  margin: 0;
+  color: var(--site-ink);
+  font-size: var(--type-subheading);
+}
+
+.download-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-2);
 }
 
 .download-button {
   display: inline-flex;
-  min-width: 180px;
-  min-height: var(--control-height);
-  padding-inline: var(--space-4);
+  min-width: 0;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--site-action-border);
   border-radius: var(--radius-small);
   background: var(--site-action);
@@ -106,17 +104,68 @@ h2 {
   text-decoration: none;
 }
 
+.download-button span {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.download-button strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.download-button small {
+  font-family: var(--font-code);
+  font-size: var(--type-label);
+  white-space: nowrap;
+}
+
+.download-button-secondary {
+  border-color: var(--site-line-strong);
+  background: var(--site-surface-raised);
+  color: var(--site-ink);
+}
+
 .download-button:hover,
 .download-button:focus-visible {
   border-color: var(--site-action-hover);
   background: var(--site-action-hover);
 }
 
-.download-button:disabled {
-  border-color: var(--site-disabled-border);
-  background: var(--site-disabled);
-  color: var(--site-disabled-text);
-  cursor: not-allowed;
+.release-links,
+.pro-release {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--type-label);
+}
+
+.release-links {
+  margin-top: var(--space-3);
+  color: var(--site-muted);
+}
+
+.pro-release {
+  margin-top: var(--space-5);
+  padding: var(--space-3);
+  border: 1px solid var(--site-line);
+  background: var(--site-surface-raised);
+}
+
+.pro-release strong {
+  color: var(--site-ink);
+  font-size: var(--type-small);
+}
+
+.pro-release span {
+  color: var(--site-muted);
+  font-family: var(--font-code);
 }
 
 .import-note {
@@ -150,18 +199,12 @@ h2 {
 }
 
 @media (max-width: 420px) {
-  .editions article {
-    padding-block: var(--space-4);
-    align-items: stretch;
+  .platform-release {
     grid-template-columns: 1fr;
   }
 
-  .download-button {
-    width: 100%;
-  }
-
-  .edition-action {
-    align-items: stretch;
+  .download-actions {
+    grid-template-columns: 1fr;
   }
 }
 

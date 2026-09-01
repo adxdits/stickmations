@@ -20,46 +20,68 @@
   </figure>
 
   <div class="download-options">
-    <h2 id="download-title">Choose your edition</h2>
+    <div class="release-heading">
+      <div>
+        <h2 id="download-title">Download Stickmations</h2>
+        <p>Version {{ config().release.version }}</p>
+      </div>
+      <a
+        [href]="config().release.releaseNotesUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        >Release notes</a
+      >
+    </div>
 
-    <div class="editions">
-      @for (edition of config().editions; track edition.name) {
-      <article>
-        <div class="edition-copy">
-          <div class="edition-heading">
-            <h3>{{ edition.name }}</h3>
-            @if (edition.status; as status) {
-            <p class="edition-status">{{ status }}</p>
-            }
-          </div>
-          @if (!edition.url && !edition.status) {
-          <p class="edition-status">Download link coming soon</p>
-          }
+    <div class="platforms">
+      @for (platform of config().release.platforms; track platform.name) {
+      <section
+        class="platform-release"
+        [attr.aria-labelledby]="'platform-' + $index"
+      >
+        <div class="platform-copy">
+          <h3 [id]="'platform-' + $index">{{ platform.name }}</h3>
+          <p>{{ platform.requirement }}</p>
         </div>
-        <div class="edition-action">
-          @if (edition.url; as downloadUrl) {
-          <a class="download-button" [href]="downloadUrl">
-            <svg lucideDownload size="18" aria-hidden="true"></svg>
-            {{ edition.actionLabel }}
-          </a>
-          } @else {
-          <button
+        <div class="download-actions">
+          @for (asset of platform.assets; track asset.url) {
+          <a
             class="download-button"
-            type="button"
-            disabled
-            [title]="edition.status ?? 'Download link coming soon'"
+            [class.download-button-secondary]="!asset.recommended"
+            [href]="asset.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            [attr.aria-label]="'Download ' + platform.name + ' ' + asset.label + ' ' + asset.format"
           >
-            <svg lucideDownload size="18" aria-hidden="true"></svg>
-            {{ edition.actionLabel }}
-          </button>
+            <svg lucideDownload size="16" aria-hidden="true"></svg>
+            <span>
+              <strong>{{ asset.label }}</strong>
+              <small>{{ asset.format }}</small>
+            </span>
+          </a>
           }
         </div>
-      </article>
+      </section>
       }
     </div>
 
+    <div class="release-links">
+      <a
+        [href]="config().release.checksumUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        >SHA-256 checksums</a
+      >
+      <span>Unsigned preview release</span>
+    </div>
+
+    <div class="pro-release">
+      <strong>Stickmations Pro</strong>
+      <span>{{ config().proStatus }}</span>
+    </div>
+
     <p class="import-note">
-      Both editions import stick figures from <code>.nodes</code> files.
+      Stickmations imports stick figures from <code>.nodes</code> files.
     </p>
   </div>
 </section>

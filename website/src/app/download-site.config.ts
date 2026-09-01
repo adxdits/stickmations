@@ -1,8 +1,21 @@
-export interface DownloadEdition {
+export interface ReleaseAsset {
+  readonly label: string;
+  readonly format: string;
+  readonly url: string;
+  readonly recommended?: boolean;
+}
+
+export interface PlatformRelease {
   readonly name: string;
-  readonly status?: string;
-  readonly actionLabel: string;
-  readonly url: string | null;
+  readonly requirement: string;
+  readonly assets: readonly ReleaseAsset[];
+}
+
+export interface DesktopRelease {
+  readonly version: string;
+  readonly releaseNotesUrl: string;
+  readonly checksumUrl: string;
+  readonly platforms: readonly PlatformRelease[];
 }
 
 export interface SiteFeature {
@@ -37,12 +50,18 @@ export interface CreatorProfile {
 export interface DownloadSiteConfig {
   readonly productName: string;
   readonly news: SiteNews;
-  readonly editions: readonly DownloadEdition[];
+  readonly release: DesktopRelease;
+  readonly proStatus: string;
   readonly features: readonly SiteFeature[];
   readonly figureResources: readonly FigureResource[];
   readonly creator: CreatorProfile;
   readonly copyright: string;
 }
+
+const RELEASE_URL =
+  'https://github.com/adxdits/stickmations/releases/tag/v0.1.0';
+const RELEASE_DOWNLOAD_URL =
+  'https://github.com/adxdits/stickmations/releases/download/v0.1.0';
 
 export const DOWNLOAD_SITE_CONFIG: DownloadSiteConfig = {
   productName: 'Stickmations',
@@ -53,19 +72,76 @@ export const DOWNLOAD_SITE_CONFIG: DownloadSiteConfig = {
     publishedAt: '2026-09-01',
     publishedLabel: 'September 2026',
   },
-  editions: [
-    {
-      name: 'Stickmations',
-      actionLabel: 'Download',
-      url: null,
-    },
-    {
-      name: 'Pro',
-      status: 'Release soon',
-      actionLabel: 'Download Pro',
-      url: null,
-    },
-  ],
+  release: {
+    version: '0.1.0',
+    releaseNotesUrl: RELEASE_URL,
+    checksumUrl: `${RELEASE_DOWNLOAD_URL}/SHA256SUMS.txt`,
+    platforms: [
+      {
+        name: 'Windows',
+        requirement: 'Windows 10 or 11 · x64',
+        assets: [
+          {
+            label: 'Installer',
+            format: 'EXE',
+            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-0.1.0-windows-x64-setup.exe`,
+            recommended: true,
+          },
+          {
+            label: 'Portable',
+            format: 'EXE',
+            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-0.1.0-windows-x64-portable.exe`,
+          },
+        ],
+      },
+      {
+        name: 'macOS',
+        requirement: 'Apple Silicon or Intel',
+        assets: [
+          {
+            label: 'Apple Silicon',
+            format: 'DMG',
+            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-0.1.0-mac-arm64.dmg`,
+            recommended: true,
+          },
+          {
+            label: 'Apple Silicon',
+            format: 'ZIP',
+            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-0.1.0-mac-arm64.zip`,
+          },
+          {
+            label: 'Intel',
+            format: 'DMG',
+            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-0.1.0-mac-x64.dmg`,
+            recommended: true,
+          },
+          {
+            label: 'Intel',
+            format: 'ZIP',
+            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-0.1.0-mac-x64.zip`,
+          },
+        ],
+      },
+      {
+        name: 'Linux',
+        requirement: 'x64',
+        assets: [
+          {
+            label: 'AppImage',
+            format: 'Universal',
+            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-0.1.0-linux-x86_64.AppImage`,
+            recommended: true,
+          },
+          {
+            label: 'Debian / Ubuntu',
+            format: 'DEB',
+            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-0.1.0-linux-amd64.deb`,
+          },
+        ],
+      },
+    ],
+  },
+  proStatus: 'Release soon',
   features: [
     {
       title: 'Frame-by-frame editing',
