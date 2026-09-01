@@ -58,9 +58,9 @@ export interface DownloadSiteConfig {
 }
 
 const RELEASE_URL =
-  'https://github.com/adxdits/stickmations/releases/tag/v0.1.0';
+  'https://github.com/adxdits/stickmations_opensource/releases/tag/v0.1.0';
 const RELEASE_DOWNLOAD_URL =
-  'https://github.com/adxdits/stickmations/releases/download/v0.1.0';
+  'https://github.com/adxdits/stickmations_opensource/releases/download/v0.1.0';
 
 export const DOWNLOAD_SITE_CONFIG: DownloadSiteConfig = {
   productName: 'Stickmations',
