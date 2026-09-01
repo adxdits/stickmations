@@ -13,8 +13,9 @@ describe('DownloadSite', () => {
     const fixture = TestBed.createComponent(DownloadSite);
     await fixture.whenStable();
     const root = fixture.nativeElement as HTMLElement;
-    const downloads =
-      root.querySelectorAll<HTMLButtonElement>('.download-button');
+    const downloads = [
+      ...root.querySelectorAll<HTMLAnchorElement>('.download-button'),
+    ];
 
     expect(root.querySelector('h1')?.textContent).toContain('Stickmations');
     const news = root.querySelector<HTMLElement>('#news');
@@ -25,25 +26,29 @@ describe('DownloadSite', () => {
     expect(news?.querySelector('time')?.getAttribute('datetime')).toBe(
       '2026-09-01',
     );
-    expect(downloads).toHaveLength(2);
-    expect(
-      [...downloads].map(({ textContent }) => textContent?.trim()),
-    ).toEqual(['Download', 'Download Pro']);
-    expect([...downloads].every(({ disabled }) => disabled)).toBe(true);
-    const editions = [
-      ...root.querySelectorAll<HTMLElement>('.editions article'),
-    ];
-    expect(editions.map(({ textContent }) => textContent)).toEqual([
-      expect.stringContaining('Stickmations'),
-      expect.stringContaining('Pro'),
+    expect(downloads.map(({ href }) => href)).toEqual([
+      'https://github.com/adxdits/stickmations/releases/download/v0.1.0/Stickmations-0.1.0-windows-x64-setup.exe',
+      'https://github.com/adxdits/stickmations/releases/download/v0.1.0/Stickmations-0.1.0-windows-x64-portable.exe',
+      'https://github.com/adxdits/stickmations/releases/download/v0.1.0/Stickmations-0.1.0-mac-arm64.dmg',
+      'https://github.com/adxdits/stickmations/releases/download/v0.1.0/Stickmations-0.1.0-mac-arm64.zip',
+      'https://github.com/adxdits/stickmations/releases/download/v0.1.0/Stickmations-0.1.0-mac-x64.dmg',
+      'https://github.com/adxdits/stickmations/releases/download/v0.1.0/Stickmations-0.1.0-mac-x64.zip',
+      'https://github.com/adxdits/stickmations/releases/download/v0.1.0/Stickmations-0.1.0-linux-x86_64.AppImage',
+      'https://github.com/adxdits/stickmations/releases/download/v0.1.0/Stickmations-0.1.0-linux-amd64.deb',
     ]);
-    expect(editions[0]?.textContent).toContain('Download link coming soon');
-    expect(editions[1]?.textContent).toContain('Release soon');
+    expect(
+      [...root.querySelectorAll<HTMLElement>('.platform-release h3')].map(
+        ({ textContent }) => textContent,
+      ),
+    ).toEqual(['Windows', 'macOS', 'Linux']);
+    expect(root.querySelector('.pro-release')?.textContent).toContain(
+      'Release soon',
+    );
     expect(root.querySelector('.edition-price')).toBeNull();
     expect(root.textContent).not.toContain('Lite');
     expect(root.textContent).not.toContain('$4.99');
     expect(root.textContent).toContain(
-      'Both editions import stick figures from .nodes files.',
+      'Stickmations imports stick figures from .nodes files.',
     );
     expect(root.querySelector('img[src*="editor_preview.webp"]')).toBeTruthy();
 
