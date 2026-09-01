@@ -1,4 +1,4 @@
-@import '@fontsource-variable/archivo';
+@import "@fontsource-variable/archivo";
 
 :host {
   --site-paper: #111315;
@@ -17,12 +17,10 @@
   --site-disabled: #292d30;
   --site-disabled-border: #41474c;
   --site-disabled-text: #9aa1a5;
-  --site-warning: #e0be77;
-  --site-warning-border: #655639;
-  --site-warning-surface: #2a251b;
-  --site-shadow: 0 24px 70px color-mix(in srgb, var(--site-hero-shade) 55%, transparent);
-  --font-display: 'Archivo Variable', sans-serif;
-  --font-code: 'JetBrains Mono', monospace;
+  --site-shadow: 0 24px 70px
+    color-mix(in srgb, var(--site-hero-shade) 55%, transparent);
+  --font-display: "Archivo Variable", sans-serif;
+  --font-code: "JetBrains Mono", monospace;
   --type-display: 5.5rem;
   --type-heading: 3.25rem;
   --type-section-title: 1.5rem;

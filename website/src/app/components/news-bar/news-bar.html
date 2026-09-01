@@ -1,0 +1,11 @@
+<section id="news" class="news-bar" aria-labelledby="news-title">
+  <div class="news-label">
+    <svg lucideNewspaper size="17" aria-hidden="true"></svg>
+    <span>What's new</span>
+  </div>
+  <div class="news-copy">
+    <strong id="news-title">{{ news().title }}</strong>
+    <span>{{ news().description }}</span>
+  </div>
+  <time [attr.datetime]="news().publishedAt">{{ news().publishedLabel }}</time>
+</section>

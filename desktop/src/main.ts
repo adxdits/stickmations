@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, shell } from 'electron';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Mp4ExportManager } from './mp4-export.js';
@@ -13,6 +13,14 @@ const appIcon = app.isPackaged
   : join(currentDirectory, '../../build/icon.png');
 const mp4Exports = new Mp4ExportManager();
 const projectSaves = new ProjectSaveManager();
+const externalLinks = new Set([
+  'https://discord.gg/5YQTaaC5W',
+  'https://www.reddit.com/r/StickmationsOfficial/',
+  'https://stickmations.com/',
+  'https://stickmations.com/#news',
+  'https://buymeacoffee.com/adxdits',
+  'mailto:adamalmounayar@hotmail.com?subject=Stickmations%20contact%20or%20bug%20report',
+]);
 
 app.setName(appName);
 app.setAppUserModelId(appId);
@@ -32,6 +40,13 @@ function createWindow(): void {
       sandbox: true,
       preload: join(currentDirectory, 'preload.cjs'),
     },
+  });
+
+  window.webContents.setWindowOpenHandler(({ url }) => {
+    if (externalLinks.has(url)) {
+      void shell.openExternal(url);
+    }
+    return { action: 'deny' };
   });
 
   if (developmentServerUrl) {

@@ -1,0 +1,106 @@
+<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+  <dialog
+    open
+    class="relative m-0 flex max-h-[calc(100vh-2rem)] w-full max-w-[420px] flex-col overflow-hidden border border-[#555555] bg-[#2B2B2B] p-0 text-[#D6D6D6] shadow-xl"
+    aria-labelledby="application-info-title"
+    aria-modal="true"
+    (keydown.escape)="closed.emit()"
+  >
+    <header class="flex h-9 shrink-0 items-center border-b border-[#414141] px-3">
+      @if (view() === 'help') {
+        <svg lucideCircleHelp size="15" class="mr-2 text-[#9FC5E0]" aria-hidden="true"></svg>
+      } @else {
+        <svg lucideInfo size="15" class="mr-2 text-[#9FC5E0]" aria-hidden="true"></svg>
+      }
+      <h2 id="application-info-title" class="text-[11px] font-semibold">
+        {{ view() === 'help' ? 'Help' : 'About Stickmations' }}
+      </h2>
+      <button
+        type="button"
+        class="ml-auto flex size-6 items-center justify-center text-[#9A9A9A] hover:text-white"
+        [attr.aria-label]="view() === 'help' ? 'Close Help' : 'Close About Us'"
+        (click)="closed.emit()"
+      >
+        <svg lucideX size="14"></svg>
+      </button>
+    </header>
+
+    <div class="min-h-0 overflow-y-auto p-4 text-[10px] text-[#9A9A9A]">
+      @if (view() === 'help') {
+        <p class="leading-4">Found a problem or need to contact the developer?</p>
+        <nav class="mt-3 border-t border-[#414141]" aria-label="Stickmations help">
+          <a
+            class="flex min-h-12 items-center gap-2 border-b border-[#414141] px-2 hover:bg-[#343434] hover:text-white"
+            [href]="links.bugReport"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <svg lucideBug size="15" aria-hidden="true"></svg>
+            <span class="min-w-0 flex-1">
+              <strong class="block font-medium text-[#D6D6D6]">Contact or report a bug</strong>
+              <small class="block break-all text-[9px]">{{ links.email }}</small>
+            </span>
+          </a>
+          <a
+            class="flex min-h-10 items-center gap-2 border-b border-[#414141] px-2 hover:bg-[#343434] hover:text-white"
+            [href]="links.development"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <svg lucideCoffee size="15" aria-hidden="true"></svg>
+            <span class="min-w-0 flex-1">Support development</span>
+            <svg lucideExternalLink size="12" aria-hidden="true"></svg>
+          </a>
+        </nav>
+      } @else {
+        <div class="flex items-center gap-2 text-[#D6D6D6]">
+          <img
+            ngSrc="assets/app_logo_64.png"
+            width="32"
+            height="32"
+            alt=""
+            class="size-8 rounded-[6px] object-cover"
+          />
+          <div>
+            <strong class="block">Stickmations 0.1.0</strong>
+            <span class="text-[9px]">Desktop stick-figure animation editor</span>
+          </div>
+        </div>
+
+        <h3 class="mt-4 text-[10px] font-semibold text-[#D6D6D6]">Community</h3>
+        <nav class="mt-1 border-t border-[#414141]" aria-label="Stickmations community">
+          <a
+            class="flex min-h-10 items-center gap-2 border-b border-[#414141] px-2 hover:bg-[#343434] hover:text-white"
+            [href]="links.discord"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <svg lucideMessagesSquare size="15" aria-hidden="true"></svg>
+            <span class="min-w-0 flex-1">Join Discord</span>
+            <svg lucideExternalLink size="12" aria-hidden="true"></svg>
+          </a>
+          <a
+            class="flex min-h-10 items-center gap-2 border-b border-[#414141] px-2 hover:bg-[#343434] hover:text-white"
+            [href]="links.reddit"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <svg lucideMessageCircle size="15" aria-hidden="true"></svg>
+            <span class="min-w-0 flex-1">Reddit community</span>
+            <svg lucideExternalLink size="12" aria-hidden="true"></svg>
+          </a>
+          <a
+            class="flex min-h-10 items-center gap-2 border-b border-[#414141] px-2 hover:bg-[#343434] hover:text-white"
+            [href]="links.website"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <svg lucideGlobe size="15" aria-hidden="true"></svg>
+            <span class="min-w-0 flex-1">stickmations.com</span>
+            <svg lucideExternalLink size="12" aria-hidden="true"></svg>
+          </a>
+        </nav>
+      }
+    </div>
+  </dialog>
+</div>

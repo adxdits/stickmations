@@ -108,6 +108,7 @@ select:focus-visible,
 }
 
 .editor-menu-panel > button,
+.editor-menu-panel > a,
 .editor-menu-panel > label {
   display: flex;
   width: 100%;
@@ -118,9 +119,11 @@ select:focus-visible,
   padding: 0 7px;
   color: #d0d0d0;
   text-align: left;
+  text-decoration: none;
 }
 
 .editor-menu-panel > button:hover:not(:disabled),
+.editor-menu-panel > a:hover,
 .editor-menu-panel > label:hover {
   background: #4a5c6b;
   color: #ffffff;

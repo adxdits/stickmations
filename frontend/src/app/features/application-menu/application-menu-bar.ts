@@ -5,6 +5,7 @@ import {
   LucideCamera,
   LucideChevronLeft,
   LucideChevronRight,
+  LucideCircleHelp,
   LucideCopyPlus,
   LucideDownload,
   LucideFilePlusCorner,
@@ -12,9 +13,9 @@ import {
   LucideImage,
   LucideInfo,
   LucideMaximize2,
+  LucideNewspaper,
   LucideRedo2,
   LucideSave,
-  LucideSettings2,
   LucideUndo2,
   LucideUpload,
   LucideX,
@@ -22,16 +23,20 @@ import {
   LucideZoomOut,
 } from '@lucide/angular';
 import type { ControlMode, PanOffset } from '../../shared/editor-types';
+import { SUPPORT_LINKS } from '../../shared/support-links';
 import { EditorWorkspaceStore, type WorkspacePanel } from '../../state/editor-workspace.store';
+import { ApplicationInfoDialog, type ApplicationInfoView } from './application-info-dialog';
 
 @Component({
   selector: 'app-application-menu-bar',
   imports: [
+    ApplicationInfoDialog,
     NgOptimizedImage,
     LucideBone,
     LucideCamera,
     LucideChevronLeft,
     LucideChevronRight,
+    LucideCircleHelp,
     LucideCopyPlus,
     LucideDownload,
     LucideFilePlusCorner,
@@ -39,9 +44,9 @@ import { EditorWorkspaceStore, type WorkspacePanel } from '../../state/editor-wo
     LucideImage,
     LucideInfo,
     LucideMaximize2,
+    LucideNewspaper,
     LucideRedo2,
     LucideSave,
-    LucideSettings2,
     LucideUndo2,
     LucideUpload,
     LucideX,
@@ -53,6 +58,7 @@ import { EditorWorkspaceStore, type WorkspacePanel } from '../../state/editor-wo
 })
 export class ApplicationMenuBar {
   protected readonly workspace = inject(EditorWorkspaceStore);
+  protected readonly links = SUPPORT_LINKS;
   readonly title = input.required<string>();
   readonly projectName = input.required<string>();
   readonly controlMode = input.required<ControlMode>();
@@ -83,7 +89,7 @@ export class ApplicationMenuBar {
   readonly nextFrame = output<void>();
   readonly projectSaveRequested = output<void>();
   readonly mp4ExportRequested = output<void>();
-  protected readonly aboutOpen = signal(false);
+  protected readonly informationOpen = signal<ApplicationInfoView | null>(null);
 
   protected togglePanel(panel: WorkspacePanel, event: Event): void {
     this.workspace.toggle(panel);

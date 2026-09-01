@@ -1,7 +1,14 @@
-<section id="download" class="download-section" aria-labelledby="download-title">
+<section
+  id="download"
+  class="download-section"
+  aria-labelledby="download-title"
+>
   <figure class="product-preview">
     <picture>
-      <source media="(max-width: 600px)" srcset="assets/editor_preview_600.webp" />
+      <source
+        media="(max-width: 600px)"
+        srcset="assets/editor_preview_600.webp"
+      />
       <img
         ngSrc="assets/editor_preview.webp"
         width="1600"
@@ -17,41 +24,42 @@
 
     <div class="editions">
       @for (edition of config().editions; track edition.name) {
-        <article>
-          <div class="edition-copy">
-            <div class="edition-heading">
-              <h3>{{ edition.name }}</h3>
-              <p class="edition-price">
-                <strong>{{ edition.price }}</strong>
-                @if (edition.billingPeriod; as billingPeriod) {
-                  <span>{{ billingPeriod }}</span>
-                }
-              </p>
-            </div>
-            @if (edition.limitation; as limitation) {
-              <p class="edition-warning">
-                <svg lucideTriangleAlert size="14" aria-hidden="true"></svg>
-                <span>{{ limitation }}</span>
-              </p>
+      <article>
+        <div class="edition-copy">
+          <div class="edition-heading">
+            <h3>{{ edition.name }}</h3>
+            @if (edition.status; as status) {
+            <p class="edition-status">{{ status }}</p>
             }
           </div>
-          <div class="edition-action">
-            @if (edition.available && edition.url; as downloadUrl) {
-              <a class="download-button" [href]="downloadUrl">
-                <svg lucideDownload size="18" aria-hidden="true"></svg>
-                {{ edition.actionLabel }}
-              </a>
-            } @else {
-              <button class="download-button" type="button" disabled title="Coming soon">
-                <svg lucideDownload size="18" aria-hidden="true"></svg>
-                {{ edition.actionLabel }}
-              </button>
-            }
-          </div>
-        </article>
+          @if (!edition.url && !edition.status) {
+          <p class="edition-status">Download link coming soon</p>
+          }
+        </div>
+        <div class="edition-action">
+          @if (edition.url; as downloadUrl) {
+          <a class="download-button" [href]="downloadUrl">
+            <svg lucideDownload size="18" aria-hidden="true"></svg>
+            {{ edition.actionLabel }}
+          </a>
+          } @else {
+          <button
+            class="download-button"
+            type="button"
+            disabled
+            [title]="edition.status ?? 'Download link coming soon'"
+          >
+            <svg lucideDownload size="18" aria-hidden="true"></svg>
+            {{ edition.actionLabel }}
+          </button>
+          }
+        </div>
+      </article>
       }
     </div>
 
-    <p class="import-note">Both editions import stick figures from <code>.nodes</code> files.</p>
+    <p class="import-note">
+      Both editions import stick figures from <code>.nodes</code> files.
+    </p>
   </div>
 </section>
