@@ -47,10 +47,7 @@ describe('App shell', () => {
       timeline: false,
       inspector: true,
     };
-    globalThis.localStorage.setItem(
-      'framation.workspace-layout.v1',
-      JSON.stringify(legacyLayout),
-    );
+    globalThis.localStorage.setItem('framation.workspace-layout.v1', JSON.stringify(legacyLayout));
 
     const fixture = TestBed.createComponent(App);
     const workspace = getWorkspace(fixture.componentInstance);
