@@ -1,5 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
-import type { StickFigure } from '@framation/engine';
+import type { StickFigure } from '@stickmations/engine';
 import type { EditorSnapshot } from '../domain/editor-history';
 import {
   DEFAULT_BACKGROUND,

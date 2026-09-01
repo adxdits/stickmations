@@ -9,7 +9,8 @@ export interface WorkspaceLayout {
   readonly inspector: boolean;
 }
 
-const STORAGE_KEY = 'framation.workspace-layout.v1';
+const STORAGE_KEY = 'stickmations.workspace-layout.v1';
+const LEGACY_STORAGE_KEY = 'framation.workspace-layout.v1';
 const DEFAULT_LAYOUT: WorkspaceLayout = {
   project: true,
   sceneStrip: true,
@@ -55,13 +56,25 @@ export class EditorWorkspaceStore {
 
 function loadLayout(): WorkspaceLayout {
   try {
-    const stored = globalThis.localStorage?.getItem(STORAGE_KEY);
+    const storage = globalThis.localStorage;
+    const current = storage?.getItem(STORAGE_KEY);
+    const legacy = current == null ? storage?.getItem(LEGACY_STORAGE_KEY) : null;
+    const stored = current ?? legacy;
     const value = stored ? (JSON.parse(stored) as Partial<WorkspaceLayout>) : null;
     if (
       value &&
       Object.keys(DEFAULT_LAYOUT).every((key) => typeof value[key as WorkspacePanel] === 'boolean')
     ) {
-      return { ...DEFAULT_LAYOUT, ...value };
+      const layout = { ...DEFAULT_LAYOUT, ...value };
+      if (legacy != null) {
+        try {
+          storage?.setItem(STORAGE_KEY, JSON.stringify(layout));
+          storage?.removeItem(LEGACY_STORAGE_KEY);
+        } catch {
+          // Keep the migrated layout available for this session.
+        }
+      }
+      return layout;
     }
   } catch {
     // Invalid or unavailable storage falls back to the standard workspace.

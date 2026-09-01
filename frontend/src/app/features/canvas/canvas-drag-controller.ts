@@ -1,4 +1,4 @@
-import { moveJointToward, translateFigure, type StickFigure } from '@framation/engine';
+import { moveJointToward, translateFigure, type StickFigure } from '@stickmations/engine';
 import type { CameraChange, SceneCamera } from '../../domain/scene-frame';
 import type { PanOffset } from '../../shared/editor-types';
 

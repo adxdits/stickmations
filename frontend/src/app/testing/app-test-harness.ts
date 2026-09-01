@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import type { StickFigure } from '@framation/engine';
+import type { StickFigure } from '@stickmations/engine';
 import { App } from '../app';
 import { createFigureLayer, createSceneFrame, type SceneFrame } from '../domain/scene-frame';
 import { EditorDocumentStore } from '../state/editor-document.store';
@@ -17,6 +17,7 @@ export const simpleFigure: StickFigure = {
 };
 
 export async function configureAppTestBed(): Promise<void> {
+  globalThis.localStorage?.removeItem('stickmations.workspace-layout.v1');
   globalThis.localStorage?.removeItem('framation.workspace-layout.v1');
   await TestBed.configureTestingModule({ imports: [App] }).compileComponents();
 }

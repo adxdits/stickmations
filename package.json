@@ -11,7 +11,7 @@
   "homepage": "https://stickmations.com",
   "repository": {
     "type": "git",
-    "url": "https://github.com/adxdits/framation.git"
+    "url": "https://github.com/adxdits/stickmations.git"
   },
   "main": "desktop/dist/main.js",
   "workspaces": [
@@ -21,13 +21,13 @@
     "website"
   ],
   "scripts": {
-    "dev": "npm run build --workspace @framation/engine && concurrently --kill-others-on-fail --names engine,frontend,desktop \"npm run watch --workspace @framation/engine\" \"npm run start --workspace @framation/frontend\" \"npm run dev --workspace @framation/desktop\"",
-    "dev:website": "npm run start --workspace @framation/website",
-    "start": "npm run build:app && npm run launch --workspace @framation/desktop",
+    "dev": "npm run build --workspace @stickmations/engine && concurrently --kill-others-on-fail --names engine,frontend,desktop \"npm run watch --workspace @stickmations/engine\" \"npm run start --workspace @stickmations/frontend\" \"npm run dev --workspace @stickmations/desktop\"",
+    "dev:website": "npm run start --workspace @stickmations/website",
+    "start": "npm run build:app && npm run launch --workspace @stickmations/desktop",
     "build": "npm run build --workspaces --if-present",
-    "build:app": "npm run build --workspace @framation/engine && npm run build --workspace @framation/desktop && npm run build --workspace @framation/frontend",
-    "test": "npm run test --workspace @framation/engine && npm run test --workspace @framation/frontend -- --watch=false && npm run test --workspace @framation/website -- --watch=false",
-    "typecheck": "npm run typecheck --workspace @framation/engine && npm run typecheck --workspace @framation/desktop",
+    "build:app": "npm run build --workspace @stickmations/engine && npm run build --workspace @stickmations/desktop && npm run build --workspace @stickmations/frontend",
+    "test": "npm run test --workspace @stickmations/engine && npm run test --workspace @stickmations/frontend -- --watch=false && npm run test --workspace @stickmations/website -- --watch=false",
+    "typecheck": "npm run typecheck --workspace @stickmations/engine && npm run typecheck --workspace @stickmations/desktop",
     "check": "npm run build && npm run test && npm run typecheck",
     "pack": "npm run build:app && electron-builder --dir --publish never",
     "dist": "npm run build:app && electron-builder --publish never",

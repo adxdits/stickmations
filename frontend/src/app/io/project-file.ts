@@ -1,4 +1,4 @@
-import { parseStickFigure, type StickFigure } from '@framation/engine';
+import { parseStickFigure, type StickFigure } from '@stickmations/engine';
 import type { FrameTransform } from '../domain/animation-frame';
 import type { SceneBackground, SceneCamera, SceneFrame } from '../domain/scene-frame';
 import { requireSafeBackgroundImageDataUrl } from './background-image';

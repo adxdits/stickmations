@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
-import type { StickFigure } from '@framation/engine';
+import type { StickFigure } from '@stickmations/engine';
 import {
   LucideFlipHorizontal2,
   LucideFlipVertical2,

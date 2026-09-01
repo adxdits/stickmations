@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, InjectionToken, signal } from '@angular/core';
 import type { SceneFrame } from '../domain/scene-frame';
 import { renderVideoFramePng } from '../rendering/video-frame-renderer';
-import type { FramationDesktopApi } from './desktop-api';
+import type { StickmationsDesktopApi } from './desktop-api';
 
 export type Mp4ExportPhase = 'idle' | 'preparing' | 'rendering' | 'encoding' | 'complete' | 'error';
 
@@ -37,7 +37,7 @@ export class Mp4ExportService {
     const phase = this.state().phase;
     return phase === 'preparing' || phase === 'rendering' || phase === 'encoding';
   });
-  readonly isAvailable = typeof window !== 'undefined' && Boolean(window.framationDesktop);
+  readonly isAvailable = typeof window !== 'undefined' && Boolean(window.stickmationsDesktop);
   private operationId = 0;
   private activeSession: Readonly<{ operationId: number; sessionId: string }> | null = null;
 
@@ -51,8 +51,8 @@ export class Mp4ExportService {
       this.operationId += 1;
       const session = this.activeSession;
       this.activeSession = null;
-      if (session && window.framationDesktop) {
-        await window.framationDesktop.cancelMp4Export(session.sessionId).catch(() => undefined);
+      if (session && window.stickmationsDesktop) {
+        await window.stickmationsDesktop.cancelMp4Export(session.sessionId).catch(() => undefined);
       }
       this.state.set(IDLE_STATE);
     }
@@ -64,11 +64,11 @@ export class Mp4ExportService {
     }
   }
 
-  private prepareExport(frameCount: number): FramationDesktopApi | null {
+  private prepareExport(frameCount: number): StickmationsDesktopApi | null {
     if (this.isActive()) {
       return null;
     }
-    const desktop = window.framationDesktop;
+    const desktop = window.stickmationsDesktop;
     if (!desktop) {
       this.fail('MP4 export is only available in the Stickmations desktop app.', frameCount);
       return null;
@@ -81,7 +81,7 @@ export class Mp4ExportService {
   }
 
   private async runExport(
-    desktop: FramationDesktopApi,
+    desktop: StickmationsDesktopApi,
     frames: readonly SceneFrame[],
     fps: number,
     suggestedName: string,
@@ -112,7 +112,7 @@ export class Mp4ExportService {
   }
 
   private async startSession(
-    desktop: FramationDesktopApi,
+    desktop: StickmationsDesktopApi,
     operationId: number,
     frameCount: number,
     fps: number,
@@ -132,7 +132,7 @@ export class Mp4ExportService {
   }
 
   private async renderFrames(
-    desktop: FramationDesktopApi,
+    desktop: StickmationsDesktopApi,
     operationId: number,
     sessionId: string,
     frames: readonly SceneFrame[],
@@ -154,7 +154,7 @@ export class Mp4ExportService {
   }
 
   private async completeExport(
-    desktop: FramationDesktopApi,
+    desktop: StickmationsDesktopApi,
     operationId: number,
     sessionId: string,
   ): Promise<void> {
@@ -174,7 +174,7 @@ export class Mp4ExportService {
   }
 
   private async handleFailure(
-    desktop: FramationDesktopApi,
+    desktop: StickmationsDesktopApi,
     operationId: number,
     sessionId: string | null,
     frameCount: number,
@@ -217,7 +217,7 @@ export class Mp4ExportService {
 }
 
 async function cancelDesktopSession(
-  desktop: FramationDesktopApi,
+  desktop: StickmationsDesktopApi,
   sessionId: string,
 ): Promise<void> {
   await desktop.cancelMp4Export(sessionId).catch(() => undefined);

@@ -1,6 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import type { FramationDesktopApi, StartProjectSaveResult } from './desktop-api';
+import type { StickmationsDesktopApi, StartProjectSaveResult } from './desktop-api';
 import { PROJECT_FILE_EXTENSION, serializeProjectFile, type ProjectSnapshot } from './project-file';
 
 export type ProjectSavePhase = 'idle' | 'saving' | 'complete' | 'error';
@@ -13,7 +13,7 @@ export interface ProjectSaveState {
 
 type ProjectSaveDesktopApi = Required<
   Pick<
-    FramationDesktopApi,
+    StickmationsDesktopApi,
     'startProjectSave' | 'writeProjectChunk' | 'completeProjectSave' | 'cancelProjectSave'
   >
 >;
@@ -47,7 +47,7 @@ export class ProjectSaveService {
 
   private async runSave(operationId: number, snapshot: ProjectSnapshot): Promise<void> {
     this.state.set({ phase: 'saving', outputPath: null, error: null });
-    const desktop = projectSaveDesktopApi(window.framationDesktop);
+    const desktop = projectSaveDesktopApi(window.stickmationsDesktop);
     let sessionId: string | null = null;
 
     try {
@@ -89,7 +89,7 @@ export class ProjectSaveService {
 }
 
 function projectSaveDesktopApi(
-  desktop: FramationDesktopApi | undefined,
+  desktop: StickmationsDesktopApi | undefined,
 ): ProjectSaveDesktopApi | null {
   return desktop &&
     desktop.startProjectSave &&

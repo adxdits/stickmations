@@ -21,7 +21,7 @@
     {
       "label": "Stickmations: Website",
       "type": "shell",
-      "command": "source \"$HOME/.nvm/nvm.sh\" && nvm use 22.12.0 && npm run start --workspace @framation/website -- --port 4300",
+      "command": "source \"$HOME/.nvm/nvm.sh\" && nvm use 22.12.0 && npm run start --workspace @stickmations/website -- --port 4300",
       "isBackground": true,
       "problemMatcher": [],
       "group": "build"

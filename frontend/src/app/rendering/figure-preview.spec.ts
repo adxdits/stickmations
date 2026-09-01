@@ -1,4 +1,4 @@
-import type { StickFigure } from '@framation/engine';
+import type { StickFigure } from '@stickmations/engine';
 import { createFigureLayer } from '../domain/scene-frame';
 import { createFigurePreview, createScenePreview } from './figure-preview';
 

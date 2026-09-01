@@ -40,6 +40,28 @@ describe('App shell', () => {
     expect(input?.multiple).toBe(true);
   });
 
+  it('migrates the legacy workspace layout to the Stickmations storage key', () => {
+    const legacyLayout = {
+      project: false,
+      sceneStrip: true,
+      timeline: false,
+      inspector: true,
+    };
+    globalThis.localStorage.setItem(
+      'framation.workspace-layout.v1',
+      JSON.stringify(legacyLayout),
+    );
+
+    const fixture = TestBed.createComponent(App);
+    const workspace = getWorkspace(fixture.componentInstance);
+
+    expect(workspace.layout()).toEqual(legacyLayout);
+    expect(globalThis.localStorage.getItem('stickmations.workspace-layout.v1')).toBe(
+      JSON.stringify(legacyLayout),
+    );
+    expect(globalThis.localStorage.getItem('framation.workspace-layout.v1')).toBeNull();
+  });
+
   it('runs editor commands from the application menus', () => {
     const fixture = TestBed.createComponent(App);
     const app = getEditor(fixture.componentInstance);

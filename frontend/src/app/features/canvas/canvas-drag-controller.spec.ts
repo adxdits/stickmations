@@ -1,4 +1,4 @@
-import type { StickFigure } from '@framation/engine';
+import type { StickFigure } from '@stickmations/engine';
 import { describe, expect, it } from 'vitest';
 import type { SceneCamera } from '../../domain/scene-frame';
 import { CanvasDragController, type CanvasPoint } from './canvas-drag-controller';

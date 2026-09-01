@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { createFigureLayer, createSceneFrame } from '../domain/scene-frame';
 import { simpleFigure } from '../testing/app-test-harness';
-import type { FramationDesktopApi } from './desktop-api';
+import type { StickmationsDesktopApi } from './desktop-api';
 import type { ProjectSnapshot } from './project-file';
 import { projectFileName, ProjectSaveService } from './project-save';
 
@@ -17,11 +17,11 @@ describe('ProjectSaveService', () => {
     writeProjectChunk.mockResolvedValue(undefined);
     completeProjectSave.mockResolvedValue({ path: '/Users/test/Example.stickmation' });
     cancelProjectSave.mockResolvedValue(undefined);
-    window.framationDesktop = desktopApi();
+    window.stickmationsDesktop = desktopApi();
   });
 
   afterEach(() => {
-    delete window.framationDesktop;
+    delete window.stickmationsDesktop;
     TestBed.resetTestingModule();
     vi.clearAllMocks();
   });
@@ -71,7 +71,7 @@ describe('ProjectSaveService', () => {
     expect(projectFileName('demo.stickmation')).toBe('demo.stickmation');
   });
 
-  function desktopApi(): FramationDesktopApi {
+  function desktopApi(): StickmationsDesktopApi {
     return {
       startMp4Export: vi.fn(),
       writeMp4Frame: vi.fn(),
