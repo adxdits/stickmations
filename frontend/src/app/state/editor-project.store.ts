@@ -8,7 +8,8 @@ import {
   type SceneBackground,
 } from '../domain/scene-frame';
 import { addFigureLayer } from '../domain/scene-operations';
-import { parseFigureFile, readFileAsDataUrl } from '../io/editor-file-import';
+import { parseFigureFile, readBackgroundFileAsDataUrl } from '../io/editor-file-import';
+import { readProjectFile } from '../io/project-import';
 import { createFigurePreview } from '../rendering/figure-preview';
 import { cameraEditorViewBox } from '../shared/view-box';
 import { DEFAULT_FPS, EditorDocumentState } from './editor-document.state';
@@ -21,6 +22,7 @@ export class EditorProjectStore {
   private readonly history = inject(EditorHistoryStore);
   private readonly viewport = inject(EditorViewportStore);
   private nextFigureId = 1;
+  private projectImport: AbortController | null = null;
 
   async importFigure(file: File): Promise<void> {
     try {
@@ -38,6 +40,7 @@ export class EditorProjectStore {
         ]);
         this.viewport.reset(cameraEditorViewBox(camera));
         this.document.currentFrame.set(1);
+        this.document.projectName.set(figure.name);
         this.history.reset();
       } else {
         this.history.record(this.document.snapshot());
@@ -74,12 +77,47 @@ export class EditorProjectStore {
     }
   }
 
+  async importProject(file: File): Promise<void> {
+    this.projectImport?.abort();
+    const operation = new AbortController();
+    this.projectImport = operation;
+    try {
+      const project = await readProjectFile(file, { signal: operation.signal });
+      if (operation.signal.aborted) {
+        return;
+      }
+      this.document.restore({
+        frames: project.frames,
+        currentFrame: project.currentFrame,
+        selectedFigureId: project.selectedFigureId,
+        fps: project.fps,
+      });
+      this.document.projectName.set(project.name);
+      this.document.importError.set(null);
+      this.history.reset();
+      this.nextFigureId = nextFigureId(project.frames);
+      this.viewport.reset(cameraEditorViewBox(project.frames[project.currentFrame - 1]!.camera));
+      this.viewport.controlMode.set('none');
+    } catch (error: unknown) {
+      if (!operation.signal.aborted) {
+        this.document.importError.set(
+          error instanceof Error ? error.message : 'The project could not be imported.',
+        );
+      }
+    } finally {
+      if (this.projectImport === operation) {
+        this.projectImport = null;
+      }
+    }
+  }
+
   createBlankProject(): void {
     const frame = createSceneFrame();
     this.document.animationFrames.set([frame]);
     this.viewport.reset(cameraEditorViewBox(frame.camera));
     this.document.currentFrame.set(1);
     this.document.fps.set(DEFAULT_FPS);
+    this.document.projectName.set('Untitled project');
     this.document.selectedFigureId.set(null);
     this.document.importError.set(null);
     this.history.reset();
@@ -92,7 +130,7 @@ export class EditorProjectStore {
 
   async importBackground(file: File): Promise<void> {
     try {
-      const imageUrl = await readFileAsDataUrl(file);
+      const imageUrl = await readBackgroundFileAsDataUrl(file);
       this.ensureFrame();
       this.updateBackground({
         ...this.document.currentBackground(),
@@ -180,4 +218,22 @@ export class EditorProjectStore {
       frames.map((frame) => ({ ...frame, background })),
     );
   }
+}
+
+function nextFigureId(
+  frames: readonly { readonly figures: readonly { readonly id: string }[] }[],
+): number {
+  let nextId = 1;
+  for (const { figures } of frames) {
+    for (const { id } of figures) {
+      const match = /^figure-(\d+)$/.exec(id);
+      if (match) {
+        const idNumber = Number(match[1]);
+        if (Number.isSafeInteger(idNumber) && idNumber < Number.MAX_SAFE_INTEGER) {
+          nextId = Math.max(nextId, idNumber + 1);
+        }
+      }
+    }
+  }
+  return nextId;
 }

@@ -1,6 +1,7 @@
-import type { StickFigure } from './figure.js';
+import type { FigureSegmentShape, StickFigure } from './figure.js';
 import {
   InvalidStickFigureError,
+  optionalBoolean,
   optionalPositiveNumber,
   optionalString,
   requireArray,
@@ -8,6 +9,17 @@ import {
   requireNonEmptyString,
   requireRecord,
 } from './validation.js';
+
+const FIGURE_SEGMENT_SHAPES = new Set<FigureSegmentShape>([
+  'rounded-segment',
+  'segment',
+  'circle',
+  'filled-circle',
+  'triangle',
+  'ellipse',
+  'trapezoid',
+  'polygon',
+]);
 
 export function parseStickFigureJson(source: string): StickFigure {
   let value: unknown;
@@ -53,6 +65,14 @@ export function parseStickFigure(value: unknown): StickFigure {
     }
 
     jointIds.add(id);
+    const isStatic = optionalBoolean(
+      joint['isStatic'],
+      `Joint "${id}" static flag`,
+    );
+    const isStretchy = optionalBoolean(
+      joint['isStretchy'],
+      `Joint "${id}" stretchy flag`,
+    );
     return {
       id,
       x: requireFiniteNumber(joint['x'], `Joint "${id}" x`),
@@ -63,6 +83,8 @@ export function parseStickFigure(value: unknown): StickFigure {
         `Joint "${id}" radius`,
       ),
       color: optionalString(joint['color'], '#202020', `Joint "${id}" color`),
+      ...(isStatic === undefined ? {} : { isStatic }),
+      ...(isStretchy === undefined ? {} : { isStretchy }),
     };
   });
 
@@ -91,6 +113,14 @@ export function parseStickFigure(value: unknown): StickFigure {
     }
 
     segmentIds.add(id);
+    const shape = optionalSegmentShape(
+      segment['shape'],
+      `Segment "${id}" shape`,
+    );
+    const hollow = optionalBoolean(
+      segment['hollow'],
+      `Segment "${id}" hollow flag`,
+    );
     return {
       id,
       from,
@@ -105,8 +135,26 @@ export function parseStickFigure(value: unknown): StickFigure {
         '#202020',
         `Segment "${id}" color`,
       ),
+      ...(shape === undefined ? {} : { shape }),
+      ...(hollow === undefined ? {} : { hollow }),
     };
   });
 
   return { version: 1, name, joints, segments };
+}
+
+function optionalSegmentShape(
+  value: unknown,
+  property: string,
+): FigureSegmentShape | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (
+    typeof value !== 'string' ||
+    !FIGURE_SEGMENT_SHAPES.has(value as FigureSegmentShape)
+  ) {
+    throw new InvalidStickFigureError(`${property} is invalid.`);
+  }
+  return value as FigureSegmentShape;
 }

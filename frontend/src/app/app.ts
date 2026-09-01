@@ -9,6 +9,7 @@ import { ProjectSidebar } from './features/project/project-sidebar';
 import { SceneStrip } from './features/scene-strip/scene-strip';
 import { Timeline } from './features/timeline/timeline';
 import { Mp4ExportService } from './io/mp4-export';
+import { ProjectSaveService } from './io/project-save';
 import { isEditableTarget } from './shared/dom-events';
 import { EditorDocumentStore } from './state/editor-document.store';
 import { EditorViewportStore } from './state/editor-viewport.store';
@@ -39,7 +40,12 @@ export class App {
   protected readonly viewport = inject(EditorViewportStore);
   protected readonly workspace = inject(EditorWorkspaceStore);
   protected readonly mp4Export = inject(Mp4ExportService);
+  protected readonly projectSave = inject(ProjectSaveService);
   protected readonly fullscreen = signal(false);
+  protected readonly projectName = this.editor.projectName;
+  protected readonly canSaveProject = computed(
+    () => this.editor.animationFrames().length > 0 && !this.projectSave.isActive(),
+  );
   protected readonly canExportMp4 = computed(
     () =>
       this.mp4Export.isAvailable &&
@@ -50,6 +56,20 @@ export class App {
   protected exportMp4(): void {
     const projectName = this.editor.importedFigure()?.name.trim() || 'Untitled animation';
     void this.mp4Export.export(this.editor.animationFrames(), this.editor.fps(), projectName);
+  }
+
+  protected saveProject(): void {
+    void this.projectSave.save({
+      name: this.projectName(),
+      fps: this.editor.fps(),
+      currentFrame: this.editor.currentFrame(),
+      selectedFigureId: this.editor.selectedFigureId(),
+      frames: this.editor.animationFrames(),
+    });
+  }
+
+  protected importProject(file: File): void {
+    void this.editor.importProject(file);
   }
 
   protected fitCurrentCamera(): void {
@@ -72,6 +92,19 @@ export class App {
 
   protected handleShortcut(event: KeyboardEvent): void {
     this.editor.handleShortcut(event);
+    if (
+      !event.defaultPrevented &&
+      (event.metaKey || event.ctrlKey) &&
+      !event.altKey &&
+      event.key.toLowerCase() === 's' &&
+      !isEditableTarget(event.target)
+    ) {
+      event.preventDefault();
+      if (this.canSaveProject()) {
+        this.saveProject();
+      }
+      return;
+    }
     if (
       !event.defaultPrevented &&
       (event.metaKey || event.ctrlKey) &&

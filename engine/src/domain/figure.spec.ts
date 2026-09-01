@@ -28,6 +28,41 @@ describe('parseStickFigureJson', () => {
     });
   });
 
+  it('preserves validated rig and segment metadata', () => {
+    const figure = parseStickFigureJson(
+      JSON.stringify({
+        ...validFigure,
+        joints: [
+          { ...validFigure.joints[0], isStatic: true, isStretchy: false },
+          validFigure.joints[1],
+        ],
+        segments: [
+          { ...validFigure.segments[0], shape: 'filled-circle', hollow: false },
+        ],
+      }),
+    );
+
+    expect(figure.joints[0]).toMatchObject({
+      isStatic: true,
+      isStretchy: false,
+    });
+    expect(figure.segments[0]).toMatchObject({
+      shape: 'filled-circle',
+      hollow: false,
+    });
+  });
+
+  it('rejects invalid optional metadata', () => {
+    const invalidFigure = {
+      ...validFigure,
+      segments: [{ ...validFigure.segments[0], shape: 'external-resource' }],
+    };
+
+    expect(() => parseStickFigureJson(JSON.stringify(invalidFigure))).toThrow(
+      'Segment "leg" shape is invalid.',
+    );
+  });
+
   it('rejects malformed JSON', () => {
     expect(() => parseStickFigureJson('{')).toThrow(
       new InvalidStickFigureError('The selected file is not valid JSON.'),

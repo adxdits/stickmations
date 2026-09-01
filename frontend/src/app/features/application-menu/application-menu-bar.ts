@@ -62,6 +62,7 @@ export class ApplicationMenuBar {
   readonly currentFrame = input.required<number>();
   readonly totalFrames = input.required<number>();
   readonly selectedFigureName = input<string | null>(null);
+  readonly canSaveProject = input(false);
   readonly canExportMp4 = input(false);
   readonly controlModeChange = output<ControlMode>();
   readonly undo = output<void>();
@@ -71,6 +72,7 @@ export class ApplicationMenuBar {
   readonly fitCanvas = output<void>();
   readonly panRequested = output<PanOffset>();
   readonly filesSelected = output<readonly File[]>();
+  readonly projectFileSelected = output<File>();
   readonly backgroundFileSelected = output<File>();
   readonly blankProjectRequested = output<void>();
   readonly selectedFigureDeleted = output<void>();
@@ -79,6 +81,7 @@ export class ApplicationMenuBar {
   readonly frameDeleted = output<void>();
   readonly previousFrame = output<void>();
   readonly nextFrame = output<void>();
+  readonly projectSaveRequested = output<void>();
   readonly mp4ExportRequested = output<void>();
   protected readonly aboutOpen = signal(false);
 
@@ -92,6 +95,16 @@ export class ApplicationMenuBar {
     const files = Array.from(input.files ?? []);
     if (files.length > 0) {
       this.filesSelected.emit(files);
+    }
+    input.value = '';
+    this.closeMenu(event);
+  }
+
+  protected selectProject(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) {
+      this.projectFileSelected.emit(file);
     }
     input.value = '';
     this.closeMenu(event);

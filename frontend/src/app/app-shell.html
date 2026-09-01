@@ -1,9 +1,25 @@
 <main class="flex h-screen flex-col overflow-hidden bg-[#232323] text-[12px] text-[#D6D6D6]">
+  @if (projectSave.state().phase === 'error') {
+    <aside
+      role="alert"
+      class="fixed right-3 bottom-3 z-[100] w-80 max-w-[calc(100vw-1.5rem)] border border-[#A94D4D] bg-[#2B2B2B] p-3 shadow-xl"
+    >
+      <strong class="text-[11px] text-[#F0D0D0]">Project save failed</strong>
+      <p class="mt-1 text-[10px] text-[#D6B0B0]">{{ projectSave.state().error }}</p>
+      <button
+        type="button"
+        class="mt-2 border border-[#555555] px-2 py-1 text-[10px] text-[#D6D6D6] hover:bg-[#3A3A3A]"
+        (click)="projectSave.dismiss()"
+      >
+        Dismiss
+      </button>
+    </aside>
+  }
   @if (!workspace.canvasFocused()) {
     <app-application-menu-bar
       class="contents"
       [title]="editor.title()"
-      [projectName]="editor.importedFigure()?.name ?? 'Untitled project'"
+      [projectName]="projectName()"
       [controlMode]="viewport.controlMode()"
       [zoom]="viewport.zoom()"
       [canUndo]="editor.canUndo()"
@@ -11,6 +27,7 @@
       [currentFrame]="editor.currentFrame()"
       [totalFrames]="editor.animationFrames().length"
       [selectedFigureName]="editor.importedFigure()?.name ?? null"
+      [canSaveProject]="canSaveProject()"
       [canExportMp4]="canExportMp4()"
       (controlModeChange)="viewport.controlMode.set($event)"
       (undo)="editor.undo()"
@@ -19,6 +36,7 @@
       (zoomOut)="viewport.decreaseZoom()"
       (fitCanvas)="viewport.fitCanvas()"
       (panRequested)="viewport.panBy($event)"
+      (projectFileSelected)="importProject($event)"
       (filesSelected)="editor.importFigures($event)"
       (backgroundFileSelected)="editor.importBackground($event)"
       (blankProjectRequested)="editor.createBlankProject()"
@@ -28,6 +46,7 @@
       (frameDeleted)="editor.deleteFrame()"
       (previousFrame)="editor.selectRelativeFrame(-1)"
       (nextFrame)="editor.selectRelativeFrame(1)"
+      (projectSaveRequested)="saveProject()"
       (mp4ExportRequested)="exportMp4()"
     />
   }

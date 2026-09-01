@@ -44,6 +44,23 @@ Features may coordinate through inputs and outputs, but should not reach into si
 
 Pure scene mutations belong in `domain/scene-operations.ts`, not in components or stores.
 
+## Project persistence
+
+Project saves use the `.stickmation` extension. The file contains gzip-compressed, versioned JSON
+so future readers can reject unsupported formats before restoring editor state. Figure snapshots and
+background images are stored once in asset tables; frames refer to those assets by numeric index.
+
+The renderer serializes projects in 256 KiB chunks without constructing a second full project graph.
+Electron validates each IPC chunk, streams it through gzip with backpressure, and writes to a sibling
+temporary file. The destination is replaced only after compression succeeds, so cancellation, a full
+disk, or a renderer crash cannot leave a partially written project at the selected path. The browser
+fallback uses the same chunk stream and gzip format with an object-URL download.
+
+Save and import share a 512 MiB uncompressed limit. Import checks compressed input size before reading,
+enforces the limit again while decompressing, decodes UTF-8 strictly, and validates every asset reference
+before replacing the current document. Background assets must be embedded raster data URLs, so opening a
+project cannot fetch remote content.
+
 ## UI organization
 
 Each feature folder owns a component and its external template. Extract a child component when a section has an independent input/output contract, as with Inspector camera and background properties. Shared interaction state that does not require Angular belongs in a plain class, such as `CanvasDragController`.
