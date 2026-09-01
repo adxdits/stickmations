@@ -56,8 +56,7 @@ h2 {
   font-size: var(--type-label);
 }
 
-.release-heading a,
-.release-links a {
+.release-heading a {
   color: var(--site-ink);
   font-size: var(--type-label);
 }
@@ -84,7 +83,7 @@ h2 {
 
 .download-actions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-2);
 }
 
@@ -92,36 +91,42 @@ h2 {
   display: inline-flex;
   min-width: 0;
   min-height: 44px;
-  padding: var(--space-2) var(--space-3);
+  padding: 6px var(--space-2);
   border: 1px solid var(--site-action-border);
   border-radius: var(--radius-small);
   background: var(--site-action);
   color: var(--site-on-action);
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
-  font-weight: 700;
+  gap: 6px;
   text-decoration: none;
+}
+
+.download-button > svg {
+  flex: 0 0 auto;
 }
 
 .download-button span {
   display: flex;
   min-width: 0;
   flex: 1;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-2);
+  align-items: flex-start;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  line-height: 1.2;
 }
 
 .download-button strong {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  max-width: 100%;
+  font-size: var(--type-label);
+  font-weight: 700;
+  overflow-wrap: anywhere;
 }
 
 .download-button small {
   font-family: var(--font-code);
-  font-size: var(--type-label);
+  font-size: 0.625rem;
   white-space: nowrap;
 }
 
@@ -137,25 +142,19 @@ h2 {
   background: var(--site-action-hover);
 }
 
-.release-links,
 .pro-release {
-  display: flex;
+  display: grid;
+  min-height: 64px;
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--site-line);
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
+  grid-template-columns: minmax(100px, 0.35fr) minmax(0, 1fr);
+  gap: var(--space-4);
   font-size: var(--type-label);
 }
 
-.release-links {
-  margin-top: var(--space-3);
-  color: var(--site-muted);
-}
-
 .pro-release {
-  margin-top: var(--space-5);
-  padding: var(--space-3);
-  border: 1px solid var(--site-line);
-  background: var(--site-surface-raised);
+  margin-top: var(--space-3);
 }
 
 .pro-release strong {
@@ -187,6 +186,12 @@ h2 {
   }
 }
 
+@media (min-width: 1180px) {
+  .download-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 760px) {
   .download-section {
     grid-template-columns: 1fr;
@@ -199,11 +204,8 @@ h2 {
 }
 
 @media (max-width: 420px) {
-  .platform-release {
-    grid-template-columns: 1fr;
-  }
-
-  .download-actions {
+  .platform-release,
+  .pro-release {
     grid-template-columns: 1fr;
   }
 }

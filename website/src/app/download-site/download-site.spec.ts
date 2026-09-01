@@ -44,6 +44,12 @@ describe('DownloadSite', () => {
     expect(root.querySelector('.pro-release')?.textContent).toContain(
       'Release soon',
     );
+    expect(root.querySelector('.download-button strong')?.textContent).toBe(
+      'Install',
+    );
+    expect(root.querySelector('.release-links')).toBeNull();
+    expect(root.textContent).not.toContain('SHA-256 checksums');
+    expect(root.textContent).not.toContain('Unsigned preview release');
     expect(root.querySelector('.edition-price')).toBeNull();
     expect(root.textContent).not.toContain('Lite');
     expect(root.textContent).not.toContain('$4.99');

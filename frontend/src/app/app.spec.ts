@@ -90,12 +90,12 @@ describe('App shell', () => {
     const root = fixture.nativeElement as HTMLElement;
     expect(
       menu(root, 'Help').querySelector<HTMLAnchorElement>(
-        "a[href='https://stickmations.com/#news']",
+        "a[href='https://adxdits.github.io/stickmations/#news']",
       )?.textContent,
     ).toContain("What's new");
     expect(
       root.querySelector<HTMLAnchorElement>('a[aria-label="What\'s new"]')?.getAttribute('href'),
-    ).toBe('https://stickmations.com/#news');
+    ).toBe('https://adxdits.github.io/stickmations/#news');
     menu(root, 'Help').querySelector<HTMLButtonElement>('button')?.click();
     fixture.detectChanges();
     const help = root.querySelector('dialog') as HTMLDialogElement;
@@ -123,7 +123,7 @@ describe('App shell', () => {
     ).toEqual([
       'https://discord.gg/5YQTaaC5W',
       'https://www.reddit.com/r/StickmationsOfficial/',
-      'https://stickmations.com/',
+      'https://adxdits.github.io/stickmations/',
     ]);
     expect(root.querySelector('button[aria-label="Help and bug reports"]')).toBeTruthy();
     expect(root.querySelector('button[aria-label="About Stickmations"]')).toBeTruthy();
