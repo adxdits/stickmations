@@ -25,7 +25,7 @@ npm run dev
 ```
 
 This starts the Angular development server and opens it in Electron. Use
-`npm start` to build all workspaces and launch the production desktop build.
+`npm start` to build the application workspaces and launch the production desktop build.
 The public website has its own development server:
 
 ```bash
@@ -37,6 +37,7 @@ Useful commands:
 | Command               | Purpose                                     |
 | --------------------- | ------------------------------------------- |
 | `npm run dev:website` | Serve only the public download website      |
+| `npm run build:app`   | Build only the desktop application          |
 | `npm run build`       | Build every workspace                       |
 | `npm test`            | Run engine, editor, and website tests once  |
 | `npm run typecheck`   | Type-check the engine and Electron sources  |
