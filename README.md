@@ -42,10 +42,28 @@ Useful commands:
 | `npm test`            | Run engine, editor, and website tests once  |
 | `npm run typecheck`   | Type-check the engine and Electron sources  |
 | `npm run check`       | Build, test, and type-check every workspace |
+| `npm run dist:mac`    | Build macOS DMG and ZIP artifacts           |
+| `npm run dist:win`    | Build Windows installer and portable EXE    |
+| `npm run dist:linux`  | Build Linux AppImage and Debian package     |
 
 VS Code recommends the Angular, EditorConfig, ESLint, and Prettier
 extensions. Run the `Stickmations: Dev` or `Stickmations: Check` task from the Command
 Palette for the same workflows.
+
+## Releases
+
+Desktop releases are built on native GitHub-hosted runners so the bundled FFmpeg binary
+matches each operating system and CPU architecture. A version tag such as `v0.1.0` publishes:
+
+- macOS DMG and ZIP files for Apple Silicon and Intel
+- Windows x64 installer and portable executable
+- Linux x64 AppImage and Debian package
+- `SHA256SUMS.txt` covering every download
+
+Run `npm run check` before tagging, then push the tag to start
+`.github/workflows/release.yml`. The workflow smoke-tests bundled FFmpeg before publishing.
+macOS and Windows artifacts are currently unsigned, so those operating systems may show an
+unverified-developer warning until code-signing certificates are configured.
 
 ## Architecture
 

@@ -3,7 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "description": "Desktop 2D stick-figure animation software.",
-  "author": "adxdits",
+  "author": {
+    "name": "Adam Almounayar",
+    "email": "adamalmounayar@hotmail.com",
+    "url": "https://stickmations.com"
+  },
+  "homepage": "https://stickmations.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adxdits/framation.git"
+  },
   "main": "desktop/dist/main.js",
   "workspaces": [
     "engine",
@@ -20,12 +29,17 @@
     "test": "npm run test --workspace @framation/engine && npm run test --workspace @framation/frontend -- --watch=false && npm run test --workspace @framation/website -- --watch=false",
     "typecheck": "npm run typecheck --workspace @framation/engine && npm run typecheck --workspace @framation/desktop",
     "check": "npm run build && npm run test && npm run typecheck",
-    "pack": "npm run build:app && electron-builder --dir",
-    "dist": "npm run build:app && electron-builder --win"
+    "pack": "npm run build:app && electron-builder --dir --publish never",
+    "dist": "npm run build:app && electron-builder --publish never",
+    "dist:mac": "npm run build:app && electron-builder --mac --publish never",
+    "dist:win": "npm run build:app && electron-builder --win --publish never",
+    "dist:linux": "npm run build:app && electron-builder --linux --publish never",
+    "verify:release": "node scripts/verify-release.mjs"
   },
   "build": {
     "appId": "com.stickmations.app",
     "productName": "Stickmations",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "copyright": "Copyright (c) 2026 adxdits",
     "directories": {
       "output": "release",
@@ -56,33 +70,40 @@
       }
     ],
     "mac": {
-      "icon": "build/icon.icns"
+      "icon": "build/icon.icns",
+      "category": "public.app-category.graphics-design",
+      "target": [
+        "dmg",
+        "zip"
+      ]
     },
     "win": {
       "icon": "build/icon.ico",
       "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "portable",
-          "arch": [
-            "x64"
-          ]
-        }
+        "nsis",
+        "portable"
       ]
     },
     "linux": {
-      "icon": "build/icon.png"
+      "icon": "build/icon.png",
+      "category": "Graphics",
+      "executableName": "stickmations",
+      "maintainer": "Adam Almounayar <adamalmounayar@hotmail.com>",
+      "synopsis": "Desktop 2D stick-figure animation editor",
+      "target": [
+        "AppImage",
+        "deb"
+      ]
     },
     "nsis": {
+      "artifactName": "${productName}-${version}-windows-${arch}-setup.${ext}",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-windows-${arch}-portable.${ext}"
     }
   },
   "devDependencies": {
