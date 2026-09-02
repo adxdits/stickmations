@@ -74,46 +74,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build:app
-      - name: Require release signing credentials
-        if: matrix.platform == 'mac' || matrix.platform == 'win'
-        shell: bash
-        env:
-          MACOS_CSC_LINK: ${{ secrets.MACOS_CSC_LINK }}
-          MACOS_CSC_KEY_PASSWORD: ${{ secrets.MACOS_CSC_KEY_PASSWORD }}
-          APPLE_API_KEY_BASE64: ${{ secrets.APPLE_API_KEY_BASE64 }}
-          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
-          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
-          WINDOWS_CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
-          WINDOWS_CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
-        run: |
-          if [[ "${{ matrix.platform }}" == "mac" ]]; then
-            required="MACOS_CSC_LINK MACOS_CSC_KEY_PASSWORD APPLE_API_KEY_BASE64 APPLE_API_KEY_ID APPLE_API_ISSUER"
-          else
-            required="WINDOWS_CSC_LINK WINDOWS_CSC_KEY_PASSWORD"
-          fi
-
-          for variable in $required; do
-            if [[ -z "${!variable}" ]]; then
-              echo "::error::Missing required release secret: $variable"
-              exit 1
-            fi
-          done
-      - name: Prepare Apple notarization key
-        if: matrix.platform == 'mac'
-        env:
-          APPLE_API_KEY_BASE64: ${{ secrets.APPLE_API_KEY_BASE64 }}
-          APPLE_API_KEY: ${{ runner.temp }}/AuthKey.p8
-        run: |
-          node -e "const fs=require('node:fs'); const key=Buffer.from(process.env.APPLE_API_KEY_BASE64, 'base64'); if (!key.includes('BEGIN PRIVATE KEY')) throw new Error('APPLE_API_KEY_BASE64 is not a base64-encoded App Store Connect API key.'); fs.writeFileSync(process.env.APPLE_API_KEY, key, { mode: 0o600 });"
       - run: npx electron-builder --${{ matrix.platform }} --${{ matrix.architecture }} --publish never
         env:
-          CSC_LINK: ${{ matrix.platform == 'mac' && secrets.MACOS_CSC_LINK || '' }}
-          CSC_KEY_PASSWORD: ${{ matrix.platform == 'mac' && secrets.MACOS_CSC_KEY_PASSWORD || '' }}
-          APPLE_API_KEY: ${{ runner.temp }}/AuthKey.p8
-          APPLE_API_KEY_ID: ${{ matrix.platform == 'mac' && secrets.APPLE_API_KEY_ID || '' }}
-          APPLE_API_ISSUER: ${{ matrix.platform == 'mac' && secrets.APPLE_API_ISSUER || '' }}
-          WIN_CSC_LINK: ${{ matrix.platform == 'win' && secrets.WINDOWS_CSC_LINK || '' }}
-          WIN_CSC_KEY_PASSWORD: ${{ matrix.platform == 'win' && secrets.WINDOWS_CSC_KEY_PASSWORD || '' }}
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
       - run: npm run verify:release -- ${{ matrix.platform }} ${{ matrix.architecture }}
       - uses: actions/upload-artifact@v4
         with:
@@ -154,6 +117,6 @@ jobs:
           else
             gh release create "$RELEASE_TAG" release-assets/* \
               --target main \
-              --notes "Signed desktop installers for Stickmations ${RELEASE_TAG#v}." \
+              --notes "Desktop installers for Stickmations ${RELEASE_TAG#v}." \
               --title "Stickmations ${RELEASE_TAG#v}"
           fi

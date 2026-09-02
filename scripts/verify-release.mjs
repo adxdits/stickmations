@@ -9,7 +9,6 @@ const expectedSuffixes = expectedArtifactSuffixes(platform, architecture);
 const releaseDirectory = join(process.cwd(), 'release');
 const files = await listFiles(releaseDirectory);
 const releaseFiles = files.map((file) => basename(file));
-const artifacts = [];
 
 for (const suffix of expectedSuffixes) {
   const artifactIndex = releaseFiles.findIndex((file) => file.endsWith(suffix));
@@ -19,7 +18,6 @@ for (const suffix of expectedSuffixes) {
       `Missing ${platform}/${architecture} release artifact ending in ${suffix}.`,
     );
   }
-  artifacts.push(files[artifactIndex]);
 }
 
 const ffmpegName = platform === 'win' ? 'ffmpeg.exe' : 'ffmpeg';
@@ -48,12 +46,10 @@ if (probe.status !== 0 || !probe.stdout.startsWith('ffmpeg version')) {
 
 if (platform === 'mac') {
   verifyMacRelease(files);
-} else if (platform === 'win') {
-  verifyWindowsRelease(artifacts);
 }
 
 console.log(
-  `Verified ${platform}/${architecture} installers, trust, and bundled FFmpeg.`,
+  `Verified ${platform}/${architecture} installers and bundled FFmpeg.`,
 );
 
 function verifyMacRelease(releaseContents) {
@@ -70,41 +66,13 @@ function verifyMacRelease(releaseContents) {
   runVerification(
     'codesign',
     ['--verify', '--deep', '--strict', '--verbose=2', appPath],
-    'macOS code signature verification',
-  );
-  runVerification(
-    'xcrun',
-    ['stapler', 'validate', appPath],
-    'macOS notarization ticket verification',
-  );
-  runVerification(
-    'spctl',
-    ['--assess', '--type', 'execute', '--verbose=4', appPath],
-    'macOS Gatekeeper assessment',
+    'macOS bundle verification',
   );
 }
 
-function verifyWindowsRelease(releaseArtifacts) {
-  const signatureCheck = [
-    '$signature = Get-AuthenticodeSignature -LiteralPath $env:STICKMATIONS_SIGNATURE_PATH',
-    "if ($signature.Status -ne 'Valid') { Write-Error ('Invalid Authenticode signature: ' + $signature.Status); exit 1 }",
-    '$signature.SignerCertificate.Subject',
-  ].join('; ');
-
-  for (const artifact of releaseArtifacts) {
-    runVerification(
-      'powershell.exe',
-      ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', signatureCheck],
-      `Authenticode verification for ${basename(artifact)}`,
-      { STICKMATIONS_SIGNATURE_PATH: artifact },
-    );
-  }
-}
-
-function runVerification(command, args, description, extraEnvironment = {}) {
+function runVerification(command, args, description) {
   const result = spawnSync(command, args, {
     encoding: 'utf8',
-    env: { ...process.env, ...extraEnvironment },
     timeout: 30_000,
   });
   if (result.status !== 0) {
