@@ -58,7 +58,9 @@ console.log(
 
 function verifyMacRelease(releaseContents) {
   const appExecutable = releaseContents.find((file) =>
-    file.endsWith(join('Stickmations.app', 'Contents', 'MacOS', 'Stickmations')),
+    file.endsWith(
+      join('Stickmations.app', 'Contents', 'MacOS', 'Stickmations'),
+    ),
   );
   if (!appExecutable) {
     throw new Error('The macOS release does not contain Stickmations.app.');

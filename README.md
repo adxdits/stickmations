@@ -80,7 +80,7 @@ Configure these Actions secrets in the source repository before publishing:
 - `WINDOWS_CSC_LINK`: base64-encoded `.pfx` from a trusted Windows code-signing CA
 - `WINDOWS_CSC_KEY_PASSWORD`: password for the Windows certificate
 - `RELEASE_GITHUB_TOKEN`: fine-grained token with Contents read/write access only to
-	`adxdits/stickmations_opensource`
+  `adxdits/stickmations_opensource`
 
 Encode certificate and API key files on macOS with
 `base64 < path/to/file | tr -d '\n'`, then store the output as the matching secret. Keep the
