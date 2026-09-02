@@ -2,6 +2,11 @@ name: Release desktop apps
 
 on:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing or new release tag to publish (for example, v0.1.0)
+        required: false
+        type: string
   push:
     tags:
       - "v*"
@@ -21,9 +26,20 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - name: Verify release tag
-        if: startsWith(github.ref, 'refs/tags/')
-        run: test "$GITHUB_REF_NAME" = "v$(node -p "require('./package.json').version")"
+      - name: Verify release version
+        if: startsWith(github.ref, 'refs/tags/') || inputs.release_tag != ''
+        env:
+          RELEASE_TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || inputs.release_tag }}
+        run: test "$RELEASE_TAG" = "v$(node -p "require('./package.json').version")"
+      - name: Require release repository token
+        if: startsWith(github.ref, 'refs/tags/') || inputs.release_tag != ''
+        env:
+          RELEASE_GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+        run: |
+          if [[ -z "$RELEASE_GITHUB_TOKEN" ]]; then
+            echo "::error::Missing required release secret: RELEASE_GITHUB_TOKEN"
+            exit 1
+          fi
       - run: npm run check
 
   package:
@@ -58,9 +74,46 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build:app
+      - name: Require release signing credentials
+        if: matrix.platform == 'mac' || matrix.platform == 'win'
+        shell: bash
+        env:
+          MACOS_CSC_LINK: ${{ secrets.MACOS_CSC_LINK }}
+          MACOS_CSC_KEY_PASSWORD: ${{ secrets.MACOS_CSC_KEY_PASSWORD }}
+          APPLE_API_KEY_BASE64: ${{ secrets.APPLE_API_KEY_BASE64 }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          WINDOWS_CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
+          WINDOWS_CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
+        run: |
+          if [[ "${{ matrix.platform }}" == "mac" ]]; then
+            required="MACOS_CSC_LINK MACOS_CSC_KEY_PASSWORD APPLE_API_KEY_BASE64 APPLE_API_KEY_ID APPLE_API_ISSUER"
+          else
+            required="WINDOWS_CSC_LINK WINDOWS_CSC_KEY_PASSWORD"
+          fi
+
+          for variable in $required; do
+            if [[ -z "${!variable}" ]]; then
+              echo "::error::Missing required release secret: $variable"
+              exit 1
+            fi
+          done
+      - name: Prepare Apple notarization key
+        if: matrix.platform == 'mac'
+        env:
+          APPLE_API_KEY_BASE64: ${{ secrets.APPLE_API_KEY_BASE64 }}
+          APPLE_API_KEY: ${{ runner.temp }}/AuthKey.p8
+        run: |
+          node -e "const fs=require('node:fs'); const key=Buffer.from(process.env.APPLE_API_KEY_BASE64, 'base64'); if (!key.includes('BEGIN PRIVATE KEY')) throw new Error('APPLE_API_KEY_BASE64 is not a base64-encoded App Store Connect API key.'); fs.writeFileSync(process.env.APPLE_API_KEY, key, { mode: 0o600 });"
       - run: npx electron-builder --${{ matrix.platform }} --${{ matrix.architecture }} --publish never
         env:
-          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+          CSC_LINK: ${{ matrix.platform == 'mac' && secrets.MACOS_CSC_LINK || '' }}
+          CSC_KEY_PASSWORD: ${{ matrix.platform == 'mac' && secrets.MACOS_CSC_KEY_PASSWORD || '' }}
+          APPLE_API_KEY: ${{ runner.temp }}/AuthKey.p8
+          APPLE_API_KEY_ID: ${{ matrix.platform == 'mac' && secrets.APPLE_API_KEY_ID || '' }}
+          APPLE_API_ISSUER: ${{ matrix.platform == 'mac' && secrets.APPLE_API_ISSUER || '' }}
+          WIN_CSC_LINK: ${{ matrix.platform == 'win' && secrets.WINDOWS_CSC_LINK || '' }}
+          WIN_CSC_KEY_PASSWORD: ${{ matrix.platform == 'win' && secrets.WINDOWS_CSC_KEY_PASSWORD || '' }}
       - run: npm run verify:release -- ${{ matrix.platform }} ${{ matrix.architecture }}
       - uses: actions/upload-artifact@v4
         with:
@@ -77,10 +130,10 @@ jobs:
   publish:
     name: Publish GitHub release
     needs: package
-    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/') || inputs.release_tag != ''
     runs-on: ubuntu-24.04
     permissions:
-      contents: write
+      contents: read
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -92,14 +145,15 @@ jobs:
         run: find . -maxdepth 1 -type f -printf '%f\n' | sort | xargs sha256sum > SHA256SUMS.txt
       - name: Publish release
         env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+          GH_REPO: adxdits/stickmations_opensource
+          RELEASE_TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || inputs.release_tag }}
         run: |
-          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            gh release upload "$GITHUB_REF_NAME" release-assets/* --clobber
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" release-assets/* --clobber
           else
-            gh release create "$GITHUB_REF_NAME" release-assets/* \
-              --verify-tag \
-              --generate-notes \
-              --title "Stickmations ${GITHUB_REF_NAME#v}"
+            gh release create "$RELEASE_TAG" release-assets/* \
+              --target main \
+              --notes "Signed desktop installers for Stickmations ${RELEASE_TAG#v}." \
+              --title "Stickmations ${RELEASE_TAG#v}"
           fi

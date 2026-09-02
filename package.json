@@ -42,6 +42,7 @@
     "productName": "Stickmations",
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "copyright": "Copyright (c) 2026 adxdits",
+    "forceCodeSigning": true,
     "directories": {
       "output": "release",
       "buildResources": "build"
@@ -73,6 +74,8 @@
     "mac": {
       "icon": "build/icon.icns",
       "category": "public.app-category.graphics-design",
+      "hardenedRuntime": true,
+      "notarize": true,
       "target": [
         "dmg",
         "zip"
@@ -80,6 +83,11 @@
     },
     "win": {
       "icon": "build/icon.ico",
+      "signtoolOptions": {
+        "signingHashAlgorithms": [
+          "sha256"
+        ]
+      },
       "target": [
         "nsis",
         "portable"
