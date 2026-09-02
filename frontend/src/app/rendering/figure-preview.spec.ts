@@ -53,7 +53,69 @@ describe('createScenePreview', () => {
       createFigureLayer('second', figure),
     ]);
 
-    expect(preview.segments).toHaveLength(2);
-    expect(new Set(preview.segments.map(({ id }) => id)).size).toBe(2);
+    const lines = preview.drawables.filter((drawable) => drawable.kind === 'line');
+    expect(lines).toHaveLength(2);
+    expect(new Set(lines.map(({ id }) => id)).size).toBe(2);
+  });
+
+  it('preserves shape and polyfill draw order', () => {
+    const figure: StickFigure = {
+      version: 1,
+      name: 'Shapes',
+      joints: [
+        { id: 'root', x: 0, y: 0, radius: 1, color: '#000000' },
+        { id: 'right', x: 100, y: 0, radius: 1, color: '#000000' },
+        { id: 'corner', x: 100, y: 100, radius: 1, color: '#000000' },
+        { id: 'top', x: 0, y: 100, radius: 1, color: '#000000' },
+      ],
+      segments: [
+        {
+          id: 'ellipse',
+          from: 'root',
+          to: 'right',
+          width: 20,
+          color: '#ff0000',
+          shape: 'ellipse',
+          drawOrder: 2,
+        },
+        {
+          id: 'triangle',
+          from: 'right',
+          to: 'corner',
+          width: 20,
+          color: '#00ff00',
+          shape: 'triangle',
+          drawOrder: 3,
+        },
+        {
+          id: 'polygon',
+          from: 'top',
+          to: 'root',
+          width: 10,
+          color: '#0000ff',
+          shape: 'polygon',
+          polygonSides: 6,
+          drawOrder: 4,
+        },
+      ],
+      fills: [
+        {
+          id: 'fill',
+          jointIds: ['root', 'right', 'corner', 'top'],
+          color: '#ffff00',
+          drawOrder: 1,
+        },
+      ],
+    };
+
+    const preview = createFigurePreview(figure);
+
+    expect(preview.drawables.map(({ id }) => id)).toEqual([
+      'fill',
+      'ellipse',
+      'triangle',
+      'polygon',
+    ]);
+    expect(preview.drawables.every(({ kind }) => kind === 'path')).toBe(true);
   });
 });

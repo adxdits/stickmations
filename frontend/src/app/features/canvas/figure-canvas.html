@@ -55,26 +55,35 @@
           (wheel)="zoomWithWheel($event)"
         >
           <g [attr.transform]="sceneTransform()" data-testid="camera-scene">
-            @for (segment of scenePreview.segments; track segment.id) {
-              <line
-                [attr.x1]="segment.x1"
-                [attr.y1]="segment.y1"
-                [attr.x2]="segment.x2"
-                [attr.y2]="segment.y2"
-                [attr.stroke]="segment.color"
-                [attr.stroke-width]="segment.width"
-                [attr.stroke-linecap]="segment.rounded ? 'round' : 'butt'"
-              />
-            }
-            @for (circle of scenePreview.circles; track circle.id) {
-              <circle
-                [attr.cx]="circle.cx"
-                [attr.cy]="circle.cy"
-                [attr.r]="circle.radius"
-                [attr.fill]="circle.hollow ? 'none' : circle.color"
-                [attr.stroke]="circle.color"
-                [attr.stroke-width]="circle.hollow ? circle.width : 0"
-              />
+            @for (drawable of scenePreview.drawables; track drawable.id) {
+              @if (drawable.kind === 'line') {
+                <line
+                  [attr.x1]="drawable.x1"
+                  [attr.y1]="drawable.y1"
+                  [attr.x2]="drawable.x2"
+                  [attr.y2]="drawable.y2"
+                  [attr.stroke]="drawable.color"
+                  [attr.stroke-width]="drawable.width"
+                  [attr.stroke-linecap]="drawable.lineCap"
+                />
+              } @else if (drawable.kind === 'circle') {
+                <circle
+                  [attr.cx]="drawable.cx"
+                  [attr.cy]="drawable.cy"
+                  [attr.r]="drawable.radius"
+                  [attr.fill]="drawable.fill"
+                  [attr.stroke]="drawable.stroke"
+                  [attr.stroke-width]="drawable.strokeWidth"
+                />
+              } @else {
+                <path
+                  [attr.d]="drawable.d"
+                  [attr.fill]="drawable.fill"
+                  [attr.stroke]="drawable.stroke"
+                  [attr.stroke-width]="drawable.strokeWidth"
+                  stroke-linejoin="round"
+                />
+              }
             }
             @if (!playbackPreview()) {
               @if (selectedPreview(); as figurePreview) {

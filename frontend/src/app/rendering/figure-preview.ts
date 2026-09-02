@@ -1,26 +1,11 @@
 import type { StickFigure } from '@stickmations/engine';
 import type { FigureLayer } from '../domain/scene-frame';
-
-export interface PreviewSegment {
-  readonly id: string;
-  readonly x1: number;
-  readonly y1: number;
-  readonly x2: number;
-  readonly y2: number;
-  readonly width: number;
-  readonly color: string;
-  readonly rounded: boolean;
-}
-
-export interface PreviewCircle {
-  readonly id: string;
-  readonly cx: number;
-  readonly cy: number;
-  readonly radius: number;
-  readonly color: string;
-  readonly hollow: boolean;
-  readonly width: number;
-}
+import {
+  createFilledPath,
+  createSegmentGeometry,
+  type GeometryPoint,
+  type PreviewDrawable,
+} from './figure-geometry';
 
 export interface PreviewJoint {
   readonly id: string;
@@ -30,8 +15,7 @@ export interface PreviewJoint {
 
 export interface FigurePreview {
   readonly viewBox: string;
-  readonly segments: readonly PreviewSegment[];
-  readonly circles: readonly PreviewCircle[];
+  readonly drawables: readonly PreviewDrawable[];
   readonly joints: readonly PreviewJoint[];
   readonly editableJoints: readonly PreviewJoint[];
   readonly center: PreviewJoint;
@@ -39,10 +23,11 @@ export interface FigurePreview {
 
 export function createFigurePreview(figure: StickFigure): FigurePreview {
   const jointsById = new Map(figure.joints.map((joint) => [joint.id, joint]));
-  const segments: PreviewSegment[] = [];
-  const circles: PreviewCircle[] = [];
+  const entries: DrawableEntry[] = [];
+  const bounds = createBounds();
+  let sequence = 0;
 
-  for (const segment of figure.segments) {
+  for (const [index, segment] of figure.segments.entries()) {
     const from = jointsById.get(segment.from);
     const to = jointsById.get(segment.to);
 
@@ -50,29 +35,35 @@ export function createFigurePreview(figure: StickFigure): FigurePreview {
       throw new Error(`Segment "${segment.id}" references an unknown joint.`);
     }
 
-    if (segment.shape === 'circle' || segment.shape === 'filled-circle') {
-      circles.push({
-        id: segment.id,
-        cx: (from.x + to.x) / 2,
-        cy: -(from.y + to.y) / 2,
-        radius: Math.hypot(to.x - from.x, to.y - from.y) / 2,
-        color: segment.color,
-        hollow: segment.hollow ?? segment.shape === 'circle',
-        width: segment.width,
+    for (const geometry of createSegmentGeometry(
+      segment,
+      { x: from.x, y: -from.y },
+      { x: to.x, y: -to.y },
+    )) {
+      entries.push({
+        drawable: geometry.drawable,
+        drawOrder: segment.drawOrder ?? index,
+        sequence: sequence++,
       });
-      continue;
+      includePoints(bounds, geometry.points, geometry.padding);
     }
+  }
 
-    segments.push({
-      id: segment.id,
-      x1: from.x,
-      y1: -from.y,
-      x2: to.x,
-      y2: -to.y,
-      width: segment.width,
-      color: segment.color,
-      rounded: segment.shape !== 'segment',
+  for (const [index, fill] of (figure.fills ?? []).entries()) {
+    const points = fill.jointIds.map((jointId) => {
+      const joint = jointsById.get(jointId);
+      if (!joint) {
+        throw new Error(`Fill "${fill.id}" references an unknown joint.`);
+      }
+      return { x: joint.x, y: -joint.y };
     });
+    const geometry = createFilledPath(fill.id, points, fill.color);
+    entries.push({
+      drawable: geometry.drawable,
+      drawOrder: fill.drawOrder ?? figure.segments.length + index,
+      sequence: sequence++,
+    });
+    includePoints(bounds, geometry.points, geometry.padding);
   }
 
   const joints = figure.joints.map((joint) => ({
@@ -81,24 +72,14 @@ export function createFigurePreview(figure: StickFigure): FigurePreview {
     y: -joint.y,
   }));
   const hasRigMetadata = figure.joints.some(({ isStatic }) => isStatic !== undefined);
-  const horizontalBounds = joints.flatMap((joint) => [joint.x]);
-  const verticalBounds = joints.flatMap((joint) => [joint.y]);
-
-  for (const circle of circles) {
-    horizontalBounds.push(circle.cx - circle.radius, circle.cx + circle.radius);
-    verticalBounds.push(circle.cy - circle.radius, circle.cy + circle.radius);
-  }
-
-  const minX = Math.min(...horizontalBounds);
-  const maxX = Math.max(...horizontalBounds);
-  const minY = Math.min(...verticalBounds);
-  const maxY = Math.max(...verticalBounds);
+  includePoints(bounds, joints, 0);
   const padding = 20;
 
   return {
-    viewBox: `${minX - padding} ${minY - padding} ${Math.max(maxX - minX + padding * 2, 1)} ${Math.max(maxY - minY + padding * 2, 1)}`,
-    segments,
-    circles,
+    viewBox: `${bounds.minX - padding} ${bounds.minY - padding} ${Math.max(bounds.maxX - bounds.minX + padding * 2, 1)} ${Math.max(bounds.maxY - bounds.minY + padding * 2, 1)}`,
+    drawables: entries
+      .sort((left, right) => left.drawOrder - right.drawOrder || left.sequence - right.sequence)
+      .map(({ drawable }) => drawable),
     joints,
     editableJoints: hasRigMetadata
       ? joints.filter(({ id }) => !figure.joints.find((joint) => joint.id === id)?.isStatic)
@@ -112,8 +93,7 @@ export function createScenePreview(layers: readonly FigureLayer[]): FigurePrevie
   if (visibleLayers.length === 0) {
     return {
       viewBox: '-320 -180 640 360',
-      segments: [],
-      circles: [],
+      drawables: [],
       joints: [],
       editableJoints: [],
       center: { id: '', x: 0, y: 0 },
@@ -126,14 +106,54 @@ export function createScenePreview(layers: readonly FigureLayer[]): FigurePrevie
     joints: visibleLayers.flatMap((layer) =>
       layer.figure.joints.map((joint) => ({ ...joint, id: `${layer.id}:${joint.id}` })),
     ),
-    segments: visibleLayers.flatMap((layer) =>
-      layer.figure.segments.map((segment) => ({
+    segments: visibleLayers.flatMap((layer, layerIndex) =>
+      layer.figure.segments.map((segment, segmentIndex) => ({
         ...segment,
         id: `${layer.id}:${segment.id}`,
         from: `${layer.id}:${segment.from}`,
         to: `${layer.id}:${segment.to}`,
+        drawOrder: layerIndex * 1000 + (segment.drawOrder ?? segmentIndex),
+      })),
+    ),
+    fills: visibleLayers.flatMap((layer, layerIndex) =>
+      (layer.figure.fills ?? []).map((fill, fillIndex) => ({
+        ...fill,
+        id: `${layer.id}:${fill.id}`,
+        jointIds: fill.jointIds.map((jointId) => `${layer.id}:${jointId}`),
+        drawOrder: layerIndex * 1000 + (fill.drawOrder ?? layer.figure.segments.length + fillIndex),
       })),
     ),
   };
   return createFigurePreview(merged);
+}
+
+interface DrawableEntry {
+  readonly drawable: PreviewDrawable;
+  readonly drawOrder: number;
+  readonly sequence: number;
+}
+
+interface Bounds {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+}
+
+function createBounds(): Bounds {
+  return {
+    minX: Number.POSITIVE_INFINITY,
+    minY: Number.POSITIVE_INFINITY,
+    maxX: Number.NEGATIVE_INFINITY,
+    maxY: Number.NEGATIVE_INFINITY,
+  };
+}
+
+function includePoints(bounds: Bounds, points: readonly GeometryPoint[], padding: number): void {
+  for (const point of points) {
+    bounds.minX = Math.min(bounds.minX, point.x - padding);
+    bounds.minY = Math.min(bounds.minY, point.y - padding);
+    bounds.maxX = Math.max(bounds.maxX, point.x + padding);
+    bounds.maxY = Math.max(bounds.maxY, point.y + padding);
+  }
 }
