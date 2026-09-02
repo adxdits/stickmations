@@ -1,5 +1,6 @@
 import { BinaryReader } from './binary-reader.js';
 import type {
+  FigureFill,
   FigureJoint,
   FigureSegment,
   FigureSegmentShape,
@@ -27,6 +28,7 @@ interface ParentNode {
 
 interface ParsedNode {
   readonly id: string;
+  readonly drawOrder: number;
   readonly shape: FigureSegmentShape;
   readonly hollow: boolean;
   readonly isStatic: boolean;
@@ -36,6 +38,14 @@ interface ParsedNode {
   readonly scale: number;
   readonly width: number;
   readonly color: string;
+  readonly halfShape: boolean;
+  readonly outlineColor?: string;
+  readonly triangleType: 'isosceles' | 'right';
+  readonly triangleFlipped: boolean;
+  readonly triangleUpsideDown: boolean;
+  readonly startWidth: number;
+  readonly endWidth: number;
+  readonly polygonSides: number;
   readonly childConnectors: readonly boolean[];
 }
 
@@ -44,6 +54,7 @@ interface ImportState {
   readonly header: StickNodesHeader;
   readonly joints: FigureJoint[];
   readonly segments: FigureSegment[];
+  readonly fills: FigureFill[];
   readonly nodeIds: Set<string>;
   nodeCount: number;
 }
@@ -78,17 +89,21 @@ export function parseStickNodesFile(
       header,
       joints: [],
       segments: [],
+      fills: [],
       nodeIds: new Set(),
       nodeCount: 0,
     };
 
     readNodeTree(state, null, false);
+    readPolyfills(state);
+    readConnectors(state);
 
     return {
       version: 1,
       name: fileName.replace(/\.nodes$/i, '') || 'Imported figure',
       joints: state.joints,
       segments: state.segments,
+      ...(state.fills.length === 0 ? {} : { fills: state.fills }),
     };
   } catch (error: unknown) {
     if (error instanceof InvalidStickFigureError) {
@@ -145,6 +160,18 @@ function readNodeTree(
       color: node.color,
       shape: node.shape,
       hollow: node.hollow,
+      drawOrder: node.drawOrder,
+      halfShape: node.halfShape,
+      expandShapeByWidth: true,
+      ...(node.outlineColor === undefined
+        ? {}
+        : { outlineColor: node.outlineColor }),
+      triangleType: node.triangleType,
+      triangleFlipped: node.triangleFlipped,
+      triangleUpsideDown: node.triangleUpsideDown,
+      startWidth: node.startWidth,
+      endWidth: node.endWidth,
+      polygonSides: node.polygonSides,
     });
   }
 
@@ -164,31 +191,55 @@ function readNode(
   }
 
   const shape = readNodeShape(reader.readInt8());
-  const id = `node-${reader.readInt32()}`;
+  const drawOrder = reader.readInt32();
+  const id = `node-${drawOrder}`;
   const isStatic = reader.readUint8() !== 0;
   const isStretchy = reader.readUint8() !== 0;
-  reader.skip(2);
-  reader.skip(2);
-  const useSegmentColor = reader.readUint8() !== 0;
   reader.readUint8();
+  reader.readUint8();
+  reader.readUint8();
+  reader.readUint8();
+  const useSegmentColor = reader.readUint8() !== 0;
+  const useCircleOutline = reader.readUint8() !== 0;
   const hollow = reader.readUint8() !== 0;
-  reader.skip(4);
+  reader.readUint8();
+  reader.readUint8();
+  reader.readInt16();
   const useSegmentScale = reader.readUint8() !== 0;
-  reader.skip(8);
+  reader.readFloat32();
+  reader.readFloat32();
   const scale = requireFinite(reader.readFloat32());
-  reader.skip(4);
+  reader.readFloat32();
   const length = requireFinite(reader.readFloat32());
-  reader.skip(4);
+  reader.readInt32();
   const thickness = reader.readInt32();
-  reader.skip(31);
+  reader.readInt32();
+  reader.readUint8();
+  reader.readInt16();
+  const halfShape = reader.readUint8() !== 0;
+  const triangleDirection = reader.readInt16();
+  const triangleUpsideDown = reader.readUint8() !== 0;
+  const trapezoidStart = requireFinite(reader.readFloat32());
+  const trapezoidEnd = requireFinite(reader.readFloat32());
+  reader.readFloat32();
+  reader.readUint8();
+  reader.readUint8();
+  const polygonSides = reader.readInt16();
+  reader.readFloat32();
   const angle = requireFinite(reader.readFloat32());
-  reader.skip(4);
+  reader.readFloat32();
   const nodeColor = readColor(reader);
-  reader.skip(8);
-  reader.skip(2);
-  reader.skip(12);
-  reader.skip(2);
-  reader.skip(8);
+  readColor(reader);
+  const outlineColor = readColor(reader);
+  reader.readUint8();
+  reader.readUint8();
+  reader.readFloat32();
+  reader.readFloat32();
+  reader.readFloat32();
+  reader.readInt8();
+  reader.readUint8();
+  reader.readFloat32();
+  reader.readFloat32();
 
   const childCount = reader.readInt32();
   if (childCount < 0 || childCount > MAX_NODE_COUNT) {
@@ -202,9 +253,11 @@ function readNode(
     () => reader.readInt32() !== 0,
   );
   const segmentScale = useSegmentScale ? scale : 1;
+  const widthScale = segmentScale * header.scale;
 
   return {
     id,
+    drawOrder,
     shape,
     hollow,
     isStatic,
@@ -212,10 +265,58 @@ function readNode(
     length,
     angle,
     scale: segmentScale,
-    width: Math.max(thickness * segmentScale * header.scale, 1),
+    width: Math.max(thickness * widthScale, 1),
     color: useSegmentColor ? nodeColor : header.color,
+    halfShape,
+    ...(useCircleOutline ? { outlineColor } : {}),
+    triangleType: triangleDirection === 0 ? 'isosceles' : 'right',
+    triangleFlipped: triangleDirection < 0,
+    triangleUpsideDown,
+    startWidth: Math.max(trapezoidStart * widthScale, 1),
+    endWidth: Math.max(trapezoidEnd * widthScale, 1),
+    polygonSides: Math.max(polygonSides, 3),
     childConnectors,
   };
+}
+
+function readPolyfills(state: ImportState): void {
+  const fillCount = readBoundedCount(state.reader, 'polyfill');
+  for (let index = 0; index < fillCount; index += 1) {
+    const drawOrder = state.reader.readInt32();
+    const color = readColor(state.reader);
+    const useFillColor = state.reader.readUint8() !== 0;
+    const jointCount = readBoundedCount(state.reader, 'polyfill joint');
+    const jointIds = Array.from(
+      { length: jointCount },
+      () => `node-${state.reader.readInt32()}`,
+    );
+    if (jointIds.length >= 3) {
+      state.fills.push({
+        id: `fill-${index}`,
+        jointIds,
+        color: useFillColor ? color : state.header.color,
+        drawOrder,
+      });
+    }
+  }
+}
+
+function readConnectors(state: ImportState): void {
+  const connectorCount = readBoundedCount(state.reader, 'connector');
+  for (let index = 0; index < connectorCount; index += 1) {
+    state.reader.readInt32();
+    state.reader.readInt32();
+  }
+}
+
+function readBoundedCount(reader: BinaryReader, label: string): number {
+  const count = reader.readInt32();
+  if (count < 0 || count > MAX_NODE_COUNT) {
+    throw new InvalidStickFigureError(
+      `Invalid Stick Nodes ${label} count: ${count}.`,
+    );
+  }
+  return count;
 }
 
 function readNodeShape(value: number): FigureSegmentShape {
@@ -230,7 +331,16 @@ function readNodeShape(value: number): FigureSegmentShape {
     7: 'polygon',
   };
 
-  return shapes[value] ?? 'rounded-segment';
+  if (value === -1) {
+    return 'rounded-segment';
+  }
+  const shape = shapes[value];
+  if (!shape) {
+    throw new InvalidStickFigureError(
+      `Invalid Stick Nodes segment type: ${value}.`,
+    );
+  }
+  return shape;
 }
 
 function readColor(reader: BinaryReader): string {

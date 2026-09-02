@@ -3,6 +3,7 @@ export {
   parseStickFigureJson,
 } from './domain/figure-import.js';
 export type {
+  FigureFill,
   FigureJoint,
   FigureSegment,
   StickFigure,

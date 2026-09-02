@@ -233,6 +233,15 @@ function parseProjectFigure(value: unknown, index: number): StickFigure {
   }
   for (const segment of figure.segments) {
     requireSafePaint(segment.color, `Figure asset ${index + 1} segment "${segment.id}" color`);
+    if (segment.outlineColor !== undefined) {
+      requireSafePaint(
+        segment.outlineColor,
+        `Figure asset ${index + 1} segment "${segment.id}" outline color`,
+      );
+    }
+  }
+  for (const fill of figure.fills ?? []) {
+    requireSafePaint(fill.color, `Figure asset ${index + 1} fill "${fill.id}" color`);
   }
   return figure;
 }

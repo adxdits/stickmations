@@ -1,4 +1,4 @@
-import type { FigureSegmentShape, StickFigure } from './figure.js';
+import type { FigureFill, FigureSegmentShape, StickFigure } from './figure.js';
 import {
   InvalidStickFigureError,
   optionalBoolean,
@@ -45,6 +45,8 @@ export function parseStickFigure(value: unknown): StickFigure {
   const name = requireNonEmptyString(figure['name'], 'Figure name');
   const jointValues = requireArray(figure['joints'], 'joints');
   const segmentValues = requireArray(figure['segments'], 'segments');
+  const fillValues =
+    figure['fills'] === undefined ? [] : requireArray(figure['fills'], 'fills');
 
   if (jointValues.length === 0) {
     throw new InvalidStickFigureError(
@@ -121,6 +123,46 @@ export function parseStickFigure(value: unknown): StickFigure {
       segment['hollow'],
       `Segment "${id}" hollow flag`,
     );
+    const drawOrder = optionalFiniteNumber(
+      segment['drawOrder'],
+      `Segment "${id}" draw order`,
+    );
+    const halfShape = optionalBoolean(
+      segment['halfShape'],
+      `Segment "${id}" half-shape flag`,
+    );
+    const expandShapeByWidth = optionalBoolean(
+      segment['expandShapeByWidth'],
+      `Segment "${id}" shape expansion flag`,
+    );
+    const outlineColor = optionalStringValue(
+      segment['outlineColor'],
+      `Segment "${id}" outline color`,
+    );
+    const triangleType = optionalTriangleType(
+      segment['triangleType'],
+      `Segment "${id}" triangle type`,
+    );
+    const triangleFlipped = optionalBoolean(
+      segment['triangleFlipped'],
+      `Segment "${id}" triangle flipped flag`,
+    );
+    const triangleUpsideDown = optionalBoolean(
+      segment['triangleUpsideDown'],
+      `Segment "${id}" triangle upside-down flag`,
+    );
+    const startWidth = optionalPositiveNumberValue(
+      segment['startWidth'],
+      `Segment "${id}" start width`,
+    );
+    const endWidth = optionalPositiveNumberValue(
+      segment['endWidth'],
+      `Segment "${id}" end width`,
+    );
+    const polygonSides = optionalPolygonSides(
+      segment['polygonSides'],
+      `Segment "${id}" polygon sides`,
+    );
     return {
       id,
       from,
@@ -137,10 +179,122 @@ export function parseStickFigure(value: unknown): StickFigure {
       ),
       ...(shape === undefined ? {} : { shape }),
       ...(hollow === undefined ? {} : { hollow }),
+      ...(drawOrder === undefined ? {} : { drawOrder }),
+      ...(halfShape === undefined ? {} : { halfShape }),
+      ...(expandShapeByWidth === undefined ? {} : { expandShapeByWidth }),
+      ...(outlineColor === undefined ? {} : { outlineColor }),
+      ...(triangleType === undefined ? {} : { triangleType }),
+      ...(triangleFlipped === undefined ? {} : { triangleFlipped }),
+      ...(triangleUpsideDown === undefined ? {} : { triangleUpsideDown }),
+      ...(startWidth === undefined ? {} : { startWidth }),
+      ...(endWidth === undefined ? {} : { endWidth }),
+      ...(polygonSides === undefined ? {} : { polygonSides }),
     };
   });
 
-  return { version: 1, name, joints, segments };
+  const fillIds = new Set<string>();
+  const fills: FigureFill[] = fillValues.map((fillValue, index) => {
+    const fill = requireRecord(
+      fillValue,
+      `Fill ${index + 1} must be an object.`,
+    );
+    const id = requireNonEmptyString(fill['id'], `Fill ${index + 1} id`);
+    if (fillIds.has(id)) {
+      throw new InvalidStickFigureError(`Fill id "${id}" is duplicated.`);
+    }
+    fillIds.add(id);
+    const fillJointValues = requireArray(
+      fill['jointIds'],
+      `Fill "${id}" joints`,
+    );
+    if (fillJointValues.length < 3) {
+      throw new InvalidStickFigureError(
+        `Fill "${id}" must contain at least three joints.`,
+      );
+    }
+    const fillJointIds = fillJointValues.map((jointId, jointIndex) => {
+      const value = requireNonEmptyString(
+        jointId,
+        `Fill "${id}" joint ${jointIndex + 1}`,
+      );
+      if (!jointIds.has(value)) {
+        throw new InvalidStickFigureError(
+          `Fill "${id}" references an unknown joint.`,
+        );
+      }
+      return value;
+    });
+    const drawOrder = optionalFiniteNumber(
+      fill['drawOrder'],
+      `Fill "${id}" draw order`,
+    );
+    return {
+      id,
+      jointIds: fillJointIds,
+      color: optionalString(fill['color'], '#202020', `Fill "${id}" color`),
+      ...(drawOrder === undefined ? {} : { drawOrder }),
+    };
+  });
+
+  return {
+    version: 1,
+    name,
+    joints,
+    segments,
+    ...(fills.length === 0 ? {} : { fills }),
+  };
+}
+
+function optionalFiniteNumber(
+  value: unknown,
+  property: string,
+): number | undefined {
+  return value === undefined ? undefined : requireFiniteNumber(value, property);
+}
+
+function optionalPositiveNumberValue(
+  value: unknown,
+  property: string,
+): number | undefined {
+  return value === undefined
+    ? undefined
+    : optionalPositiveNumber(value, 1, property);
+}
+
+function optionalStringValue(
+  value: unknown,
+  property: string,
+): string | undefined {
+  return value === undefined ? undefined : optionalString(value, '', property);
+}
+
+function optionalTriangleType(
+  value: unknown,
+  property: string,
+): 'isosceles' | 'right' | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value !== 'isosceles' && value !== 'right') {
+    throw new InvalidStickFigureError(`${property} is invalid.`);
+  }
+  return value;
+}
+
+function optionalPolygonSides(
+  value: unknown,
+  property: string,
+): number | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  const sides = requireFiniteNumber(value, property);
+  if (!Number.isInteger(sides) || sides < 3 || sides > 64) {
+    throw new InvalidStickFigureError(
+      `${property} must be an integer from 3 to 64.`,
+    );
+  }
+  return sides;
 }
 
 function optionalSegmentShape(

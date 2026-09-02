@@ -26,6 +26,23 @@ export interface FigureSegment {
   readonly color: string;
   readonly shape?: FigureSegmentShape;
   readonly hollow?: boolean;
+  readonly drawOrder?: number;
+  readonly halfShape?: boolean;
+  readonly expandShapeByWidth?: boolean;
+  readonly outlineColor?: string;
+  readonly triangleType?: 'isosceles' | 'right';
+  readonly triangleFlipped?: boolean;
+  readonly triangleUpsideDown?: boolean;
+  readonly startWidth?: number;
+  readonly endWidth?: number;
+  readonly polygonSides?: number;
+}
+
+export interface FigureFill {
+  readonly id: string;
+  readonly jointIds: readonly string[];
+  readonly color: string;
+  readonly drawOrder?: number;
 }
 
 export interface StickFigure {
@@ -33,4 +50,5 @@ export interface StickFigure {
   readonly name: string;
   readonly joints: readonly FigureJoint[];
   readonly segments: readonly FigureSegment[];
+  readonly fills?: readonly FigureFill[];
 }

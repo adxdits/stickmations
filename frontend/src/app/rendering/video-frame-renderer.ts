@@ -62,27 +62,35 @@ export function createVideoFrameSvg(
   });
   const preview = createScenePreview(frame.figures);
 
-  for (const segment of preview.segments) {
-    appendElement(sceneGroup, 'line', {
-      x1: segment.x1,
-      y1: segment.y1,
-      x2: segment.x2,
-      y2: segment.y2,
-      stroke: segment.color,
-      'stroke-width': segment.width,
-      'stroke-linecap': segment.rounded ? 'round' : 'butt',
-    });
-  }
-
-  for (const circle of preview.circles) {
-    appendElement(sceneGroup, 'circle', {
-      cx: circle.cx,
-      cy: circle.cy,
-      r: circle.radius,
-      fill: circle.hollow ? 'none' : circle.color,
-      stroke: circle.color,
-      'stroke-width': circle.hollow ? circle.width : 0,
-    });
+  for (const drawable of preview.drawables) {
+    if (drawable.kind === 'line') {
+      appendElement(sceneGroup, 'line', {
+        x1: drawable.x1,
+        y1: drawable.y1,
+        x2: drawable.x2,
+        y2: drawable.y2,
+        stroke: drawable.color,
+        'stroke-width': drawable.width,
+        'stroke-linecap': drawable.lineCap,
+      });
+    } else if (drawable.kind === 'circle') {
+      appendElement(sceneGroup, 'circle', {
+        cx: drawable.cx,
+        cy: drawable.cy,
+        r: drawable.radius,
+        fill: drawable.fill,
+        stroke: drawable.stroke,
+        'stroke-width': drawable.strokeWidth,
+      });
+    } else {
+      appendElement(sceneGroup, 'path', {
+        d: drawable.d,
+        fill: drawable.fill,
+        stroke: drawable.stroke,
+        'stroke-width': drawable.strokeWidth,
+        'stroke-linejoin': 'round',
+      });
+    }
   }
 
   return new XMLSerializer().serializeToString(svgDocument);

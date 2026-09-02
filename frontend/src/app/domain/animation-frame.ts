@@ -46,6 +46,14 @@ export function cloneAnimationFrame(frame: AnimationFrame): AnimationFrame {
       ...frame.figure,
       joints: frame.figure.joints.map((joint) => ({ ...joint })),
       segments: frame.figure.segments.map((segment) => ({ ...segment })),
+      ...(frame.figure.fills === undefined
+        ? {}
+        : {
+            fills: frame.figure.fills.map((fill) => ({
+              ...fill,
+              jointIds: [...fill.jointIds],
+            })),
+          }),
     },
     transform: { ...frame.transform },
   };
