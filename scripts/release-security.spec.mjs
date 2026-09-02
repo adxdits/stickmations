@@ -35,10 +35,7 @@ describe('release security', () => {
   });
 
   it('publishes releases only to the public repository', () => {
-    assert.match(
-      releaseWorkflow,
-      /GH_REPO: adxdits\/stickmations_opensource/,
-    );
+    assert.match(releaseWorkflow, /GH_REPO: adxdits\/stickmations_opensource/);
     assert.doesNotMatch(releaseWorkflow, /GH_REPO:.*github\.repository/);
     assert.match(releaseWorkflow, /GH_TOKEN:.*RELEASE_GITHUB_TOKEN/);
     assert.match(releaseWorkflow, /release_tag:/);
