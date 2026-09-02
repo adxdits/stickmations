@@ -53,7 +53,7 @@ Palette for the same workflows.
 ## Releases
 
 Desktop releases are built on native GitHub-hosted runners so the bundled FFmpeg binary
-matches each operating system and CPU architecture. A version tag such as `v0.1.0` publishes:
+matches each operating system and CPU architecture. A version tag such as `v0.1.1` publishes:
 
 - macOS DMG and ZIP files for Apple Silicon and Intel
 - Windows x64 installer and portable executable
@@ -76,8 +76,8 @@ that previously failed even after that approval, but it does not remove the init
 The source repository needs one Actions secret: `RELEASE_GITHUB_TOKEN`, a fine-grained token
 with Contents read/write access only to `adxdits/stickmations_opensource`.
 
-To replace the existing `v0.1.0` downloads after configuring that token, run the
-`Release desktop apps` workflow from `main` with `release_tag` set to `v0.1.0`. The workflow
+To publish the current version after configuring that token, run the
+`Release desktop apps` workflow from `main` with `release_tag` set to `v0.1.1`. The workflow
 rebuilds every platform, verifies the packages, and replaces the assets and checksums in the public
 release repository.
 

@@ -57,10 +57,11 @@ export interface DownloadSiteConfig {
   readonly copyright: string;
 }
 
-const RELEASE_URL =
-  'https://github.com/adxdits/stickmations_opensource/releases/tag/v0.1.0';
-const RELEASE_DOWNLOAD_URL =
-  'https://github.com/adxdits/stickmations_opensource/releases/download/v0.1.0';
+const RELEASE_VERSION = '0.1.1';
+const RELEASE_REPOSITORY =
+  'https://github.com/adxdits/stickmations_opensource';
+const RELEASE_URL = `${RELEASE_REPOSITORY}/releases/tag/v${RELEASE_VERSION}`;
+const RELEASE_DOWNLOAD_URL = `${RELEASE_REPOSITORY}/releases/download/v${RELEASE_VERSION}`;
 
 export const DOWNLOAD_SITE_CONFIG: DownloadSiteConfig = {
   productName: 'Stickmations',
@@ -72,7 +73,7 @@ export const DOWNLOAD_SITE_CONFIG: DownloadSiteConfig = {
     publishedLabel: 'September 2026',
   },
   release: {
-    version: '0.1.0',
+    version: RELEASE_VERSION,
     releaseNotesUrl: RELEASE_URL,
     platforms: [
       {
@@ -82,13 +83,13 @@ export const DOWNLOAD_SITE_CONFIG: DownloadSiteConfig = {
           {
             label: 'Install',
             format: 'EXE',
-            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-0.1.0-windows-x64-setup.exe`,
+            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-${RELEASE_VERSION}-windows-x64-setup.exe`,
             recommended: true,
           },
           {
             label: 'Portable',
             format: 'EXE',
-            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-0.1.0-windows-x64-portable.exe`,
+            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-${RELEASE_VERSION}-windows-x64-portable.exe`,
           },
         ],
       },
@@ -99,24 +100,24 @@ export const DOWNLOAD_SITE_CONFIG: DownloadSiteConfig = {
           {
             label: 'Apple Silicon',
             format: 'DMG',
-            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-0.1.0-mac-arm64.dmg`,
+            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-${RELEASE_VERSION}-mac-arm64.dmg`,
             recommended: true,
           },
           {
             label: 'Apple Silicon',
             format: 'ZIP',
-            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-0.1.0-mac-arm64.zip`,
+            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-${RELEASE_VERSION}-mac-arm64.zip`,
           },
           {
             label: 'Intel',
             format: 'DMG',
-            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-0.1.0-mac-x64.dmg`,
+            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-${RELEASE_VERSION}-mac-x64.dmg`,
             recommended: true,
           },
           {
             label: 'Intel',
             format: 'ZIP',
-            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-0.1.0-mac-x64.zip`,
+            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-${RELEASE_VERSION}-mac-x64.zip`,
           },
         ],
       },
@@ -127,13 +128,13 @@ export const DOWNLOAD_SITE_CONFIG: DownloadSiteConfig = {
           {
             label: 'AppImage',
             format: 'Universal',
-            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-0.1.0-linux-x86_64.AppImage`,
+            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-${RELEASE_VERSION}-linux-x86_64.AppImage`,
             recommended: true,
           },
           {
             label: 'Debian / Ubuntu',
             format: 'DEB',
-            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-0.1.0-linux-amd64.deb`,
+            url: `${RELEASE_DOWNLOAD_URL}/Stickmations-${RELEASE_VERSION}-linux-amd64.deb`,
           },
         ],
       },
