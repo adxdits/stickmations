@@ -7,8 +7,10 @@ import type {
 } from './figure.js';
 import { InvalidStickFigureError } from './validation.js';
 
-const SUPPORTED_VERSION = 432;
-const SUPPORTED_BUILD = 119;
+const SUPPORTED_FORMATS = new Map<number, number>([
+  [432, 119],
+  [433, 120],
+]);
 const MAX_NODE_COUNT = 400;
 
 interface StickNodesHeader {
@@ -55,9 +57,15 @@ export function parseStickNodesFile(
     const version = reader.readInt32();
     const build = reader.readInt32();
 
-    if (version !== SUPPORTED_VERSION || build !== SUPPORTED_BUILD) {
+    if (SUPPORTED_FORMATS.get(version) !== build) {
+      const supportedFormats = [...SUPPORTED_FORMATS]
+        .map(
+          ([supportedVersion, supportedBuild]) =>
+            `version ${supportedVersion}, build ${supportedBuild}`,
+        )
+        .join(' or ');
       throw new InvalidStickFigureError(
-        `Unsupported Stick Nodes version ${version}, build ${build}. Expected version ${SUPPORTED_VERSION}, build ${SUPPORTED_BUILD}.`,
+        `Unsupported Stick Nodes version ${version}, build ${build}. Expected ${supportedFormats}.`,
       );
     }
 
