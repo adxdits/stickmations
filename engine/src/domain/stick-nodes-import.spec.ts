@@ -34,6 +34,23 @@ describe('parseStickNodesFile', () => {
     });
   });
 
+  it('imports current Stick Nodes version 433 build 120 files', () => {
+    const currentFigure = minimalFigure.slice();
+    const header = new DataView(
+      currentFigure.buffer,
+      currentFigure.byteOffset,
+      currentFigure.byteLength,
+    );
+    header.setInt32(0, 433);
+    header.setInt32(4, 120);
+
+    const figure = parseStickNodesFile(currentFigure, 'Current.nodes');
+
+    expect(figure.name).toBe('Current');
+    expect(figure.joints).toHaveLength(2);
+    expect(figure.segments).toHaveLength(1);
+  });
+
   it('rejects truncated files', () => {
     expect(() =>
       parseStickNodesFile(minimalFigure.slice(0, 20), 'Broken.nodes'),
