@@ -122,8 +122,7 @@ export function createSegmentGeometry(
   }
 
   const sides = Math.max(segment.polygonSides ?? 5, 3);
-  const radius =
-    length / 2 + (segment.expandShapeByWidth ? width / 2 : 0);
+  const radius = length / 2 + (segment.expandShapeByWidth ? width / 2 : 0);
   const baseAngle = Math.atan2(axis.y, axis.x);
   const points = Array.from({ length: sides }, (_, index) => ({
     x: center.x + radius * Math.cos(baseAngle + (index * Math.PI * 2) / sides),
