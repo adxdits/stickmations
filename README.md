@@ -62,8 +62,37 @@ matches each operating system and CPU architecture. A version tag such as `v0.1.
 
 Run `npm run check` before tagging, then push the tag to start
 `.github/workflows/release.yml`. The workflow smoke-tests bundled FFmpeg before publishing.
-macOS and Windows artifacts are currently unsigned, so those operating systems may show an
-unverified-developer warning until code-signing certificates are configured.
+It publishes release assets to
+`https://github.com/adxdits/stickmations_opensource/releases`, not the source repository.
+macOS packages must pass Developer ID signing, Apple notarization, ticket stapling, and a
+Gatekeeper assessment. Windows executables must have a valid Authenticode signature. The
+workflow fails before publishing if any trust check fails.
+
+### Release credentials
+
+Configure these Actions secrets in the source repository before publishing:
+
+- `MACOS_CSC_LINK`: base64-encoded Developer ID Application `.p12` certificate
+- `MACOS_CSC_KEY_PASSWORD`: password for the macOS certificate
+- `APPLE_API_KEY_BASE64`: base64-encoded App Store Connect `.p8` API key
+- `APPLE_API_KEY_ID`: App Store Connect API key ID
+- `APPLE_API_ISSUER`: App Store Connect API issuer ID
+- `WINDOWS_CSC_LINK`: base64-encoded `.pfx` from a trusted Windows code-signing CA
+- `WINDOWS_CSC_KEY_PASSWORD`: password for the Windows certificate
+- `RELEASE_GITHUB_TOKEN`: fine-grained token with Contents read/write access only to
+	`adxdits/stickmations_opensource`
+
+Encode certificate and API key files on macOS with
+`base64 < path/to/file | tr -d '\n'`, then store the output as the matching secret. Keep the
+same trusted Windows signing identity across releases so Microsoft can retain its reputation.
+An EV certificate or Microsoft Trusted Signing gives new downloads the strongest immediate
+SmartScreen reputation; a new standard certificate can still show a reputation warning while
+it establishes history, even though the publisher signature is valid.
+
+To replace the existing `v0.1.0` downloads after configuring the secrets, run the
+`Release desktop apps` workflow from `main` with `release_tag` set to `v0.1.0`. The workflow
+rebuilds every platform, verifies trust, and replaces the assets and checksums in the public
+release repository.
 
 The public website deploys separately through `.github/workflows/deploy-website.yml` whenever
 website files reach `main`. GitHub Pages serves the generated site for free at
