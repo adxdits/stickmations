@@ -57,7 +57,7 @@ export interface DownloadSiteConfig {
   readonly copyright: string;
 }
 
-const RELEASE_VERSION = '0.1.1';
+const RELEASE_VERSION = '0.1.2';
 const RELEASE_REPOSITORY =
   'https://github.com/adxdits/stickmations_opensource';
 const RELEASE_URL = `${RELEASE_REPOSITORY}/releases/tag/v${RELEASE_VERSION}`;
@@ -66,10 +66,10 @@ const RELEASE_DOWNLOAD_URL = `${RELEASE_REPOSITORY}/releases/download/v${RELEASE
 export const DOWNLOAD_SITE_CONFIG: DownloadSiteConfig = {
   productName: 'Stickmations',
   news: {
-    title: 'Project save and import are now available',
+    title: 'Stick Nodes imports are now more accurate',
     description:
-      'Keep your animation in a compact project file and reopen it whenever you need.',
-    publishedAt: '2026-09-01',
+      'Import current .nodes figures with improved shapes, fills, and rendering fidelity.',
+    publishedAt: '2026-09-02',
     publishedLabel: 'September 2026',
   },
   release: {
