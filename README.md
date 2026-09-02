@@ -64,34 +64,21 @@ Run `npm run check` before tagging, then push the tag to start
 `.github/workflows/release.yml`. The workflow smoke-tests bundled FFmpeg before publishing.
 It publishes release assets to
 `https://github.com/adxdits/stickmations_opensource/releases`, not the source repository.
-macOS packages must pass Developer ID signing, Apple notarization, ticket stapling, and a
-Gatekeeper assessment. Windows executables must have a valid Authenticode signature. The
-workflow fails before publishing if any trust check fails.
+macOS packages use a fast ad-hoc signature so the app bundle stays internally valid without
+paid credentials. The workflow verifies that bundle before publishing.
 
-### Release credentials
+These builds still show an unverified-publisher warning after downloading. On macOS, use
+Privacy & Security > Open Anyway to approve the app. Ad-hoc signing fixes the malformed bundle
+that previously failed even after that approval, but it does not remove the initial warning.
 
-Configure these Actions secrets in the source repository before publishing:
+### Release publishing
 
-- `MACOS_CSC_LINK`: base64-encoded Developer ID Application `.p12` certificate
-- `MACOS_CSC_KEY_PASSWORD`: password for the macOS certificate
-- `APPLE_API_KEY_BASE64`: base64-encoded App Store Connect `.p8` API key
-- `APPLE_API_KEY_ID`: App Store Connect API key ID
-- `APPLE_API_ISSUER`: App Store Connect API issuer ID
-- `WINDOWS_CSC_LINK`: base64-encoded `.pfx` from a trusted Windows code-signing CA
-- `WINDOWS_CSC_KEY_PASSWORD`: password for the Windows certificate
-- `RELEASE_GITHUB_TOKEN`: fine-grained token with Contents read/write access only to
-  `adxdits/stickmations_opensource`
+The source repository needs one Actions secret: `RELEASE_GITHUB_TOKEN`, a fine-grained token
+with Contents read/write access only to `adxdits/stickmations_opensource`.
 
-Encode certificate and API key files on macOS with
-`base64 < path/to/file | tr -d '\n'`, then store the output as the matching secret. Keep the
-same trusted Windows signing identity across releases so Microsoft can retain its reputation.
-An EV certificate or Microsoft Trusted Signing gives new downloads the strongest immediate
-SmartScreen reputation; a new standard certificate can still show a reputation warning while
-it establishes history, even though the publisher signature is valid.
-
-To replace the existing `v0.1.0` downloads after configuring the secrets, run the
+To replace the existing `v0.1.0` downloads after configuring that token, run the
 `Release desktop apps` workflow from `main` with `release_tag` set to `v0.1.0`. The workflow
-rebuilds every platform, verifies trust, and replaces the assets and checksums in the public
+rebuilds every platform, verifies the packages, and replaces the assets and checksums in the public
 release repository.
 
 The public website deploys separately through `.github/workflows/deploy-website.yml` whenever
