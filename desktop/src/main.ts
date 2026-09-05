@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, Menu, shell } from 'electron';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Mp4ExportManager } from './mp4-export.js';
@@ -25,6 +25,20 @@ const externalLinks = new Set([
 app.setName(appName);
 app.setAppUserModelId(appId);
 
+// The renderer draws its own menu bar, so Electron's default menu would stack a
+// second, unused bar above it on Windows and Linux. macOS keeps a menu because it
+// lives in the system menu bar and supplies the standard editing shortcuts.
+function applyApplicationMenu(): void {
+  if (process.platform !== 'darwin') {
+    Menu.setApplicationMenu(null);
+    return;
+  }
+
+  Menu.setApplicationMenu(
+    Menu.buildFromTemplate([{ role: 'appMenu' }, { role: 'editMenu' }, { role: 'windowMenu' }]),
+  );
+}
+
 function createWindow(): void {
   const window = new BrowserWindow({
     title: appName,
@@ -34,6 +48,7 @@ function createWindow(): void {
     minWidth: 960,
     minHeight: 640,
     backgroundColor: '#1d1f21',
+    autoHideMenuBar: true,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
@@ -70,6 +85,7 @@ mp4Exports.register();
 projectSaves.register();
 await app.whenReady();
 app.dock?.setIcon(appIcon);
+applyApplicationMenu();
 createWindow();
 
 app.on('activate', () => {
