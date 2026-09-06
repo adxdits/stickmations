@@ -1,0 +1,385 @@
+<section class="flex min-h-0 flex-1 flex-col bg-[#232323]" aria-label="Stick figure editor">
+  <header
+    class="flex h-9 shrink-0 items-center gap-1.5 border-b border-[#414141] bg-[#2B2B2B] px-1.5"
+  >
+    <div class="flex items-center gap-0.5 border-r border-[#414141] pr-1.5">
+      @for (option of tools; track option.tool) {
+        <button
+          type="button"
+          class="canvas-tool-button"
+          [class.active-tool]="store.tool() === option.tool"
+          [attr.aria-pressed]="store.tool() === option.tool"
+          [attr.aria-label]="option.label"
+          [attr.data-tooltip]="option.tooltip"
+          (click)="store.setTool(option.tool)"
+        >
+          @switch (option.tool) {
+            @case ('select') {
+              <svg lucideMousePointer2 size="16"></svg>
+            }
+            @case ('draw') {
+              <svg lucidePencil size="16"></svg>
+            }
+            @case ('connect') {
+              <svg lucideSpline size="16"></svg>
+            }
+            @case ('erase') {
+              <svg lucideEraser size="16"></svg>
+            }
+          }
+        </button>
+      }
+    </div>
+    <div class="flex items-center gap-0.5 border-r border-[#414141] pr-1.5">
+      <button
+        type="button"
+        class="canvas-tool-button"
+        aria-label="Undo"
+        data-tooltip="Undo"
+        [disabled]="!store.canUndo()"
+        (click)="store.undo()"
+      >
+        <svg lucideUndo2 size="16"></svg>
+      </button>
+      <button
+        type="button"
+        class="canvas-tool-button"
+        aria-label="Redo"
+        data-tooltip="Redo"
+        [disabled]="!store.canRedo()"
+        (click)="store.redo()"
+      >
+        <svg lucideRedo2 size="16"></svg>
+      </button>
+    </div>
+    <label class="flex items-center gap-1.5 text-[10px] text-[#9A9A9A]">
+      <span>Name</span>
+      <input
+        type="text"
+        class="w-44 border border-[#555555] bg-[#232323] px-1.5 py-0.5 text-[10px] text-[#D6D6D6]"
+        [value]="store.figure().name"
+        (change)="renameFromInput($event)"
+      />
+    </label>
+    <p class="ml-3 text-[10px] text-[#666666]">{{ hint() }}</p>
+    <div class="ml-auto flex items-center gap-1">
+      <button
+        type="button"
+        class="border border-[#555555] px-2 py-1 text-[10px] text-[#D6D6D6] hover:bg-[#3A3A3A] disabled:opacity-40"
+        [disabled]="!store.canSave() || figureSave.isActive()"
+        (click)="saveFigure()"
+      >
+        {{ figureSave.isActive() ? 'Saving…' : 'Save figure…' }}
+      </button>
+      <button
+        type="button"
+        class="border border-[#555555] px-2 py-1 text-[10px] text-[#D6D6D6] hover:bg-[#3A3A3A]"
+        (click)="closed.emit()"
+      >
+        Close
+      </button>
+    </div>
+  </header>
+
+  <div class="flex min-h-0 flex-1">
+    <div class="relative min-w-0 flex-1 overflow-hidden bg-[#232323]">
+      <svg
+        class="size-full touch-none"
+        [attr.viewBox]="viewBox()"
+        preserveAspectRatio="xMidYMid meet"
+        role="application"
+        aria-label="Figure drawing canvas"
+        (pointerdown)="startCanvasPointer($event)"
+        (pointermove)="movePointer($event)"
+        (pointerup)="endPointer($event)"
+        (pointercancel)="endPointer($event)"
+      >
+        <defs>
+          <pattern id="figure-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#2F2F2F" stroke-width="1" />
+          </pattern>
+        </defs>
+        <rect
+          [attr.x]="bounds().x"
+          [attr.y]="bounds().y"
+          [attr.width]="bounds().width"
+          [attr.height]="bounds().height"
+          fill="url(#figure-grid)"
+        />
+        <line
+          [attr.x1]="bounds().x"
+          [attr.x2]="bounds().x + bounds().width"
+          y1="0"
+          y2="0"
+          stroke="#3D3D3D"
+          stroke-width="1"
+        />
+        <line
+          x1="0"
+          x2="0"
+          [attr.y1]="bounds().y"
+          [attr.y2]="bounds().y + bounds().height"
+          stroke="#3D3D3D"
+          stroke-width="1"
+        />
+
+        @for (drawable of preview().drawables; track drawable.id) {
+          @if (drawable.kind === 'line') {
+            <line
+              [attr.x1]="drawable.x1"
+              [attr.y1]="drawable.y1"
+              [attr.x2]="drawable.x2"
+              [attr.y2]="drawable.y2"
+              [attr.stroke]="drawable.color"
+              [attr.stroke-width]="drawable.width"
+              [attr.stroke-linecap]="drawable.lineCap"
+            />
+          } @else if (drawable.kind === 'circle') {
+            <circle
+              [attr.cx]="drawable.cx"
+              [attr.cy]="drawable.cy"
+              [attr.r]="drawable.radius"
+              [attr.fill]="drawable.fill"
+              [attr.stroke]="drawable.stroke"
+              [attr.stroke-width]="drawable.strokeWidth"
+            />
+          } @else {
+            <path
+              [attr.d]="drawable.d"
+              [attr.fill]="drawable.fill"
+              [attr.stroke]="drawable.stroke"
+              [attr.stroke-width]="drawable.strokeWidth"
+            />
+          }
+        }
+
+        <!-- Wide transparent hit lines make thin segments clickable. -->
+        @for (segment of segmentHandles(); track segment.id) {
+          <line
+            [attr.x1]="segment.x1"
+            [attr.y1]="segment.y1"
+            [attr.x2]="segment.x2"
+            [attr.y2]="segment.y2"
+            [attr.stroke]="segment.selected ? '#4A90D9' : 'transparent'"
+            [attr.stroke-width]="segment.selected ? 2 : 12"
+            stroke-linecap="round"
+            [attr.stroke-dasharray]="segment.selected ? '4 3' : null"
+            [attr.pointer-events]="store.tool() === 'draw' ? 'none' : 'stroke'"
+            class="cursor-pointer"
+            [attr.aria-label]="'Segment ' + segment.id"
+            (pointerdown)="pickSegment($event, segment.id)"
+          />
+        }
+
+        @for (joint of jointHandles(); track joint.id) {
+          <circle
+            [attr.cx]="joint.x"
+            [attr.cy]="joint.y"
+            [attr.r]="joint.selected ? 6 : 4.5"
+            [attr.fill]="joint.color"
+            [attr.stroke]="
+              joint.pendingConnect ? '#E0B341' : joint.selected ? '#4A90D9' : '#1B1B1B'
+            "
+            [attr.stroke-width]="joint.pendingConnect || joint.selected ? 2.5 : 1"
+            class="cursor-pointer"
+            [attr.aria-label]="'Joint ' + joint.id"
+            (pointerdown)="startJointPointer($event, joint.id)"
+          />
+        }
+      </svg>
+
+      @if (store.figure().joints.length === 0) {
+        <p
+          class="pointer-events-none absolute inset-x-0 top-1/2 text-center text-[11px] text-[#666666]"
+        >
+          Click anywhere to place the first joint, then keep clicking to grow limbs.
+        </p>
+      }
+    </div>
+
+    <aside
+      class="hidden w-60 shrink-0 flex-col gap-3 overflow-y-auto border-l border-[#414141] bg-[#2B2B2B] p-2.5 lg:flex"
+      aria-label="Figure properties"
+    >
+      <section>
+        <h2 class="mb-1.5 text-[10px] font-semibold tracking-wide text-[#9A9A9A] uppercase">
+          New shapes
+        </h2>
+        <label class="figure-field">
+          <span>Shape</span>
+          <select
+            [value]="store.segmentStyle().shape"
+            (change)="changeDefaultShape($event)"
+            class="figure-input"
+          >
+            @for (shape of shapes; track shape.value) {
+              <option [value]="shape.value">{{ shape.label }}</option>
+            }
+          </select>
+        </label>
+        <label class="figure-field">
+          <span>Width</span>
+          <input
+            type="number"
+            min="1"
+            step="1"
+            class="figure-input"
+            [value]="store.segmentStyle().width"
+            (change)="changeDefaultWidth($event)"
+          />
+        </label>
+        <label class="figure-field">
+          <span>Color</span>
+          <input
+            type="color"
+            class="figure-color"
+            [value]="store.segmentStyle().color"
+            (change)="changeDefaultColor($event)"
+          />
+        </label>
+        <label class="figure-field">
+          <span>Joint size</span>
+          <input
+            type="number"
+            min="1"
+            step="1"
+            class="figure-input"
+            [value]="store.jointStyle().radius"
+            (change)="changeDefaultJointRadius($event)"
+          />
+        </label>
+      </section>
+
+      @if (store.selectedJoint(); as joint) {
+        <section>
+          <h2 class="mb-1.5 text-[10px] font-semibold tracking-wide text-[#9A9A9A] uppercase">
+            Selected joint
+          </h2>
+          <label class="figure-field">
+            <span>X</span>
+            <input
+              type="number"
+              step="1"
+              class="figure-input"
+              [value]="joint.x"
+              (change)="editJointNumber('x', $event)"
+            />
+          </label>
+          <label class="figure-field">
+            <span>Y</span>
+            <input
+              type="number"
+              step="1"
+              class="figure-input"
+              [value]="joint.y"
+              (change)="editJointNumber('y', $event)"
+            />
+          </label>
+          <label class="figure-field">
+            <span>Radius</span>
+            <input
+              type="number"
+              min="1"
+              step="1"
+              class="figure-input"
+              [value]="joint.radius"
+              (change)="editJointNumber('radius', $event)"
+            />
+          </label>
+          <label class="figure-field">
+            <span>Color</span>
+            <input
+              type="color"
+              class="figure-color"
+              [value]="joint.color"
+              (change)="editJointColor($event)"
+            />
+          </label>
+          <p class="text-[9px] leading-snug text-[#666666]">
+            Joint colors mark points in this editor. Pick a shape to recolor what the animation
+            draws.
+          </p>
+        </section>
+      }
+
+      @if (store.selectedSegment(); as segment) {
+        <section>
+          <h2 class="mb-1.5 text-[10px] font-semibold tracking-wide text-[#9A9A9A] uppercase">
+            Selected shape
+          </h2>
+          <label class="figure-field">
+            <span>Shape</span>
+            <select
+              class="figure-input"
+              [value]="segment.shape ?? 'rounded-segment'"
+              (change)="editSegmentShape($event)"
+            >
+              @for (shape of shapes; track shape.value) {
+                <option [value]="shape.value">{{ shape.label }}</option>
+              }
+            </select>
+          </label>
+          <label class="figure-field">
+            <span>Width</span>
+            <input
+              type="number"
+              min="1"
+              step="1"
+              class="figure-input"
+              [value]="segment.width"
+              (change)="editSegmentWidth($event)"
+            />
+          </label>
+          <label class="figure-field">
+            <span>Color</span>
+            <input
+              type="color"
+              class="figure-color"
+              [value]="segment.color"
+              (change)="editSegmentColor($event)"
+            />
+          </label>
+        </section>
+      }
+
+      @if (store.selection()) {
+        <button
+          type="button"
+          class="border border-[#555555] px-2 py-1 text-[10px] text-[#D6D6D6] hover:bg-[#3A3A3A]"
+          (click)="store.deleteSelection()"
+        >
+          Delete selection
+        </button>
+      }
+
+      <p class="mt-auto font-mono text-[9px] text-[#666666]">
+        {{ store.figure().joints.length }} joints · {{ store.figure().segments.length }} shapes
+      </p>
+    </aside>
+  </div>
+
+  @if (figureSave.state().phase === 'error') {
+    <div role="alert" class="border-t border-[#A94D4D] bg-[#2B2B2B] px-3 py-2">
+      <strong class="text-[11px] text-[#F0D0D0]">Figure save failed</strong>
+      <p class="mt-0.5 text-[10px] text-[#D6B0B0]">{{ figureSave.state().error }}</p>
+      <button
+        type="button"
+        class="mt-1 border border-[#555555] px-2 py-0.5 text-[10px] text-[#D6D6D6] hover:bg-[#3A3A3A]"
+        (click)="figureSave.dismiss()"
+      >
+        Dismiss
+      </button>
+    </div>
+  } @else if (figureSave.state().phase === 'complete') {
+    <div role="status" class="border-t border-[#414141] bg-[#2B2B2B] px-3 py-2">
+      <span class="text-[10px] text-[#9A9A9A]">Saved to {{ figureSave.state().outputPath }}</span>
+      <button
+        type="button"
+        class="ml-2 border border-[#555555] px-2 py-0.5 text-[10px] text-[#D6D6D6] hover:bg-[#3A3A3A]"
+        (click)="figureSave.dismiss()"
+      >
+        Dismiss
+      </button>
+    </div>
+  }
+</section>

@@ -4,6 +4,7 @@ import { ApplicationMenuBar } from './features/application-menu/application-menu
 import { CanvasToolbar } from './features/canvas/canvas-toolbar';
 import { FigureCanvas } from './features/canvas/figure-canvas';
 import { Mp4ExportDialog } from './features/export/mp4-export-dialog';
+import { FigureEditor } from './features/figure-editor/figure-editor';
 import { Inspector } from './features/inspector/inspector';
 import { ProjectSidebar } from './features/project/project-sidebar';
 import { SceneStrip } from './features/scene-strip/scene-strip';
@@ -11,6 +12,7 @@ import { Timeline } from './features/timeline/timeline';
 import { Mp4ExportService } from './io/mp4-export';
 import { ProjectSaveService } from './io/project-save';
 import { isEditableTarget } from './shared/dom-events';
+import { EditorFigureStore } from './state/editor-figure.store';
 import { EditorDocumentStore } from './state/editor-document.store';
 import { EditorViewportStore } from './state/editor-viewport.store';
 import { EditorWorkspaceStore } from './state/editor-workspace.store';
@@ -21,6 +23,7 @@ import { EditorWorkspaceStore } from './state/editor-workspace.store';
     ApplicationMenuBar,
     CanvasToolbar,
     FigureCanvas,
+    FigureEditor,
     Mp4ExportDialog,
     Inspector,
     ProjectSidebar,
@@ -39,6 +42,7 @@ export class App {
   protected readonly editor = inject(EditorDocumentStore);
   protected readonly viewport = inject(EditorViewportStore);
   protected readonly workspace = inject(EditorWorkspaceStore);
+  protected readonly figureEditor = inject(EditorFigureStore);
   protected readonly mp4Export = inject(Mp4ExportService);
   protected readonly projectSave = inject(ProjectSaveService);
   protected readonly fullscreen = signal(false);
@@ -91,6 +95,11 @@ export class App {
   }
 
   protected handleShortcut(event: KeyboardEvent): void {
+    // The figure editor owns the keyboard while it is open, so undo and save reach one surface only.
+    if (this.figureEditor.isOpen()) {
+      return;
+    }
+
     this.editor.handleShortcut(event);
     if (
       !event.defaultPrevented &&

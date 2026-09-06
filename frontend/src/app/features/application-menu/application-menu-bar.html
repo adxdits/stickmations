@@ -22,6 +22,9 @@
         <button type="button" (click)="blankProjectRequested.emit(); closeMenu($event)">
           <svg lucideFilePlusCorner size="13"></svg><span>New blank animation</span>
         </button>
+        <button type="button" (click)="figureEditorRequested.emit(); closeMenu($event)">
+          <svg lucideFilePlusCorner size="13"></svg><span>New stick figure…</span>
+        </button>
         <label
           ><svg lucideUpload size="13"></svg><span>Import existing project…</span
           ><input

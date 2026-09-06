@@ -40,6 +40,7 @@
       (filesSelected)="editor.importFigures($event)"
       (backgroundFileSelected)="editor.importBackground($event)"
       (blankProjectRequested)="editor.createBlankProject()"
+      (figureEditorRequested)="figureEditor.open()"
       (selectedFigureDeleted)="editor.deleteSelectedFigure()"
       (frameAdded)="editor.addFrame()"
       (blankFrameAdded)="editor.addBlankFrame()"
@@ -50,130 +51,134 @@
       (mp4ExportRequested)="exportMp4()"
     />
   }
-  <app-canvas-toolbar
-    class="contents"
-    [controlMode]="viewport.controlMode()"
-    [canUndo]="editor.canUndo()"
-    [canRedo]="editor.canRedo()"
-    [canFitCamera]="editor.currentCamera() !== null"
-    [canvasFocused]="workspace.canvasFocused()"
-    [fullscreen]="fullscreen()"
-    [zoom]="viewport.zoom()"
-    (controlModeChange)="viewport.controlMode.set($event)"
-    (undo)="editor.undo()"
-    (redo)="editor.redo()"
-    (zoomIn)="viewport.increaseZoom()"
-    (zoomOut)="viewport.decreaseZoom()"
-    (zoomChange)="viewport.setZoom($event)"
-    (fitCanvas)="viewport.fitCanvas()"
-    (fitCamera)="fitCurrentCamera()"
-    (canvasFocusToggle)="workspace.toggleCanvasFocus()"
-    (fullscreenToggle)="toggleFullscreen()"
-    (panRequested)="viewport.panBy($event)"
-  />
-  <div class="flex min-h-0 flex-1">
-    @if (workspace.isVisible('project')) {
-      <app-project-sidebar
-        class="hidden w-56 shrink-0 flex-col border-r border-[#414141] bg-[#2B2B2B] md:flex"
-        [figures]="editor.currentScene()?.figures ?? []"
-        [selectedFigureId]="editor.selectedLayer()?.id ?? null"
-        [background]="editor.currentBackground()"
-        (filesSelected)="editor.importFigures($event)"
-        (backgroundFileSelected)="editor.importBackground($event)"
-        (blankProjectRequested)="editor.createBlankProject()"
-        (figureSelected)="editor.selectFigure($event)"
-        (figureDeleted)="editor.deleteFigure($event)"
-        (figureMoved)="editor.moveFigure($event)"
-        (figureVisibilityChanged)="editor.setFigureVisibility($event.id, $event.visible)"
-      />
-    }
-    <section class="flex min-w-0 flex-1 flex-col bg-[#232323]" aria-label="Animation workspace">
-      @if (workspace.isVisible('sceneStrip')) {
-        <app-scene-strip
-          class="hidden h-[92px] shrink-0 sm:block"
-          [previews]="editor.framePreviews()"
-          [backgrounds]="editor.frameBackgrounds()"
-          [cameras]="editor.frameCameras()"
-          [currentFrame]="editor.currentFrame()"
-          (frameSelected)="editor.selectFrame($event)"
-          (frameAdded)="editor.addFrame()"
-          (blankFrameAdded)="editor.addBlankFrame()"
-          (frameDeleted)="editor.deleteFrame()"
-          (frameMoved)="editor.moveFrame($event)"
-          (previousFrame)="editor.selectRelativeFrame(-1)"
-          (nextFrame)="editor.selectRelativeFrame(1)"
+  @if (figureEditor.isOpen()) {
+    <app-figure-editor class="contents" (closed)="figureEditor.close()" />
+  } @else {
+    <app-canvas-toolbar
+      class="contents"
+      [controlMode]="viewport.controlMode()"
+      [canUndo]="editor.canUndo()"
+      [canRedo]="editor.canRedo()"
+      [canFitCamera]="editor.currentCamera() !== null"
+      [canvasFocused]="workspace.canvasFocused()"
+      [fullscreen]="fullscreen()"
+      [zoom]="viewport.zoom()"
+      (controlModeChange)="viewport.controlMode.set($event)"
+      (undo)="editor.undo()"
+      (redo)="editor.redo()"
+      (zoomIn)="viewport.increaseZoom()"
+      (zoomOut)="viewport.decreaseZoom()"
+      (zoomChange)="viewport.setZoom($event)"
+      (fitCanvas)="viewport.fitCanvas()"
+      (fitCamera)="fitCurrentCamera()"
+      (canvasFocusToggle)="workspace.toggleCanvasFocus()"
+      (fullscreenToggle)="toggleFullscreen()"
+      (panRequested)="viewport.panBy($event)"
+    />
+    <div class="flex min-h-0 flex-1">
+      @if (workspace.isVisible('project')) {
+        <app-project-sidebar
+          class="hidden w-56 shrink-0 flex-col border-r border-[#414141] bg-[#2B2B2B] md:flex"
+          [figures]="editor.currentScene()?.figures ?? []"
+          [selectedFigureId]="editor.selectedLayer()?.id ?? null"
+          [background]="editor.currentBackground()"
+          (filesSelected)="editor.importFigures($event)"
+          (backgroundFileSelected)="editor.importBackground($event)"
+          (blankProjectRequested)="editor.createBlankProject()"
+          (figureSelected)="editor.selectFigure($event)"
+          (figureDeleted)="editor.deleteFigure($event)"
+          (figureMoved)="editor.moveFigure($event)"
+          (figureVisibilityChanged)="editor.setFigureVisibility($event.id, $event.visible)"
         />
       }
-      <app-figure-canvas
-        class="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[#232323]"
-        [figure]="editor.importedFigure()"
-        [preview]="editor.preview()"
-        [selectedPreview]="editor.selectedPreview()"
-        [viewBox]="viewport.sceneViewBox()"
-        [hasFrame]="editor.animationFrames().length > 0"
-        [background]="editor.currentBackground()"
-        [camera]="editor.currentCamera()"
-        [controlMode]="viewport.controlMode()"
-        [playbackPreview]="viewport.isPlaybackPreview()"
-        [expanded]="workspace.canvasFocused()"
-        [zoom]="viewport.zoom()"
-        [pan]="viewport.pan()"
-        [importError]="editor.importError()"
-        (filesSelected)="editor.importFigures($event)"
-        (blankProjectRequested)="editor.createBlankProject()"
-        (figureChange)="editor.updateCurrentFrame($event)"
-        (editStarted)="editor.beginFrameEdit()"
-        (editEnded)="editor.endFrameEdit()"
-        (panChange)="viewport.pan.set($event)"
-        (zoomRequested)="viewport.zoomAt($event.factor, $event.anchor)"
-        (cameraChange)="editor.updateCamera($event)"
-      />
-      @if (workspace.isVisible('timeline')) {
-        <app-timeline
-          class="h-[150px] shrink-0 border-t border-[#414141] bg-[#2B2B2B] sm:h-[190px]"
-          [figureName]="editor.importedFigure()?.name ?? 'Figure'"
-          [currentFrame]="editor.currentFrame()"
-          [totalFrames]="editor.animationFrames().length"
-          [fps]="editor.fps()"
-          [transform]="editor.currentTransform()"
+      <section class="flex min-w-0 flex-1 flex-col bg-[#232323]" aria-label="Animation workspace">
+        @if (workspace.isVisible('sceneStrip')) {
+          <app-scene-strip
+            class="hidden h-[92px] shrink-0 sm:block"
+            [previews]="editor.framePreviews()"
+            [backgrounds]="editor.frameBackgrounds()"
+            [cameras]="editor.frameCameras()"
+            [currentFrame]="editor.currentFrame()"
+            (frameSelected)="editor.selectFrame($event)"
+            (frameAdded)="editor.addFrame()"
+            (blankFrameAdded)="editor.addBlankFrame()"
+            (frameDeleted)="editor.deleteFrame()"
+            (frameMoved)="editor.moveFrame($event)"
+            (previousFrame)="editor.selectRelativeFrame(-1)"
+            (nextFrame)="editor.selectRelativeFrame(1)"
+          />
+        }
+        <app-figure-canvas
+          class="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[#232323]"
+          [figure]="editor.importedFigure()"
+          [preview]="editor.preview()"
+          [selectedPreview]="editor.selectedPreview()"
+            [viewBox]="viewport.sceneViewBox()"
+          [hasFrame]="editor.animationFrames().length > 0"
+          [background]="editor.currentBackground()"
           [camera]="editor.currentCamera()"
-          (currentFrameChange)="editor.selectFrame($event)"
-          (fpsChange)="editor.setFps($event)"
-          (playbackStarted)="viewport.startPlaybackPreview()"
-          (playbackStopped)="viewport.stopPlaybackPreview()"
+          [controlMode]="viewport.controlMode()"
+          [playbackPreview]="viewport.isPlaybackPreview()"
+          [expanded]="workspace.canvasFocused()"
+          [zoom]="viewport.zoom()"
+          [pan]="viewport.pan()"
+          [importError]="editor.importError()"
+          (filesSelected)="editor.importFigures($event)"
+          (blankProjectRequested)="editor.createBlankProject()"
+          (figureChange)="editor.updateCurrentFrame($event)"
+          (editStarted)="editor.beginFrameEdit()"
+          (editEnded)="editor.endFrameEdit()"
+          (panChange)="viewport.pan.set($event)"
+          (zoomRequested)="viewport.zoomAt($event.factor, $event.anchor)"
+          (cameraChange)="editor.updateCamera($event)"
+        />
+        @if (workspace.isVisible('timeline')) {
+          <app-timeline
+            class="h-[150px] shrink-0 border-t border-[#414141] bg-[#2B2B2B] sm:h-[190px]"
+            [figureName]="editor.importedFigure()?.name ?? 'Figure'"
+            [currentFrame]="editor.currentFrame()"
+            [totalFrames]="editor.animationFrames().length"
+            [fps]="editor.fps()"
+            [transform]="editor.currentTransform()"
+            [camera]="editor.currentCamera()"
+            (currentFrameChange)="editor.selectFrame($event)"
+            (fpsChange)="editor.setFps($event)"
+            (playbackStarted)="viewport.startPlaybackPreview()"
+            (playbackStopped)="viewport.stopPlaybackPreview()"
+            (transformChange)="editor.updateTransform($event)"
+            (cameraChange)="editor.updateCamera($event)"
+          />
+        }
+      </section>
+      @if (workspace.isVisible('inspector')) {
+        <app-inspector
+          class="hidden w-64 shrink-0 flex-col border-l border-[#414141] bg-[#2B2B2B] xl:flex"
+          [figure]="editor.importedFigure()"
+          [controlMode]="viewport.controlMode()"
+          [transform]="editor.currentTransform()"
+          [background]="editor.currentBackground()"
+          [camera]="editor.currentCamera()"
+          (controlModeChange)="viewport.controlMode.set($event)"
           (transformChange)="editor.updateTransform($event)"
+          (figureOperation)="editor.applySelectedFigureOperation($event)"
+          (backgroundColorChange)="editor.setBackgroundColor($event)"
+          (backgroundChange)="editor.updateBackgroundTransform($event)"
+          (backgroundReset)="editor.resetBackgroundTransform()"
+          (backgroundImageRemoved)="editor.clearBackgroundImage()"
           (cameraChange)="editor.updateCamera($event)"
         />
       }
-    </section>
-    @if (workspace.isVisible('inspector')) {
-      <app-inspector
-        class="hidden w-64 shrink-0 flex-col border-l border-[#414141] bg-[#2B2B2B] xl:flex"
-        [figure]="editor.importedFigure()"
-        [controlMode]="viewport.controlMode()"
-        [transform]="editor.currentTransform()"
-        [background]="editor.currentBackground()"
-        [camera]="editor.currentCamera()"
-        (controlModeChange)="viewport.controlMode.set($event)"
-        (transformChange)="editor.updateTransform($event)"
-        (figureOperation)="editor.applySelectedFigureOperation($event)"
-        (backgroundColorChange)="editor.setBackgroundColor($event)"
-        (backgroundChange)="editor.updateBackgroundTransform($event)"
-        (backgroundReset)="editor.resetBackgroundTransform()"
-        (backgroundImageRemoved)="editor.clearBackgroundImage()"
-        (cameraChange)="editor.updateCamera($event)"
-      />
-    }
-  </div>
-  @if (!workspace.canvasFocused()) {
-    <footer
-      class="flex h-6 shrink-0 items-center border-t border-[#414141] bg-[#232323] px-2 font-mono text-[9px] text-[#666666]"
-    >
-      <span class="text-[#9A9A9A]">Ready</span
-      ><span class="ml-auto"
-        >Frame {{ editor.currentFrame() }} / {{ editor.animationFrames().length || 1 }}</span
+    </div>
+    @if (!workspace.canvasFocused()) {
+      <footer
+        class="flex h-6 shrink-0 items-center border-t border-[#414141] bg-[#232323] px-2 font-mono text-[9px] text-[#666666]"
       >
-    </footer>
+        <span class="text-[#9A9A9A]">Ready</span
+        ><span class="ml-auto"
+          >Frame {{ editor.currentFrame() }} / {{ editor.animationFrames().length || 1 }}</span
+        >
+      </footer>
+    }
   }
   @if (mp4Export.state().phase !== 'idle') {
     <app-mp4-export-dialog

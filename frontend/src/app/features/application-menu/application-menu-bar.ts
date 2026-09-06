@@ -81,6 +81,7 @@ export class ApplicationMenuBar {
   readonly projectFileSelected = output<File>();
   readonly backgroundFileSelected = output<File>();
   readonly blankProjectRequested = output<void>();
+  readonly figureEditorRequested = output<void>();
   readonly selectedFigureDeleted = output<void>();
   readonly frameAdded = output<void>();
   readonly blankFrameAdded = output<void>();
@@ -129,4 +130,5 @@ export class ApplicationMenuBar {
   protected closeMenu(event: Event): void {
     (event.currentTarget as HTMLElement).closest('details')?.removeAttribute('open');
   }
+
 }
