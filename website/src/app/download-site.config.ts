@@ -57,7 +57,7 @@ export interface DownloadSiteConfig {
   readonly copyright: string;
 }
 
-const RELEASE_VERSION = '0.1.3';
+const RELEASE_VERSION = '0.1.4';
 const RELEASE_REPOSITORY = 'https://github.com/adxdits/stickmations_opensource';
 const RELEASE_URL = `${RELEASE_REPOSITORY}/releases/tag/v${RELEASE_VERSION}`;
 const RELEASE_DOWNLOAD_URL = `${RELEASE_REPOSITORY}/releases/download/v${RELEASE_VERSION}`;
@@ -65,10 +65,10 @@ const RELEASE_DOWNLOAD_URL = `${RELEASE_REPOSITORY}/releases/download/v${RELEASE
 export const DOWNLOAD_SITE_CONFIG: DownloadSiteConfig = {
   productName: 'Stickmations',
   news: {
-    title: 'The duplicate menu bar is gone on Windows and Linux',
+    title: 'Draw your own stick figures and animate with onion skins',
     description:
-      'The desktop app no longer stacks an unused system menu above its own toolbar.',
-    publishedAt: '2026-09-05',
+      'Build a figure from scratch in the new editor, then ghost the neighbouring frames while you pose.',
+    publishedAt: '2026-09-06',
     publishedLabel: 'September 2026',
   },
   release: {
