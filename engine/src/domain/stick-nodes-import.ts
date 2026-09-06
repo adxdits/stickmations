@@ -12,6 +12,14 @@ const SUPPORTED_FORMATS = new Map<number, number>([
   [432, 119],
   [433, 120],
 ]);
+/**
+ * Files written before build 119 carry no build number and pack each node into a fixed 84 bytes,
+ * without the per-child connector flags or the trailing connector table the current format adds.
+ * Everything the older layout omits (triangle and trapezoid options, polygon sides, half shapes)
+ * simply did not exist yet, so those fall back to the same defaults a plain segment uses.
+ */
+const LEGACY_NODE_BYTES = 84;
+const OLDEST_LEGACY_VERSION = 200;
 const MAX_NODE_COUNT = 400;
 
 interface StickNodesHeader {
@@ -51,6 +59,7 @@ interface ParsedNode {
 
 interface ImportState {
   readonly reader: BinaryReader;
+  readonly legacy: boolean;
   readonly header: StickNodesHeader;
   readonly joints: FigureJoint[];
   readonly segments: FigureSegment[];
@@ -65,20 +74,7 @@ export function parseStickNodesFile(
 ): StickFigure {
   try {
     const reader = new BinaryReader(source);
-    const version = reader.readInt32();
-    const build = reader.readInt32();
-
-    if (SUPPORTED_FORMATS.get(version) !== build) {
-      const supportedFormats = [...SUPPORTED_FORMATS]
-        .map(
-          ([supportedVersion, supportedBuild]) =>
-            `version ${supportedVersion}, build ${supportedBuild}`,
-        )
-        .join(' or ');
-      throw new InvalidStickFigureError(
-        `Unsupported Stick Nodes version ${version}, build ${build}. Expected ${supportedFormats}.`,
-      );
-    }
+    const legacy = readFormat(reader);
 
     const header = {
       scale: requireFinite(reader.readFloat32()),
@@ -86,6 +82,7 @@ export function parseStickNodesFile(
     };
     const state: ImportState = {
       reader,
+      legacy,
       header,
       joints: [],
       segments: [],
@@ -96,7 +93,9 @@ export function parseStickNodesFile(
 
     readNodeTree(state, null, false);
     readPolyfills(state);
-    readConnectors(state);
+    if (!state.legacy) {
+      readConnectors(state);
+    }
 
     return {
       version: 1,
@@ -115,6 +114,31 @@ export function parseStickNodesFile(
   }
 }
 
+/** Returns true when the file predates build numbers and uses the compact node record. */
+function readFormat(reader: BinaryReader): boolean {
+  const version = reader.readInt32();
+  const expectedBuild = SUPPORTED_FORMATS.get(version);
+
+  if (expectedBuild !== undefined) {
+    const build = reader.readInt32();
+    if (build !== expectedBuild) {
+      throw new InvalidStickFigureError(
+        `Unsupported Stick Nodes build ${build} for version ${version}. Expected build ${expectedBuild}.`,
+      );
+    }
+    return false;
+  }
+
+  const oldestSupported = Math.min(...SUPPORTED_FORMATS.keys());
+  if (version >= OLDEST_LEGACY_VERSION && version < oldestSupported) {
+    return true;
+  }
+
+  throw new InvalidStickFigureError(
+    `Unsupported Stick Nodes version ${version}. Expected ${OLDEST_LEGACY_VERSION} to ${oldestSupported} or ${[...SUPPORTED_FORMATS.keys()].join(' or ')}.`,
+  );
+}
+
 function readNodeTree(
   state: ImportState,
   parent: ParentNode | null,
@@ -127,7 +151,9 @@ function readNodeTree(
     );
   }
 
-  const node = readNode(state.reader, state.header, isConnector);
+  const node = state.legacy
+    ? readLegacyNode(state.reader, state.header)
+    : readNode(state.reader, state.header, isConnector);
   if (state.nodeIds.has(node.id)) {
     throw new InvalidStickFigureError(
       `Stick Nodes node id "${node.id}" is duplicated.`,
@@ -276,6 +302,69 @@ function readNode(
     endWidth: Math.max(trapezoidEnd * widthScale, 1),
     polygonSides: Math.max(polygonSides, 3),
     childConnectors,
+  };
+}
+
+function readLegacyNode(
+  reader: BinaryReader,
+  header: StickNodesHeader,
+): ParsedNode {
+  const shape = readNodeShape(reader.readInt8());
+  const drawOrder = reader.readInt32();
+  const isStatic = reader.readUint8() !== 0;
+  const isStretchy = reader.readUint8() !== 0;
+  reader.skip(2);
+  const useSegmentColor = reader.readUint8() !== 0;
+  const useCircleOutline = reader.readUint8() !== 0;
+  const hollow = reader.readUint8() !== 0;
+  reader.skip(1);
+  const useSegmentScale = reader.readUint8() !== 0;
+  reader.skip(8);
+  const scale = requireFinite(reader.readFloat32());
+  reader.skip(4);
+  const length = requireFinite(reader.readFloat32());
+  reader.skip(4);
+  const thickness = reader.readInt32();
+  reader.skip(18);
+  const angle = requireFinite(reader.readFloat32());
+  reader.skip(4);
+  const nodeColor = readColor(reader);
+  readColor(reader);
+  const outlineColor = readColor(reader);
+
+  const childCount = reader.readInt32();
+  if (childCount < 0 || childCount > MAX_NODE_COUNT) {
+    throw new InvalidStickFigureError(
+      `Invalid Stick Nodes child count: ${childCount}.`,
+    );
+  }
+
+  const segmentScale = useSegmentScale ? scale : 1;
+  const widthScale = segmentScale * header.scale;
+  const width = Math.max(thickness * widthScale, 1);
+
+  return {
+    id: `node-${drawOrder}`,
+    drawOrder,
+    shape,
+    hollow,
+    isStatic,
+    isStretchy,
+    length,
+    angle,
+    scale: segmentScale,
+    width,
+    color: useSegmentColor ? nodeColor : header.color,
+    halfShape: false,
+    ...(useCircleOutline ? { outlineColor } : {}),
+    triangleType: 'isosceles',
+    triangleFlipped: false,
+    triangleUpsideDown: false,
+    startWidth: width,
+    endWidth: width,
+    polygonSides: 3,
+    // Older files have no connector flags, so every child is an ordinary node.
+    childConnectors: Array.from({ length: childCount }, () => false),
   };
 }
 

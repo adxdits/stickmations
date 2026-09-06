@@ -63,6 +63,64 @@ describe('parseStickNodesFile', () => {
     expect(figure.joints[2]?.y).toBeCloseTo(Math.SQRT1_2 * 200);
   });
 
+  it('imports files written before build numbers existed', () => {
+    const legacy = createLegacyFigure(323);
+
+    const figure = parseStickNodesFile(legacy, 'Legacy.nodes');
+
+    expect(figure.name).toBe('Legacy');
+    expect(figure.joints).toHaveLength(2);
+    expect(figure.joints[0]).toMatchObject({ id: 'node-0' });
+    expect(figure.joints[1]?.x).toBeCloseTo(0);
+    expect(figure.joints[1]?.y).toBeCloseTo(100);
+    expect(figure.segments).toMatchObject([
+      {
+        id: 'segment-node-1',
+        from: 'node-0',
+        to: 'node-1',
+        width: 32,
+        color: '#ff0000',
+      },
+    ]);
+  });
+
+  it('reads the same legacy layout across the versions that share it', () => {
+    for (const version of [200, 323, 334, 431]) {
+      const figure = parseStickNodesFile(
+        createLegacyFigure(version),
+        'Legacy.nodes',
+      );
+      expect(figure.joints).toHaveLength(2);
+    }
+  });
+
+  it('defaults the options the legacy layout never stored', () => {
+    const figure = parseStickNodesFile(createLegacyFigure(323), 'Legacy.nodes');
+
+    expect(figure.segments[0]).toMatchObject({
+      shape: 'rounded-segment',
+      halfShape: false,
+      triangleType: 'isosceles',
+      triangleFlipped: false,
+      polygonSides: 3,
+    });
+  });
+
+  it('rejects versions too old to share the legacy layout', () => {
+    expect(() =>
+      parseStickNodesFile(createLegacyFigure(120), 'Ancient.nodes'),
+    ).toThrow(/Unsupported Stick Nodes version 120/);
+  });
+
+  it('still rejects a wrong build number for a current version', () => {
+    const wrongBuild = minimalFigure.slice();
+    new DataView(wrongBuild.buffer, wrongBuild.byteOffset).setInt32(4, 999);
+
+    expect(() => parseStickNodesFile(wrongBuild, 'Wrong.nodes')).toThrow(
+      /Unsupported Stick Nodes build 999/,
+    );
+  });
+
   it('rejects truncated files', () => {
     expect(() =>
       parseStickNodesFile(minimalFigure.slice(0, 20), 'Broken.nodes'),
@@ -92,5 +150,47 @@ function createNestedFigure(): Uint8Array {
   const grandchildOffset = treeEnd + 4;
   view.setInt32(grandchildOffset + 1, 2);
   view.setFloat32(grandchildOffset + angleOffset, 90);
+  return result;
+}
+
+/**
+ * Builds a two-node file in the pre-build-number layout: no build field, a fixed 84-byte node
+ * record, no per-child connector flags, and no trailing connector table.
+ */
+function createLegacyFigure(version: number): Uint8Array {
+  const NODE = 84;
+  const header = 12;
+  const result = new Uint8Array(header + NODE * 2 + 4);
+  const view = new DataView(result.buffer);
+
+  view.setInt32(0, version);
+  view.setFloat32(4, 1);
+  result.set([0xff, 0x20, 0x20, 0x20], 8); // header colour
+
+  const writeNode = (
+    at: number,
+    drawOrder: number,
+    angle: number,
+    length: number,
+    childCount: number,
+  ) => {
+    view.setInt8(at, 0); // rounded segment
+    view.setInt32(at + 1, drawOrder);
+    result[at + 9] = 1; // use the node's own colour
+    result[at + 13] = 1; // use the node's own scale
+    view.setFloat32(at + 22, 1); // scale
+    view.setFloat32(at + 30, length);
+    view.setInt32(at + 38, 32); // thickness
+    view.setFloat32(at + 60, angle);
+    result.set([0xff, 0x00, 0x00, 0xff], at + 68); // node colour, stored BGRA
+    result.set([0xff, 0x80, 0x80, 0x80], at + 72);
+    result.set([0xff, 0x80, 0x80, 0x80], at + 76);
+    view.setInt32(at + 80, childCount);
+  };
+
+  // The root offsets by its own length, so keep it at the origin.
+  writeNode(header, 0, 0, 0, 1);
+  writeNode(header + NODE, 1, 90, 100, 0);
+  view.setInt32(header + NODE * 2, 0); // no polyfills
   return result;
 }
