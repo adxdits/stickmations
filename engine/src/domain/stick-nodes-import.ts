@@ -13,14 +13,22 @@ const SUPPORTED_FORMATS = new Map<number, number>([
   [433, 120],
 ]);
 /**
- * Files written before build 119 carry no build number and pack each node into a fixed 84 bytes,
+ * Files written before build 119 carry no build number and pack each node into a fixed-size record,
  * without the per-child connector flags or the trailing connector table the current format adds.
- * Everything the older layout omits (triangle and trapezoid options, polygon sides, half shapes)
+ * Everything the older layouts omit (triangle and trapezoid options, polygon sides, half shapes)
  * simply did not exist yet, so those fall back to the same defaults a plain segment uses.
+ *
+ * The two legacy records agree field for field up to the rotation; the later one repeats the
+ * rotation before the colours, which makes its record four bytes longer.
  */
-const LEGACY_NODE_BYTES = 84;
+const LEGACY_TRAILING_ANGLE_VERSION = 320;
 const OLDEST_LEGACY_VERSION = 200;
 const MAX_NODE_COUNT = 400;
+
+interface LegacyLayout {
+  /** Later legacy files store the rotation twice, once more just before the colours. */
+  readonly repeatsAngle: boolean;
+}
 
 interface StickNodesHeader {
   readonly scale: number;
@@ -59,7 +67,7 @@ interface ParsedNode {
 
 interface ImportState {
   readonly reader: BinaryReader;
-  readonly legacy: boolean;
+  readonly legacy: LegacyLayout | null;
   readonly header: StickNodesHeader;
   readonly joints: FigureJoint[];
   readonly segments: FigureSegment[];
@@ -114,8 +122,8 @@ export function parseStickNodesFile(
   }
 }
 
-/** Returns true when the file predates build numbers and uses the compact node record. */
-function readFormat(reader: BinaryReader): boolean {
+/** Null for the current format, otherwise the legacy record this file's version uses. */
+function readFormat(reader: BinaryReader): LegacyLayout | null {
   const version = reader.readInt32();
   const expectedBuild = SUPPORTED_FORMATS.get(version);
 
@@ -126,12 +134,12 @@ function readFormat(reader: BinaryReader): boolean {
         `Unsupported Stick Nodes build ${build} for version ${version}. Expected build ${expectedBuild}.`,
       );
     }
-    return false;
+    return null;
   }
 
   const oldestSupported = Math.min(...SUPPORTED_FORMATS.keys());
   if (version >= OLDEST_LEGACY_VERSION && version < oldestSupported) {
-    return true;
+    return { repeatsAngle: version >= LEGACY_TRAILING_ANGLE_VERSION };
   }
 
   throw new InvalidStickFigureError(
@@ -152,7 +160,7 @@ function readNodeTree(
   }
 
   const node = state.legacy
-    ? readLegacyNode(state.reader, state.header)
+    ? readLegacyNode(state.reader, state.header, state.legacy)
     : readNode(state.reader, state.header, isConnector);
   if (state.nodeIds.has(node.id)) {
     throw new InvalidStickFigureError(
@@ -308,6 +316,7 @@ function readNode(
 function readLegacyNode(
   reader: BinaryReader,
   header: StickNodesHeader,
+  layout: LegacyLayout,
 ): ParsedNode {
   const shape = readNodeShape(reader.readInt8());
   const drawOrder = reader.readInt32();
@@ -327,7 +336,9 @@ function readLegacyNode(
   const thickness = reader.readInt32();
   reader.skip(18);
   const angle = requireFinite(reader.readFloat32());
-  reader.skip(4);
+  if (layout.repeatsAngle) {
+    reader.skip(4);
+  }
   const nodeColor = readColor(reader);
   readColor(reader);
   const outlineColor = readColor(reader);

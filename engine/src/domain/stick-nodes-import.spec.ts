@@ -84,14 +84,25 @@ describe('parseStickNodesFile', () => {
     ]);
   });
 
-  it('reads the same legacy layout across the versions that share it', () => {
-    for (const version of [200, 323, 334, 431]) {
+  it('reads both legacy record layouts', () => {
+    // 305 predates the repeated rotation; 320 and later carry it.
+    for (const version of [200, 305, 319, 320, 323, 334, 431]) {
       const figure = parseStickNodesFile(
         createLegacyFigure(version),
         'Legacy.nodes',
       );
-      expect(figure.joints).toHaveLength(2);
+      expect(figure.joints, `version ${version}`).toHaveLength(2);
+      expect(figure.joints[1]?.y, `version ${version}`).toBeCloseTo(100);
     }
+  });
+
+  it('imports the shorter record used before the rotation was repeated', () => {
+    const figure = parseStickNodesFile(createLegacyFigure(305), 'Effect.nodes');
+
+    expect(figure.joints).toHaveLength(2);
+    expect(figure.joints[1]?.x).toBeCloseTo(0);
+    expect(figure.joints[1]?.y).toBeCloseTo(100);
+    expect(figure.segments[0]).toMatchObject({ width: 32, color: '#ff0000' });
   });
 
   it('defaults the options the legacy layout never stored', () => {
@@ -154,11 +165,15 @@ function createNestedFigure(): Uint8Array {
 }
 
 /**
- * Builds a two-node file in the pre-build-number layout: no build field, a fixed 84-byte node
- * record, no per-child connector flags, and no trailing connector table.
+ * Builds a two-node file in a pre-build-number layout: no build field, a fixed node record, no
+ * per-child connector flags and no trailing connector table. Versions from 320 store the rotation
+ * a second time just before the colours, which makes their record four bytes longer.
  */
 function createLegacyFigure(version: number): Uint8Array {
-  const NODE = 84;
+  const repeatsAngle = version >= 320;
+  const NODE = repeatsAngle ? 84 : 80;
+  const colourAt = repeatsAngle ? 68 : 64;
+  const childCountAt = repeatsAngle ? 80 : 76;
   const header = 12;
   const result = new Uint8Array(header + NODE * 2 + 4);
   const view = new DataView(result.buffer);
@@ -182,10 +197,10 @@ function createLegacyFigure(version: number): Uint8Array {
     view.setFloat32(at + 30, length);
     view.setInt32(at + 38, 32); // thickness
     view.setFloat32(at + 60, angle);
-    result.set([0xff, 0x00, 0x00, 0xff], at + 68); // node colour, stored BGRA
-    result.set([0xff, 0x80, 0x80, 0x80], at + 72);
-    result.set([0xff, 0x80, 0x80, 0x80], at + 76);
-    view.setInt32(at + 80, childCount);
+    result.set([0xff, 0x00, 0x00, 0xff], at + colourAt); // node colour, stored BGRA
+    result.set([0xff, 0x80, 0x80, 0x80], at + colourAt + 4);
+    result.set([0xff, 0x80, 0x80, 0x80], at + colourAt + 8);
+    view.setInt32(at + childCountAt, childCount);
   };
 
   // The root offsets by its own length, so keep it at the origin.
