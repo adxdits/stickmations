@@ -1,6 +1,7 @@
 import { app, BrowserWindow, Menu, shell } from 'electron';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { FigureSaveManager } from './figure-save.js';
 import { Mp4ExportManager } from './mp4-export.js';
 import { ProjectSaveManager } from './project-save.js';
 
@@ -13,6 +14,7 @@ const appIcon = app.isPackaged
   : join(currentDirectory, '../../build/icon.png');
 const mp4Exports = new Mp4ExportManager();
 const projectSaves = new ProjectSaveManager();
+const figureSaves = new FigureSaveManager();
 const externalLinks = new Set([
   'https://discord.gg/5YQTaaC5W',
   'https://www.reddit.com/r/StickmationsOfficial/',
@@ -83,6 +85,7 @@ function createWindow(): void {
 
 mp4Exports.register();
 projectSaves.register();
+figureSaves.register();
 await app.whenReady();
 app.dock?.setIcon(appIcon);
 applyApplicationMenu();
@@ -101,5 +104,6 @@ app.on('window-all-closed', () => {
 });
 
 app.on('before-quit', () => {
+  figureSaves.dispose();
   void Promise.all([mp4Exports.dispose(), projectSaves.dispose()]);
 });

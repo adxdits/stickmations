@@ -9,12 +9,20 @@ import type {
   StartProjectSaveOptions,
   StartProjectSaveResult,
 } from "./project-save-contract.js";
+import type {
+  SaveFigureOptions,
+  SaveFigureResult,
+} from "./figure-save-contract.js";
 
 const MP4_EXPORT_CHANNELS = {
   start: "mp4-export:start",
   writeFrame: "mp4-export:write-frame",
   complete: "mp4-export:complete",
   cancel: "mp4-export:cancel",
+} as const;
+
+const FIGURE_SAVE_CHANNELS = {
+  save: "figure-save:save",
 } as const;
 
 const PROJECT_SAVE_CHANNELS = {
@@ -69,4 +77,9 @@ contextBridge.exposeInMainWorld("stickmationsDesktop", {
       PROJECT_SAVE_CHANNELS.cancel,
       sessionId,
     ) as Promise<void>,
+  saveFigure: (options: SaveFigureOptions) =>
+    ipcRenderer.invoke(
+      FIGURE_SAVE_CHANNELS.save,
+      options,
+    ) as Promise<SaveFigureResult>,
 });
