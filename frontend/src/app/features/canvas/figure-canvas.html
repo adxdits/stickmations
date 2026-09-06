@@ -55,6 +55,48 @@
           (wheel)="zoomWithWheel($event)"
         >
           <g [attr.transform]="sceneTransform()" data-testid="camera-scene">
+            <!-- Ghosts of the neighbouring frames, drawn under the live one and never while playing. -->
+            @if (!playbackPreview()) {
+              @for (skin of onionSkins(); track skin.key) {
+                <g
+                  [attr.opacity]="skin.opacity"
+                  [attr.data-testid]="'onion-skin-' + skin.offset"
+                  pointer-events="none"
+                  aria-hidden="true"
+                >
+                  @for (drawable of skin.drawables; track drawable.id) {
+                    @if (drawable.kind === 'line') {
+                      <line
+                        [attr.x1]="drawable.x1"
+                        [attr.y1]="drawable.y1"
+                        [attr.x2]="drawable.x2"
+                        [attr.y2]="drawable.y2"
+                        [attr.stroke]="drawable.color"
+                        [attr.stroke-width]="drawable.width"
+                        [attr.stroke-linecap]="drawable.lineCap"
+                      />
+                    } @else if (drawable.kind === 'circle') {
+                      <circle
+                        [attr.cx]="drawable.cx"
+                        [attr.cy]="drawable.cy"
+                        [attr.r]="drawable.radius"
+                        [attr.fill]="drawable.fill"
+                        [attr.stroke]="drawable.stroke"
+                        [attr.stroke-width]="drawable.strokeWidth"
+                      />
+                    } @else {
+                      <path
+                        [attr.d]="drawable.d"
+                        [attr.fill]="drawable.fill"
+                        [attr.stroke]="drawable.stroke"
+                        [attr.stroke-width]="drawable.strokeWidth"
+                        stroke-linejoin="round"
+                      />
+                    }
+                  }
+                </g>
+              }
+            }
             @for (drawable of scenePreview.drawables; track drawable.id) {
               @if (drawable.kind === 'line') {
                 <line

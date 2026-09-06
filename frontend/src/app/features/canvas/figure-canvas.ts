@@ -10,6 +10,7 @@ import {
   type SceneCamera,
 } from '../../domain/scene-frame';
 import type { FigurePreview } from '../../rendering/figure-preview';
+import type { OnionSkin } from '../../rendering/onion-skin';
 import { isEditableTarget } from '../../shared/dom-events';
 import type { ControlMode, PanOffset, ZoomRequest } from '../../shared/editor-types';
 import {
@@ -39,6 +40,7 @@ export class FigureCanvas {
   readonly figure = input<StickFigure | null>(null);
   readonly preview = input<FigurePreview | null>(null);
   readonly selectedPreview = input<FigurePreview | null>(null);
+  readonly onionSkins = input<readonly OnionSkin[]>([]);
   readonly viewBox = input<string | null>(null);
   readonly hasFrame = input(false);
   readonly background = input<SceneBackground>(DEFAULT_BACKGROUND);

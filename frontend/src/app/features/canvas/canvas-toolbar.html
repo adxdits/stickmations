@@ -67,6 +67,17 @@
     >
       <svg lucideHand size="15"></svg><span class="hidden lg:inline">Hand</span>
     </button>
+    <button
+      type="button"
+      class="canvas-mode-button"
+      [class.active-tool]="onionEnabled()"
+      [attr.aria-pressed]="onionEnabled()"
+      aria-label="Onion skins"
+      data-tooltip="Ghost the neighbouring frames (hidden while playing)"
+      (click)="onionToggle.emit()"
+    >
+      <svg lucideLayers size="15"></svg><span class="hidden lg:inline">Onion</span>
+    </button>
   </fieldset>
   <div class="ml-auto flex items-center gap-0.5">
     <button

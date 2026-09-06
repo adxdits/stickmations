@@ -13,6 +13,7 @@ import { Mp4ExportService } from './io/mp4-export';
 import { ProjectSaveService } from './io/project-save';
 import { isEditableTarget } from './shared/dom-events';
 import { EditorFigureStore } from './state/editor-figure.store';
+import { EditorOnionStore } from './state/editor-onion.store';
 import { EditorDocumentStore } from './state/editor-document.store';
 import { EditorViewportStore } from './state/editor-viewport.store';
 import { EditorWorkspaceStore } from './state/editor-workspace.store';
@@ -43,6 +44,7 @@ export class App {
   protected readonly viewport = inject(EditorViewportStore);
   protected readonly workspace = inject(EditorWorkspaceStore);
   protected readonly figureEditor = inject(EditorFigureStore);
+  protected readonly onion = inject(EditorOnionStore);
   protected readonly mp4Export = inject(Mp4ExportService);
   protected readonly projectSave = inject(ProjectSaveService);
   protected readonly fullscreen = signal(false);

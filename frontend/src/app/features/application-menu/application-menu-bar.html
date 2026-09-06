@@ -125,6 +125,34 @@
         </button>
         <div class="editor-menu-separator"></div>
         <label class="workspace-menu-item"
+          ><input type="checkbox" [checked]="onion.enabled()" (change)="toggleOnion($event)" /><span
+            >Onion skins</span
+          ></label
+        >
+        @if (onion.enabled()) {
+          <label class="workspace-menu-item"
+            ><span>Frames before</span
+            ><input
+              type="number"
+              min="0"
+              [max]="onion.maxFrames"
+              class="onion-count"
+              [value]="onion.before()"
+              (change)="changeOnionBefore($event)"
+          /></label>
+          <label class="workspace-menu-item"
+            ><span>Frames after</span
+            ><input
+              type="number"
+              min="0"
+              [max]="onion.maxFrames"
+              class="onion-count"
+              [value]="onion.after()"
+              (change)="changeOnionAfter($event)"
+          /></label>
+        }
+        <div class="editor-menu-separator"></div>
+        <label class="workspace-menu-item"
           ><input
             type="checkbox"
             [checked]="workspace.isVisible('project')"

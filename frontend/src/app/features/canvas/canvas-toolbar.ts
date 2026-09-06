@@ -9,6 +9,7 @@ import {
   LucideFocus,
   LucideFullscreen,
   LucideHand,
+  LucideLayers,
   LucideMaximize2,
   LucideMinimize2,
   LucideMousePointer2,
@@ -33,6 +34,8 @@ import type { ControlMode, PanOffset } from '../../shared/editor-types';
     LucideFocus,
     LucideFullscreen,
     LucideHand,
+    LucideLayers,
+    LucideLayers,
     LucideMaximize2,
     LucideMinimize2,
     LucideMousePointer2,
@@ -52,6 +55,7 @@ export class CanvasToolbar {
   readonly canFitCamera = input(false);
   readonly canvasFocused = input(false);
   readonly fullscreen = input(false);
+  readonly onionEnabled = input(false);
   readonly zoom = input.required<number>();
   readonly controlModeChange = output<ControlMode>();
   readonly undo = output<void>();
@@ -63,6 +67,7 @@ export class CanvasToolbar {
   readonly fitCamera = output<void>();
   readonly canvasFocusToggle = output<void>();
   readonly fullscreenToggle = output<void>();
+  readonly onionToggle = output<void>();
   readonly panRequested = output<PanOffset>();
 
   protected changeZoom(event: Event): void {

@@ -23,7 +23,9 @@ import {
   LucideZoomOut,
 } from '@lucide/angular';
 import type { ControlMode, PanOffset } from '../../shared/editor-types';
+import { inputNumber } from '../../shared/dom-events';
 import { SUPPORT_LINKS } from '../../shared/support-links';
+import { EditorOnionStore } from '../../state/editor-onion.store';
 import { EditorWorkspaceStore, type WorkspacePanel } from '../../state/editor-workspace.store';
 import { ApplicationInfoDialog, type ApplicationInfoView } from './application-info-dialog';
 
@@ -58,6 +60,7 @@ import { ApplicationInfoDialog, type ApplicationInfoView } from './application-i
 })
 export class ApplicationMenuBar {
   protected readonly workspace = inject(EditorWorkspaceStore);
+  protected readonly onion = inject(EditorOnionStore);
   protected readonly links = SUPPORT_LINKS;
   readonly title = input.required<string>();
   readonly projectName = input.required<string>();
@@ -131,4 +134,21 @@ export class ApplicationMenuBar {
     (event.currentTarget as HTMLElement).closest('details')?.removeAttribute('open');
   }
 
+  protected toggleOnion(event: Event): void {
+    this.onion.setEnabled((event.target as HTMLInputElement).checked);
+  }
+
+  protected changeOnionBefore(event: Event): void {
+    const value = inputNumber(event);
+    if (value !== null) {
+      this.onion.setBefore(value);
+    }
+  }
+
+  protected changeOnionAfter(event: Event): void {
+    const value = inputNumber(event);
+    if (value !== null) {
+      this.onion.setAfter(value);
+    }
+  }
 }
