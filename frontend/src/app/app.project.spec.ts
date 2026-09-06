@@ -158,7 +158,7 @@ describe('Project assets and layers', () => {
     expect(app.selectedLayer()?.figure.name).toBe('Front');
   });
 
-  it('adds an imported figure from the current animation frame forward', async () => {
+  it('adds an imported figure to the current animation frame only', async () => {
     const fixture = TestBed.createComponent(App);
     const app = getEditor(fixture.componentInstance);
     await app.importFigure(figureFile(simpleFigure, 'first.json'));
@@ -177,7 +177,33 @@ describe('Project assets and layers', () => {
     ]);
     expect(app.animationFrames()[2]?.figures.map(({ figure }) => figure.name)).toEqual([
       'Test figure',
-      'Late figure',
+    ]);
+  });
+
+  it('leaves every other frame alone when a figure is added on the first frame', async () => {
+    const fixture = TestBed.createComponent(App);
+    const app = getEditor(fixture.componentInstance);
+    await app.importFigure(figureFile(simpleFigure, 'first.json'));
+    app.addFrame();
+    app.addFrame();
+    app.currentFrame.set(1);
+
+    await app.importFigure(figureFile({ ...simpleFigure, name: 'Extra' }, 'extra.json'));
+
+    expect(app.animationFrames().map(({ figures }) => figures.length)).toEqual([2, 1, 1]);
+  });
+
+  it('carries the figures of a duplicated frame into the copy', async () => {
+    const fixture = TestBed.createComponent(App);
+    const app = getEditor(fixture.componentInstance);
+    await app.importFigure(figureFile(simpleFigure, 'first.json'));
+    await app.importFigure(figureFile({ ...simpleFigure, name: 'Extra' }, 'extra.json'));
+
+    app.addFrame();
+
+    expect(app.animationFrames()[1]?.figures.map(({ figure }) => figure.name)).toEqual([
+      'Test figure',
+      'Extra',
     ]);
   });
 

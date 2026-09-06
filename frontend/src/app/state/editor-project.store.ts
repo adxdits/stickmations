@@ -45,9 +45,12 @@ export class EditorProjectStore {
       } else {
         this.history.record(this.document.snapshot());
         const frameIndex = this.document.currentFrame() - 1;
+        // Only the frame being edited gains the figure; later frames pick it up when duplicated.
         this.document.animationFrames.update((frames) =>
           frames.map((frame, index) =>
-            index >= frameIndex ? addFigureLayer(frame, createFigureLayer(layerId, figure)) : frame,
+            index === frameIndex
+              ? addFigureLayer(frame, createFigureLayer(layerId, figure))
+              : frame,
           ),
         );
       }
