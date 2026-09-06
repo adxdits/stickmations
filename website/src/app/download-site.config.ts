@@ -57,7 +57,7 @@ export interface DownloadSiteConfig {
   readonly copyright: string;
 }
 
-const RELEASE_VERSION = '0.1.5';
+const RELEASE_VERSION = '0.1.6';
 const RELEASE_REPOSITORY = 'https://github.com/adxdits/stickmations_opensource';
 const RELEASE_URL = `${RELEASE_REPOSITORY}/releases/tag/v${RELEASE_VERSION}`;
 const RELEASE_DOWNLOAD_URL = `${RELEASE_REPOSITORY}/releases/download/v${RELEASE_VERSION}`;
@@ -65,9 +65,9 @@ const RELEASE_DOWNLOAD_URL = `${RELEASE_REPOSITORY}/releases/download/v${RELEASE
 export const DOWNLOAD_SITE_CONFIG: DownloadSiteConfig = {
   productName: 'Stickmations',
   news: {
-    title: 'Older Stick Nodes figures now import',
+    title: 'Every older Stick Nodes figure now imports',
     description:
-      'Figures saved before Stick Nodes added build numbers open correctly instead of being refused.',
+      'Figures and effects saved by older Stick Nodes releases open correctly instead of being refused.',
     publishedAt: '2026-09-06',
     publishedLabel: 'September 2026',
   },

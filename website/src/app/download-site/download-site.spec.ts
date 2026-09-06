@@ -21,7 +21,7 @@ describe('DownloadSite', () => {
     const news = root.querySelector<HTMLElement>('#news');
     expect(news?.textContent).toContain("What's new");
     expect(news?.textContent).toContain(
-      'Older Stick Nodes figures now import',
+      'Every older Stick Nodes figure now imports',
     );
     expect(news?.querySelector('time')?.getAttribute('datetime')).toBe(
       '2026-09-06',
@@ -29,17 +29,17 @@ describe('DownloadSite', () => {
     expect(
       root.querySelector<HTMLAnchorElement>('.release-heading a')?.href,
     ).toBe(
-      'https://github.com/adxdits/stickmations_opensource/releases/tag/v0.1.5',
+      'https://github.com/adxdits/stickmations_opensource/releases/tag/v0.1.6',
     );
     expect(downloads.map(({ href }) => href)).toEqual([
-      'https://github.com/adxdits/stickmations_opensource/releases/download/v0.1.5/Stickmations-0.1.5-windows-x64-setup.exe',
-      'https://github.com/adxdits/stickmations_opensource/releases/download/v0.1.5/Stickmations-0.1.5-windows-x64-portable.exe',
-      'https://github.com/adxdits/stickmations_opensource/releases/download/v0.1.5/Stickmations-0.1.5-mac-arm64.dmg',
-      'https://github.com/adxdits/stickmations_opensource/releases/download/v0.1.5/Stickmations-0.1.5-mac-arm64.zip',
-      'https://github.com/adxdits/stickmations_opensource/releases/download/v0.1.5/Stickmations-0.1.5-mac-x64.dmg',
-      'https://github.com/adxdits/stickmations_opensource/releases/download/v0.1.5/Stickmations-0.1.5-mac-x64.zip',
-      'https://github.com/adxdits/stickmations_opensource/releases/download/v0.1.5/Stickmations-0.1.5-linux-x86_64.AppImage',
-      'https://github.com/adxdits/stickmations_opensource/releases/download/v0.1.5/Stickmations-0.1.5-linux-amd64.deb',
+      'https://github.com/adxdits/stickmations_opensource/releases/download/v0.1.6/Stickmations-0.1.6-windows-x64-setup.exe',
+      'https://github.com/adxdits/stickmations_opensource/releases/download/v0.1.6/Stickmations-0.1.6-windows-x64-portable.exe',
+      'https://github.com/adxdits/stickmations_opensource/releases/download/v0.1.6/Stickmations-0.1.6-mac-arm64.dmg',
+      'https://github.com/adxdits/stickmations_opensource/releases/download/v0.1.6/Stickmations-0.1.6-mac-arm64.zip',
+      'https://github.com/adxdits/stickmations_opensource/releases/download/v0.1.6/Stickmations-0.1.6-mac-x64.dmg',
+      'https://github.com/adxdits/stickmations_opensource/releases/download/v0.1.6/Stickmations-0.1.6-mac-x64.zip',
+      'https://github.com/adxdits/stickmations_opensource/releases/download/v0.1.6/Stickmations-0.1.6-linux-x86_64.AppImage',
+      'https://github.com/adxdits/stickmations_opensource/releases/download/v0.1.6/Stickmations-0.1.6-linux-amd64.deb',
     ]);
     expect(
       [...root.querySelectorAll<HTMLElement>('.platform-release h3')].map(
