@@ -6,6 +6,7 @@ export type {
   FigureFill,
   FigureJoint,
   FigureSegment,
+  FigureSegmentShape,
   StickFigure,
 } from './domain/figure.js';
 export {
