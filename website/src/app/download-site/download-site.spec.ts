@@ -103,4 +103,60 @@ describe('DownloadSite', () => {
     ).toBeTruthy();
     expect(root.textContent).toContain('adamalmounayar@hotmail.com');
   });
+
+  it('shows the showcase videos behind posters and explains how to be featured', async () => {
+    const fixture = TestBed.createComponent(DownloadSite);
+    await fixture.whenStable();
+    const root = fixture.nativeElement as HTMLElement;
+    const showcase = root.querySelector<HTMLElement>('#showcase');
+
+    expect(root.querySelector('#showcase-title')?.textContent).toBe('Showcase');
+    expect(
+      [...root.querySelectorAll<HTMLElement>('.video-copy strong')].map(
+        ({ textContent }) => textContent,
+      ),
+    ).toEqual([
+      'First walking animation using Stickmations',
+      'Our new software beating Stick Nodes',
+    ]);
+    expect(
+      [...root.querySelectorAll<HTMLAnchorElement>('.watch-link')].map(
+        ({ href }) => href,
+      ),
+    ).toEqual([
+      'https://www.youtube.com/watch?v=L_wu_oimzKE',
+      'https://www.youtube.com/watch?v=HkSqb0QL8sk',
+    ]);
+    expect(showcase?.textContent).toContain('Adam Almounayar');
+
+    // YouTube is only contacted once a viewer asks for a video.
+    expect(root.querySelectorAll('.video-poster')).toHaveLength(2);
+    expect(root.querySelector('iframe')).toBeNull();
+
+    // A missing 1280x720 still arrives as a decodable placeholder, so the poster is
+    // re-checked on load rather than waiting for an error that never fires.
+    const poster = root.querySelector<HTMLImageElement>('.video-poster img');
+    expect(poster?.src).toContain('maxresdefault.jpg');
+    poster?.dispatchEvent(new Event('load'));
+    expect(poster?.src).toContain('hqdefault.jpg');
+
+    root.querySelector<HTMLButtonElement>('.video-poster')?.click();
+    await fixture.whenStable();
+
+    const player = root.querySelector<HTMLIFrameElement>('iframe');
+    expect(player?.src).toContain('/embed/L_wu_oimzKE');
+    expect(root.querySelectorAll('.video-poster')).toHaveLength(1);
+
+    expect(showcase?.textContent).toContain(
+      'mention Stickmations in the title or',
+    );
+    expect(
+      [...root.querySelectorAll<HTMLAnchorElement>('.submission-link')].map(
+        ({ href }) => href,
+      ),
+    ).toEqual([
+      'mailto:adamalmounayar@hotmail.com?subject=Stickmations%20showcase%20submission',
+      'https://www.youtube.com/@StickmationsSoftware',
+    ]);
+  });
 });
