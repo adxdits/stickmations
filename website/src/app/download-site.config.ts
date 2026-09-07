@@ -28,6 +28,18 @@ export interface FigureResource {
   readonly url: string;
 }
 
+export interface ShowcaseVideo {
+  readonly title: string;
+  readonly creator: string;
+  readonly videoId: string;
+}
+
+export interface SiteShowcase {
+  readonly description: string;
+  readonly channelUrl: string;
+  readonly videos: readonly ShowcaseVideo[];
+}
+
 export interface SiteNews {
   readonly title: string;
   readonly description: string;
@@ -52,6 +64,7 @@ export interface DownloadSiteConfig {
   readonly release: DesktopRelease;
   readonly proStatus: string;
   readonly features: readonly SiteFeature[];
+  readonly showcase: SiteShowcase;
   readonly figureResources: readonly FigureResource[];
   readonly creator: CreatorProfile;
   readonly copyright: string;
@@ -158,6 +171,23 @@ export const DOWNLOAD_SITE_CONFIG: DownloadSiteConfig = {
       description: 'Import compatible .nodes stick-figure files.',
     },
   ],
+  showcase: {
+    description:
+      'Animations made with Stickmations, from the people building with it.',
+    channelUrl: 'https://www.youtube.com/@StickmationsSoftware',
+    videos: [
+      {
+        title: 'First walking animation using Stickmations',
+        creator: 'Adam Almounayar',
+        videoId: 'L_wu_oimzKE',
+      },
+      {
+        title: 'Our new software beating Stick Nodes',
+        creator: 'Adam Almounayar',
+        videoId: 'HkSqb0QL8sk',
+      },
+    ],
+  },
   figureResources: [
     {
       name: 'Stick Nodes',
