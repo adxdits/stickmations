@@ -1,4 +1,4 @@
-import { BinaryReader } from './binary-reader.js';
+import { BinaryReader, type RecordReader } from './binary-reader.js';
 import type {
   FigureFill,
   FigureJoint,
@@ -8,27 +8,191 @@ import type {
 } from './figure.js';
 import { InvalidStickFigureError } from './validation.js';
 
-const SUPPORTED_FORMATS = new Map<number, number>([
-  [432, 119],
-  [433, 120],
-]);
-/**
- * Files written before build 119 carry no build number and pack each node into a fixed-size record,
- * without the per-child connector flags or the trailing connector table the current format adds.
- * Everything the older layouts omit (triangle and trapezoid options, polygon sides, half shapes)
- * simply did not exist yet, so those fall back to the same defaults a plain segment uses.
- *
- * The two legacy records agree field for field up to the rotation; the later one repeats the
- * rotation before the colours, which makes its record four bytes longer.
- */
-const LEGACY_TRAILING_ANGLE_VERSION = 320;
-const OLDEST_LEGACY_VERSION = 200;
-const MAX_NODE_COUNT = 400;
+const MAX_NODE_COUNT = 4000;
+/** Stick Nodes fans out narrowly; a wider count means the record size is wrong. */
+const MAX_CHILD_COUNT = 64;
+const MIN_FIGURE_SCALE = 0.001;
+const MAX_FIGURE_SCALE = 100;
 
-interface LegacyLayout {
-  /** Later legacy files store the rotation twice, once more just before the colours. */
-  readonly repeatsAngle: boolean;
+/** Where each field sits inside a node record. Absent fields predate that revision. */
+interface NodeOffsets {
+  readonly shape: number;
+  readonly drawOrder: number;
+  readonly isStatic: number;
+  readonly isStretchy: number;
+  readonly scale: number;
+  readonly length: number;
+  readonly thickness: number;
+  /** Rotation relative to the parent; the absolute rotation that follows it is derived. */
+  readonly angle: number;
+  /** Node colour first, then the secondary and outline colours later revisions added. */
+  readonly colors: readonly number[];
+  readonly useSegmentColor?: number;
+  readonly useCircleOutline?: number;
+  readonly hollow?: number;
+  readonly useSegmentScale?: number;
+  readonly halfShape?: number;
+  readonly triangleDirection?: number;
+  readonly triangleUpsideDown?: number;
+  readonly trapezoidStart?: number;
+  readonly trapezoidEnd?: number;
+  readonly polygonSides?: number;
 }
+
+interface NodeLayout {
+  readonly name: string;
+  /** Bytes before the figure scale: 4 when the version stands alone, 8 with a build number. */
+  readonly headerBytes: number;
+  /** Record bytes preceding the child count. */
+  readonly body: number;
+  /** Bytes per child entry, holding the connector flag revisions that have one. */
+  readonly perChildBytes: number;
+  /** Connector nodes repeat part of the parent record ahead of their own. */
+  readonly connectorSkip: number;
+  readonly hasFills: boolean;
+  readonly hasConnectors: boolean;
+  /** Lowest file version seen using this record; ordering only, never a gate. */
+  readonly since: number;
+  readonly offsets: NodeOffsets;
+}
+
+/**
+ * Stick Nodes grew its node record over time, always by inserting fields rather than moving
+ * the ones already there, so every revision keeps the same running order: the offset from the
+ * parent, the scale, the length, the thickness, the rotation, and finally the colours.
+ *
+ * Versions do not announce their record size and the boundaries between revisions are not
+ * documented, so `detectLayout` picks the entry that reads a file exactly to its last byte
+ * instead of trusting the version number alone. Ordering here only steers that search.
+ */
+const NODE_LAYOUTS: readonly NodeLayout[] = [
+  {
+    name: '45-byte record',
+    headerBytes: 4,
+    body: 45,
+    perChildBytes: 0,
+    connectorSkip: 0,
+    hasFills: false,
+    hasConnectors: false,
+    since: 170,
+    offsets: {
+      shape: 0,
+      drawOrder: 1,
+      isStatic: 5,
+      isStretchy: 6,
+      useSegmentColor: 7,
+      useCircleOutline: 8,
+      scale: 17,
+      length: 21,
+      thickness: 29,
+      angle: 37,
+      colors: [41],
+    },
+  },
+  {
+    name: '51-byte record',
+    headerBytes: 4,
+    body: 51,
+    perChildBytes: 0,
+    connectorSkip: 0,
+    hasFills: false,
+    hasConnectors: false,
+    since: 212,
+    offsets: {
+      shape: 0,
+      drawOrder: 1,
+      isStatic: 5,
+      isStretchy: 6,
+      useSegmentColor: 7,
+      useCircleOutline: 8,
+      hollow: 9,
+      scale: 19,
+      length: 23,
+      thickness: 31,
+      angle: 39,
+      colors: [43, 47],
+    },
+  },
+  {
+    name: '75-byte record',
+    headerBytes: 4,
+    body: 75,
+    perChildBytes: 0,
+    connectorSkip: 0,
+    hasFills: true,
+    hasConnectors: false,
+    since: 264,
+    offsets: {
+      shape: 0,
+      drawOrder: 1,
+      isStatic: 5,
+      isStretchy: 6,
+      useSegmentColor: 9,
+      useCircleOutline: 10,
+      hollow: 11,
+      scale: 22,
+      length: 26,
+      thickness: 34,
+      angle: 51,
+      colors: [63, 67, 71],
+    },
+  },
+  {
+    name: '86-byte record',
+    headerBytes: 8,
+    body: 86,
+    perChildBytes: 0,
+    connectorSkip: 0,
+    hasFills: true,
+    hasConnectors: false,
+    since: 417,
+    offsets: {
+      shape: 0,
+      drawOrder: 1,
+      isStatic: 5,
+      isStretchy: 6,
+      useSegmentColor: 9,
+      useCircleOutline: 10,
+      hollow: 11,
+      scale: 25,
+      length: 29,
+      thickness: 37,
+      angle: 62,
+      colors: [74, 78, 82],
+    },
+  },
+  {
+    name: '122-byte record',
+    headerBytes: 8,
+    body: 122,
+    perChildBytes: 4,
+    connectorSkip: 29,
+    hasFills: true,
+    hasConnectors: true,
+    since: 423,
+    offsets: {
+      shape: 0,
+      drawOrder: 1,
+      isStatic: 5,
+      isStretchy: 6,
+      useSegmentColor: 11,
+      useCircleOutline: 12,
+      hollow: 13,
+      useSegmentScale: 18,
+      scale: 27,
+      length: 35,
+      thickness: 43,
+      angle: 78,
+      colors: [86, 90, 94],
+      halfShape: 54,
+      triangleDirection: 55,
+      triangleUpsideDown: 57,
+      trapezoidStart: 58,
+      trapezoidEnd: 62,
+      polygonSides: 72,
+    },
+  },
+];
 
 interface StickNodesHeader {
   readonly scale: number;
@@ -67,7 +231,7 @@ interface ParsedNode {
 
 interface ImportState {
   readonly reader: BinaryReader;
-  readonly legacy: LegacyLayout | null;
+  readonly layout: NodeLayout;
   readonly header: StickNodesHeader;
   readonly joints: FigureJoint[];
   readonly segments: FigureSegment[];
@@ -80,71 +244,112 @@ export function parseStickNodesFile(
   source: ArrayBuffer | Uint8Array,
   fileName: string,
 ): StickFigure {
-  try {
-    const reader = new BinaryReader(source);
-    const legacy = readFormat(reader);
+  const name = fileName.replace(/\.nodes$/i, '') || 'Imported figure';
+  const figure = detectLayout(source, name);
+  if (figure) {
+    return figure;
+  }
 
-    const header = {
-      scale: requireFinite(reader.readFloat32()),
-      color: readColor(reader),
-    };
-    const state: ImportState = {
-      reader,
-      legacy,
-      header,
-      joints: [],
-      segments: [],
-      fills: [],
-      nodeIds: new Set(),
-      nodeCount: 0,
-    };
+  throw new InvalidStickFigureError(describeUnsupported(source));
+}
 
-    readNodeTree(state, null, false);
-    readPolyfills(state);
-    if (!state.legacy) {
-      readConnectors(state);
-    }
+/**
+ * Reads the file with each known record layout and keeps the one that lands exactly on the
+ * end of the file. A wrong record size drifts within the first node or two and then trips a
+ * bounds check, so consuming every byte is a far stronger signal than the version number,
+ * whose mapping to record sizes is only partly known.
+ */
+function detectLayout(
+  source: ArrayBuffer | Uint8Array,
+  name: string,
+): StickFigure | null {
+  const version = readVersion(source);
+  const ordered = [...NODE_LAYOUTS].sort(
+    (a, b) => layoutDistance(a, version) - layoutDistance(b, version),
+  );
 
-    return {
-      version: 1,
-      name: fileName.replace(/\.nodes$/i, '') || 'Imported figure',
-      joints: state.joints,
-      segments: state.segments,
-      ...(state.fills.length === 0 ? {} : { fills: state.fills }),
-    };
-  } catch (error: unknown) {
-    if (error instanceof InvalidStickFigureError) {
+  for (const layout of ordered) {
+    try {
+      return parseWithLayout(source, layout, name);
+    } catch (error: unknown) {
+      if (error instanceof InvalidStickFigureError) {
+        continue;
+      }
       throw error;
     }
-    throw new InvalidStickFigureError(
-      'The Stick Nodes file could not be read.',
-    );
+  }
+  return null;
+}
+
+/** Prefers the newest layout the version could plausibly be using. */
+function layoutDistance(layout: NodeLayout, version: number | null): number {
+  if (version === null) {
+    return NODE_LAYOUTS.length - NODE_LAYOUTS.indexOf(layout);
+  }
+  return version >= layout.since
+    ? version - layout.since
+    : (layout.since - version) * 1000;
+}
+
+function readVersion(source: ArrayBuffer | Uint8Array): number | null {
+  try {
+    return new BinaryReader(source).readInt32();
+  } catch {
+    return null;
   }
 }
 
-/** Null for the current format, otherwise the legacy record this file's version uses. */
-function readFormat(reader: BinaryReader): LegacyLayout | null {
-  const version = reader.readInt32();
-  const expectedBuild = SUPPORTED_FORMATS.get(version);
+function parseWithLayout(
+  source: ArrayBuffer | Uint8Array,
+  layout: NodeLayout,
+  name: string,
+): StickFigure {
+  const reader = new BinaryReader(source);
+  reader.skip(layout.headerBytes);
 
-  if (expectedBuild !== undefined) {
-    const build = reader.readInt32();
-    if (build !== expectedBuild) {
-      throw new InvalidStickFigureError(
-        `Unsupported Stick Nodes build ${build} for version ${version}. Expected build ${expectedBuild}.`,
-      );
-    }
-    return null;
+  const scale = reader.readFloat32();
+  if (
+    !Number.isFinite(scale) ||
+    scale < MIN_FIGURE_SCALE ||
+    scale > MAX_FIGURE_SCALE
+  ) {
+    throw new InvalidStickFigureError(
+      `Implausible Stick Nodes figure scale: ${scale}.`,
+    );
   }
 
-  const oldestSupported = Math.min(...SUPPORTED_FORMATS.keys());
-  if (version >= OLDEST_LEGACY_VERSION && version < oldestSupported) {
-    return { repeatsAngle: version >= LEGACY_TRAILING_ANGLE_VERSION };
+  const state: ImportState = {
+    reader,
+    layout,
+    header: { scale, color: reader.readRecord(4).color(0) },
+    joints: [],
+    segments: [],
+    fills: [],
+    nodeIds: new Set(),
+    nodeCount: 0,
+  };
+
+  readNodeTree(state, null, false);
+  if (layout.hasFills) {
+    readPolyfills(state);
+  }
+  if (layout.hasConnectors) {
+    readConnectors(state);
   }
 
-  throw new InvalidStickFigureError(
-    `Unsupported Stick Nodes version ${version}. Expected ${OLDEST_LEGACY_VERSION} to ${oldestSupported} or ${[...SUPPORTED_FORMATS.keys()].join(' or ')}.`,
-  );
+  if (!reader.atEnd) {
+    throw new InvalidStickFigureError(
+      `Trailing data after the ${layout.name} node tree.`,
+    );
+  }
+
+  return {
+    version: 1,
+    name,
+    joints: state.joints,
+    segments: state.segments,
+    ...(state.fills.length === 0 ? {} : { fills: state.fills }),
+  };
 }
 
 function readNodeTree(
@@ -159,9 +364,7 @@ function readNodeTree(
     );
   }
 
-  const node = state.legacy
-    ? readLegacyNode(state.reader, state.header, state.legacy)
-    : readNode(state.reader, state.header, isConnector);
+  const node = readNode(state, isConnector);
   if (state.nodeIds.has(node.id)) {
     throw new InvalidStickFigureError(
       `Stick Nodes node id "${node.id}" is duplicated.`,
@@ -215,175 +418,102 @@ function readNodeTree(
   }
 }
 
-function readNode(
-  reader: BinaryReader,
-  header: StickNodesHeader,
-  isConnector: boolean,
-): ParsedNode {
+function readNode(state: ImportState, isConnector: boolean): ParsedNode {
+  const { reader, layout, header } = state;
+  const at = layout.offsets;
+
   if (isConnector) {
-    reader.skip(29);
+    reader.skip(layout.connectorSkip);
   }
+  const record = reader.readRecord(layout.body);
 
-  const shape = readNodeShape(reader.readInt8());
-  const drawOrder = reader.readInt32();
-  const id = `node-${drawOrder}`;
-  const isStatic = reader.readUint8() !== 0;
-  const isStretchy = reader.readUint8() !== 0;
-  reader.readUint8();
-  reader.readUint8();
-  reader.readUint8();
-  reader.readUint8();
-  const useSegmentColor = reader.readUint8() !== 0;
-  const useCircleOutline = reader.readUint8() !== 0;
-  const hollow = reader.readUint8() !== 0;
-  reader.readUint8();
-  reader.readUint8();
-  reader.readInt16();
-  const useSegmentScale = reader.readUint8() !== 0;
-  reader.readFloat32();
-  reader.readFloat32();
-  const scale = requireFinite(reader.readFloat32());
-  reader.readFloat32();
-  const length = requireFinite(reader.readFloat32());
-  reader.readInt32();
-  const thickness = reader.readInt32();
-  reader.readInt32();
-  reader.readUint8();
-  reader.readInt16();
-  const halfShape = reader.readUint8() !== 0;
-  const triangleDirection = reader.readInt16();
-  const triangleUpsideDown = reader.readUint8() !== 0;
-  const trapezoidStart = requireFinite(reader.readFloat32());
-  const trapezoidEnd = requireFinite(reader.readFloat32());
-  reader.readFloat32();
-  reader.readUint8();
-  reader.readUint8();
-  const polygonSides = reader.readInt16();
-  reader.readFloat32();
-  const angle = requireFinite(reader.readFloat32());
-  reader.readFloat32();
-  const nodeColor = readColor(reader);
-  readColor(reader);
-  const outlineColor = readColor(reader);
-  reader.readUint8();
-  reader.readUint8();
-  reader.readFloat32();
-  reader.readFloat32();
-  reader.readFloat32();
-  reader.readInt8();
-  reader.readUint8();
-  reader.readFloat32();
-  reader.readFloat32();
+  const drawOrder = record.int32(at.drawOrder);
+  const scale = requireFinite(record.float32(at.scale));
+  const length = requireFinite(record.float32(at.length));
+  const angle = requireFinite(record.float32(at.angle));
+  const thickness = record.int32(at.thickness);
 
-  const childCount = reader.readInt32();
-  if (childCount < 0 || childCount > MAX_NODE_COUNT) {
-    throw new InvalidStickFigureError(
-      `Invalid Stick Nodes child count: ${childCount}.`,
-    );
-  }
-
-  const childConnectors = Array.from(
-    { length: childCount },
-    () => reader.readInt32() !== 0,
-  );
-  const segmentScale = useSegmentScale ? scale : 1;
-  const widthScale = segmentScale * header.scale;
-
-  return {
-    id,
-    drawOrder,
-    shape,
-    hollow,
-    isStatic,
-    isStretchy,
-    length,
-    angle,
-    scale: segmentScale,
-    width: Math.max(thickness * widthScale, 1),
-    color: useSegmentColor ? nodeColor : header.color,
-    halfShape,
-    ...(useCircleOutline ? { outlineColor } : {}),
-    triangleType: triangleDirection === 0 ? 'isosceles' : 'right',
-    triangleFlipped: triangleDirection < 0,
-    triangleUpsideDown,
-    startWidth: Math.max(trapezoidStart * widthScale, 1),
-    endWidth: Math.max(trapezoidEnd * widthScale, 1),
-    polygonSides: Math.max(polygonSides, 3),
-    childConnectors,
-  };
-}
-
-function readLegacyNode(
-  reader: BinaryReader,
-  header: StickNodesHeader,
-  layout: LegacyLayout,
-): ParsedNode {
-  const shape = readNodeShape(reader.readInt8());
-  const drawOrder = reader.readInt32();
-  const isStatic = reader.readUint8() !== 0;
-  const isStretchy = reader.readUint8() !== 0;
-  reader.skip(2);
-  const useSegmentColor = reader.readUint8() !== 0;
-  const useCircleOutline = reader.readUint8() !== 0;
-  const hollow = reader.readUint8() !== 0;
-  reader.skip(1);
-  const useSegmentScale = reader.readUint8() !== 0;
-  reader.skip(8);
-  const scale = requireFinite(reader.readFloat32());
-  reader.skip(4);
-  const length = requireFinite(reader.readFloat32());
-  reader.skip(4);
-  const thickness = reader.readInt32();
-  reader.skip(18);
-  const angle = requireFinite(reader.readFloat32());
-  if (layout.repeatsAngle) {
-    reader.skip(4);
-  }
-  const nodeColor = readColor(reader);
-  readColor(reader);
-  const outlineColor = readColor(reader);
-
-  const childCount = reader.readInt32();
-  if (childCount < 0 || childCount > MAX_NODE_COUNT) {
-    throw new InvalidStickFigureError(
-      `Invalid Stick Nodes child count: ${childCount}.`,
-    );
-  }
-
-  const segmentScale = useSegmentScale ? scale : 1;
+  const segmentScale = record.flag(at.useSegmentScale) ? scale : 1;
   const widthScale = segmentScale * header.scale;
   const width = Math.max(thickness * widthScale, 1);
+
+  const nodeColor = record.color(at.colors[0] ?? 0);
+  const outlineOffset = at.colors[2];
+  const outlineColor =
+    outlineOffset === undefined ? undefined : record.color(outlineOffset);
 
   return {
     id: `node-${drawOrder}`,
     drawOrder,
-    shape,
-    hollow,
-    isStatic,
-    isStretchy,
+    shape: readNodeShape(record.int8(at.shape)),
+    hollow: record.flag(at.hollow),
+    isStatic: record.flag(at.isStatic),
+    isStretchy: record.flag(at.isStretchy),
     length,
     angle,
     scale: segmentScale,
     width,
-    color: useSegmentColor ? nodeColor : header.color,
-    halfShape: false,
-    ...(useCircleOutline ? { outlineColor } : {}),
-    triangleType: 'isosceles',
-    triangleFlipped: false,
-    triangleUpsideDown: false,
-    startWidth: width,
-    endWidth: width,
-    polygonSides: 3,
-    // Older files have no connector flags, so every child is an ordinary node.
-    childConnectors: Array.from({ length: childCount }, () => false),
+    color: record.flag(at.useSegmentColor) ? nodeColor : header.color,
+    halfShape: record.flag(at.halfShape),
+    ...(record.flag(at.useCircleOutline) && outlineColor !== undefined
+      ? { outlineColor }
+      : {}),
+    ...readShapeOptions(record, at, width, widthScale),
+    childConnectors: readChildConnectors(state),
   };
+}
+
+/** Triangle, trapezoid and polygon options only exist in the newest record. */
+function readShapeOptions(
+  record: RecordReader,
+  at: NodeOffsets,
+  width: number,
+  widthScale: number,
+): Pick<
+  ParsedNode,
+  | 'triangleType'
+  | 'triangleFlipped'
+  | 'triangleUpsideDown'
+  | 'startWidth'
+  | 'endWidth'
+  | 'polygonSides'
+> {
+  const direction =
+    at.triangleDirection === undefined ? 0 : record.int16(at.triangleDirection);
+  const sides = at.polygonSides === undefined ? 3 : record.int16(at.polygonSides);
+  const taper = (offset: number | undefined): number =>
+    offset === undefined
+      ? width
+      : Math.max(requireFinite(record.float32(offset)) * widthScale, 1);
+
+  return {
+    triangleType: direction === 0 ? 'isosceles' : 'right',
+    triangleFlipped: direction < 0,
+    triangleUpsideDown: record.flag(at.triangleUpsideDown),
+    startWidth: taper(at.trapezoidStart),
+    endWidth: taper(at.trapezoidEnd),
+    polygonSides: Math.max(sides, 3),
+  };
+}
+
+function readChildConnectors(state: ImportState): readonly boolean[] {
+  const childCount = state.reader.readInt32();
+  if (childCount < 0 || childCount > MAX_CHILD_COUNT) {
+    throw new InvalidStickFigureError(
+      `Invalid Stick Nodes child count: ${childCount}.`,
+    );
+  }
+
+  return Array.from({ length: childCount }, () =>
+    state.layout.perChildBytes === 0 ? false : state.reader.readInt32() !== 0,
+  );
 }
 
 function readPolyfills(state: ImportState): void {
   const fillCount = readBoundedCount(state.reader, 'polyfill');
   for (let index = 0; index < fillCount; index += 1) {
     const drawOrder = state.reader.readInt32();
-    const color = readColor(state.reader);
+    const color = state.reader.readRecord(4).color(0);
     const useFillColor = state.reader.readUint8() !== 0;
     const jointCount = readBoundedCount(state.reader, 'polyfill joint');
     const jointIds = Array.from(
@@ -419,6 +549,20 @@ function readBoundedCount(reader: BinaryReader, label: string): number {
   return count;
 }
 
+/** Explains why nothing read the file, rather than repeating the last layout's failure. */
+function describeUnsupported(source: ArrayBuffer | Uint8Array): string {
+  const bytes = source instanceof Uint8Array ? source : new Uint8Array(source);
+  if (bytes[0] === 0x78) {
+    return 'This Stick Nodes file is compressed, which is not supported yet.';
+  }
+
+  const version = readVersion(source);
+  if (version === null) {
+    return 'The Stick Nodes file is incomplete or corrupted.';
+  }
+  return `Unsupported Stick Nodes file layout (version ${version}).`;
+}
+
 function readNodeShape(value: number): FigureSegmentShape {
   const shapes: Readonly<Record<number, FigureSegmentShape>> = {
     0: 'rounded-segment',
@@ -441,18 +585,6 @@ function readNodeShape(value: number): FigureSegmentShape {
     );
   }
   return shape;
-}
-
-function readColor(reader: BinaryReader): string {
-  reader.readUint8();
-  const blue = reader.readUint8();
-  const green = reader.readUint8();
-  const red = reader.readUint8();
-  return `#${toHex(red)}${toHex(green)}${toHex(blue)}`;
-}
-
-function toHex(value: number): string {
-  return value.toString(16).padStart(2, '0');
 }
 
 function requireFinite(value: number): number {
