@@ -4,6 +4,7 @@ import { DownloadHero } from '../components/download-hero/download-hero';
 import { FeatureSection } from '../components/feature-section/feature-section';
 import { NewsBar } from '../components/news-bar/news-bar';
 import { ReleaseSection } from '../components/release-section/release-section';
+import { ShowcaseSection } from '../components/showcase-section/showcase-section';
 import { SiteHeader } from '../components/site-header/site-header';
 import { DOWNLOAD_SITE_CONFIG } from '../download-site.config';
 
@@ -15,6 +16,7 @@ import { DOWNLOAD_SITE_CONFIG } from '../download-site.config';
     DownloadHero,
     ReleaseSection,
     FeatureSection,
+    ShowcaseSection,
     AboutCreatorComponent,
   ],
   templateUrl: './download-site.html',

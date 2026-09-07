@@ -1,0 +1,96 @@
+<section id="showcase" class="showcase-section" aria-labelledby="showcase-title">
+  <div class="section-intro">
+    <h2 id="showcase-title">Showcase</h2>
+    <p class="description">{{ showcase().description }}</p>
+  </div>
+
+  <ul class="video-grid">
+    @for (video of showcase().videos; track video.videoId) {
+      <li class="video-card">
+        <div class="video-frame">
+          @if (isPlaying(video)) {
+            <iframe
+              [src]="embedUrl(video)"
+              [title]="video.title"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerpolicy="strict-origin-when-cross-origin"
+              allowfullscreen
+            ></iframe>
+          } @else {
+            <button type="button" class="video-poster" (click)="play(video)">
+              <img
+                [src]="posterUrl(video)"
+                (load)="verifyPoster($event)"
+                (error)="useFallbackPoster($event)"
+                alt=""
+                width="1280"
+                height="720"
+                loading="lazy"
+                decoding="async"
+              />
+              <span class="play-badge" aria-hidden="true">
+                <svg lucidePlay size="18"></svg>
+              </span>
+              <span class="sr-only">Play {{ video.title }}</span>
+            </button>
+          }
+        </div>
+
+        <div class="video-meta">
+          <span class="video-copy">
+            <strong>{{ video.title }}</strong>
+            <small>{{ video.creator }}</small>
+          </span>
+          <a
+            class="watch-link"
+            [href]="watchUrl(video)"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span>YouTube</span>
+            <svg lucideExternalLink size="15" aria-hidden="true"></svg>
+          </a>
+        </div>
+      </li>
+    }
+  </ul>
+
+  <div class="submission">
+    <div class="submission-copy">
+      <h3>Get your animation featured</h3>
+      <p>
+        Upload your animation to YouTube and mention Stickmations in the title or
+        description. Prefer to tell us directly? Send the link by email and we will
+        add it here.
+      </p>
+    </div>
+
+    <div class="submission-links">
+      <a class="submission-link" [href]="submitUrl()">
+        <svg class="link-icon" lucideMail size="18" aria-hidden="true"></svg>
+        <span class="link-copy">
+          <strong>Send your link</strong>
+          <small>{{ email() }}</small>
+        </span>
+      </a>
+      <a
+        class="submission-link"
+        [href]="showcase().channelUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <svg class="link-icon" lucidePlay size="18" aria-hidden="true"></svg>
+        <span class="link-copy">
+          <strong>Stickmations on YouTube</strong>
+          <small>More animations from the channel</small>
+        </span>
+        <svg
+          class="external-icon"
+          lucideExternalLink
+          size="16"
+          aria-hidden="true"
+        ></svg>
+      </a>
+    </div>
+  </div>
+</section>
