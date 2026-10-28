@@ -1,12 +1,45 @@
-# Stickmations
+<p align="center">
+  <img src="docs/icon.png" alt="Stickmations logo" width="192" height="192">
+</p>
 
-Stickmations is desktop 2D stick-figure animation software.
+<h1 align="center">Stickmations</h1>
 
-## Prerequisites
+<p align="center">
+  A desktop editor for 2D stick-figure animation on Windows, macOS, and Linux.
+</p>
 
-- Node.js 22.12 and npm 10.9. Run `nvm use` from the repository root.
+<p align="center">
+  <a href="https://adxdits.github.io/stickmations/#download"><img src="https://api.iconify.design/lucide/download.svg?color=%233fb950" alt="Download now" width="32" height="32"></a>
+  &nbsp;&nbsp;&nbsp;
+  <a href="https://discord.com/invite/5YQTaaC5W"><img src="https://cdn.simpleicons.org/discord/5865F2" alt="Join our Discord" width="32" height="32"></a>
+  &nbsp;&nbsp;&nbsp;
+  <a href="https://www.youtube.com/@StickmationsSoftware"><img src="https://cdn.simpleicons.org/youtube/FF0000" alt="Subscribe to our channel" width="32" height="32"></a>
+</p>
 
-## Setup
+## Demo
+
+<p align="center">
+  <img src="docs/readme_demo.gif" alt="Stickmations editor demo" width="1120">
+</p>
+
+## Installation
+
+Choose a build for your operating system on the
+[download page](https://adxdits.github.io/stickmations/#download).
+
+Downloaded builds may show an unverified-publisher warning. On macOS, approve
+the app in **System Settings > Privacy & Security > Open Anyway**.
+
+## Development
+
+### Requirements
+
+- Node.js 22.12 and npm 10.9
+- [nvm](https://github.com/nvm-sh/nvm) to use the Node.js version in `.nvmrc`
+
+### Setup
+
+Run these commands from the repository root:
 
 ```bash
 nvm install
@@ -15,24 +48,20 @@ npm install
 npm run check
 ```
 
-The root `package-lock.json` is the only npm lockfile. Run npm commands from the
-repository root so all workspaces stay synchronized.
+Keep npm commands at the repository root. All workspaces share one
+`package-lock.json`.
 
-## Development
+### Run the app
 
 ```bash
 npm run dev
 ```
 
-This starts the Angular development server and opens it in Electron. Use
-`npm start` to build the application workspaces and launch the production desktop build.
-The public website has its own development server:
+This starts the Angular development server and opens the editor in Electron.
+Use `npm start` to build and launch the production desktop app, or
+`npm run dev:website` to run the download website separately.
 
-```bash
-npm run dev:website
-```
-
-Useful commands:
+### Commands
 
 | Command               | Purpose                                     |
 | --------------------- | ------------------------------------------- |
@@ -46,44 +75,44 @@ Useful commands:
 | `npm run dist:win`    | Build Windows installer and portable EXE    |
 | `npm run dist:linux`  | Build Linux AppImage and Debian package     |
 
-VS Code recommends the Angular, EditorConfig, ESLint, and Prettier
-extensions. Run the `Stickmations: Dev` or `Stickmations: Check` task from the Command
-Palette for the same workflows.
+In VS Code, the `Stickmations: Dev` and `Stickmations: Check` tasks run the
+development server and checks. Recommended extensions are listed in the workspace.
 
 ## Releases
 
-Desktop releases are built on native GitHub-hosted runners so the bundled FFmpeg binary
-matches each operating system and CPU architecture. A version tag such as `v1.2.3` publishes:
+Releases are built on native GitHub-hosted runners, with an FFmpeg binary for
+each operating system and CPU architecture. Each release includes:
 
 - macOS DMG and ZIP files for Apple Silicon and Intel
 - Windows x64 installer and portable executable
 - Linux x64 AppImage and Debian package
 - `SHA256SUMS.txt` covering every download
 
-Run `npm run check` before tagging, then push the tag to start
-`.github/workflows/release.yml`. The workflow smoke-tests bundled FFmpeg before publishing.
-It publishes release assets to
-`https://github.com/adxdits/stickmations_opensource/releases`, not the source repository.
-macOS packages use a fast ad-hoc signature so the app bundle stays internally valid without
-paid credentials. The workflow verifies that bundle before publishing.
+Assets are published to the separate
+[download repository](https://github.com/adxdits/stickmations_opensource/releases).
+The release workflow verifies the packages and smoke-tests bundled FFmpeg before
+publishing. macOS packages use ad-hoc signing, not a verified publisher signature.
 
-These builds still show an unverified-publisher warning after downloading. On macOS, use
-Privacy & Security > Open Anyway to approve the app. Ad-hoc signing fixes the malformed bundle
-that previously failed even after that approval, but it does not remove the initial warning.
+### Publishing a release
 
-### Release publishing
+Configure the `RELEASE_GITHUB_TOKEN` Actions secret in the source repository.
+Use a fine-grained token with Contents read/write access only to
+`adxdits/stickmations_opensource`.
 
-The source repository needs one Actions secret: `RELEASE_GITHUB_TOKEN`, a fine-grained token
-with Contents read/write access only to `adxdits/stickmations_opensource`.
+Run `npm run check` before publishing. Then either:
 
-To publish the current version after configuring that token, run the
-`Release desktop apps` workflow from `main` with `release_tag` set to the package version. The workflow
-rebuilds every platform, verifies the packages, and replaces the assets and checksums in the public
-release repository.
+- Push a version tag such as `v1.2.3` to start the release workflow.
+- Run the **Release desktop apps** workflow from `main`, with `release_tag` set
+  to the package version prefixed with `v`.
 
-The public website deploys separately through `.github/workflows/deploy-website.yml` whenever
-website files reach `main`. GitHub Pages serves the generated site for free at
-`https://adxdits.github.io/stickmations/`.
+The workflow builds every platform and publishes the assets and checksums to
+the download repository, replacing existing assets for that release.
+
+### Publishing the website
+
+The download website deploys separately when website files reach `main`, using
+`.github/workflows/deploy-website.yml`. It is hosted on
+[GitHub Pages](https://adxdits.github.io/stickmations/).
 
 ## Architecture
 
@@ -92,20 +121,18 @@ website files reach `main`. GitHub Pages serves the generated site for free at
 - `website/` - Independent Angular application for the public download website.
 - `desktop/` - Electron main process and isolated preload boundary.
 
-The editor and public website have separate entry points, Angular configuration,
-dependencies, assets, builds, and tests. Neither application imports the other.
+The editor and website have separate entry points, dependencies, builds, and
+tests. Neither imports the other. The engine is independent of Angular and
+Electron.
 
-Dependencies point inward: `engine/` knows nothing about Angular or Electron.
-See [Frontend architecture](docs/frontend-architecture.md) for the editor's feature, state,
-domain, rendering, and testing boundaries.
+See [Frontend architecture](docs/frontend-architecture.md) for the editor's
+feature, state, domain, rendering, and testing boundaries.
 
 ## License
 
-Stickmations is source-available and is not currently open source. The source may
-be viewed and used according to the Business Source License 1.1 (BUSL-1.1).
-Production or commercial use of the licensed source requires compliance with
-BUSL-1.1 or a commercial license from the licensor.
+Stickmations is source-available under the
+[Business Source License 1.1 (BUSL-1.1)](LICENSE), not an open-source license.
+Production or commercial use must comply with its terms or be covered by a
+commercial license from the licensor.
 
-The license is currently BUSL-1.1 and is scheduled to change to the Apache
-License 2.0 on 2029-08-22. Do not describe Stickmations as "open source" while
-BUSL-1.1 applies. See [LICENSE](LICENSE) for the complete license terms.
+The license is scheduled to change to Apache License 2.0 on 2029-08-22.
