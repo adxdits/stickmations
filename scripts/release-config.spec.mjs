@@ -22,4 +22,11 @@ describe('release configuration', () => {
     assert.match(releaseWorkflow, /GH_TOKEN:.*RELEASE_GITHUB_TOKEN/);
     assert.match(releaseWorkflow, /release_tag:/);
   });
+
+  it('only enforces package version checks for tag-triggered releases', () => {
+    assert.match(
+      releaseWorkflow,
+      /name: Verify release version[\s\S]*if: startsWith\(github\.ref, 'refs\/tags\/'\)/,
+    );
+  });
 });
