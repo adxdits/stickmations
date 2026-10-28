@@ -115,12 +115,52 @@ describe('release configuration', () => {
     },
   );
 
-  it('declares GPLv3 and includes its terms in packaged apps', () => {
-    assert.equal(packageJson.license, 'GPL-3.0-only');
-    assert.match(license, /GNU GENERAL PUBLIC LICENSE/);
-    assert.match(license, /Version 3, 29 June 2007/);
-    assert.match(license, /END OF TERMS AND CONDITIONS/);
-    assert.doesNotMatch(license, /Business Source License/);
+  it('declares personal-use terms consistently and includes them in packaged apps', async () => {
+    assert.equal(packageJson.license, 'SEE LICENSE IN LICENSE');
+    assert.match(license, /Stickmations Personal and Commercial License/);
+    assert.match(license, /applies only to the free version of Stickmations/);
+    assert.match(
+      license,
+      /Licensing terms and pricing for any future Premium version will be defined\s+separately before its release/,
+    );
+    assert.match(
+      license,
+      /future terms will not change the rights\s+granted under this license for the free version/,
+    );
+    assert.match(license, /personal, non-commercial purposes/);
+    assert.match(
+      license,
+      /Commercial use requires a separate paid commercial license/,
+    );
+    assert.match(license, /Third-party components retain their own licenses/);
+    assert.match(
+      license,
+      /Previously released versions remain governed by the licenses/,
+    );
+    assert.doesNotMatch(license, /^\s*GNU GENERAL PUBLIC LICENSE/m);
+
+    const lockfile = JSON.parse(
+      await readFile(new URL('../package-lock.json', import.meta.url), 'utf8'),
+    );
+    assert.equal(lockfile.packages[''].license, packageJson.license);
+    for (const workspace of packageJson.workspaces) {
+      const workspacePackage = JSON.parse(
+        await readFile(
+          new URL(`../${workspace}/package.json`, import.meta.url),
+          'utf8',
+        ),
+      );
+      assert.equal(workspacePackage.license, packageJson.license, workspace);
+      assert.equal(
+        lockfile.packages[workspace].license,
+        packageJson.license,
+        workspace,
+      );
+    }
+
+    assert.match(releaseWorkflow, /Free for personal, non-commercial use/);
+    assert.match(releaseWorkflow, /Commercial use requires a paid license/);
+    assert.doesNotMatch(releaseWorkflow, /Licensed under GNU GPLv3/);
     assert.ok(
       packageJson.build.extraResources.some(
         ({ from, to }) => from === 'LICENSE' && to === 'LICENSE',

@@ -125,6 +125,6 @@ jobs:
           else
             gh release create "$RELEASE_TAG" release-assets/* \
               --target "$RELEASE_COMMIT" \
-              --notes "Desktop installers for Stickmations ${RELEASE_TAG#v}. Source code: https://github.com/${GH_REPO}/tree/${RELEASE_COMMIT}. Licensed under GNU GPLv3; see LICENSE in the source code." \
+              --notes "Desktop installers for Stickmations ${RELEASE_TAG#v}. Source code: https://github.com/${GH_REPO}/tree/${RELEASE_COMMIT}. Free for personal, non-commercial use. Commercial use requires a paid license; see LICENSE in the source code." \
               --title "Stickmations ${RELEASE_TAG#v}"
           fi

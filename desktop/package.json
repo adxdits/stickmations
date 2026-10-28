@@ -2,7 +2,7 @@
   "name": "@stickmations/desktop",
   "version": "0.1.6",
   "private": true,
-  "license": "GPL-3.0-only",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "main": "dist/main.js",
   "scripts": {

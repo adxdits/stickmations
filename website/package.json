@@ -9,7 +9,7 @@
     "test": "ng test"
   },
   "private": true,
-  "license": "GPL-3.0-only",
+  "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "@angular/common": "^21.2.0",
     "@angular/compiler": "^21.2.0",

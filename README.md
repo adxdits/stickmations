@@ -98,10 +98,11 @@ publishing. macOS packages use ad-hoc signing, not a verified publisher signatur
 The workflow uses GitHub Actions' built-in `GITHUB_TOKEN`, with Contents write
 permission limited to the publish job. No separate release token is needed.
 
-Before the first public GPL release, make the repository public and choose a new
-version and tag containing the GPL-licensed source. Update the package versions
-and website download configuration together. Do not reuse historical release
-tags, which still identify the source and license for those older versions.
+Before publishing a release under the new licensing terms, choose a new
+version and tag containing the source and license for that release. Update the
+package versions and website download configuration together. Do not reuse
+historical release tags, which still identify the source and license for those
+older versions.
 The workflow rejects existing tags that point to a different commit than the
 one being built.
 
@@ -139,21 +140,27 @@ feature, state, domain, rendering, and testing boundaries.
 
 Copyright (c) 2026 Adam Almounayar (adxdits).
 
-Stickmations is open source under the
-[GNU General Public License version 3 only (GPL-3.0-only)](LICENSE).
-Individuals and companies may use it commercially, and copies may be sold.
-Redistribution, including modified versions, must comply with the GPL,
-including its corresponding-source requirements. The software is provided
-without warranty as described in the license.
+Stickmations is free for personal, non-commercial use under the
+[Stickmations Personal and Commercial License](LICENSE). It is source-available,
+not open-source. Commercial use requires a separate paid license for both
+individuals and companies, including internal business use, paid work, client
+projects, advertising, and monetized content.
+
+Redistribution or sale of the software, including modified versions, requires
+separate written permission. These restrictions apply to the software, not
+ownership of original animations you create with it. The software is provided
+without warranty to the extent permitted by law, as described in the license.
 
 ### Commercial licensing
 
-A separate paid commercial license is available for individuals or companies
-that need proprietary distribution terms for code owned by Adam Almounayar.
-Contact [adamalmounayar@hotmail.com](mailto:adamalmounayar@hotmail.com) to
-discuss terms. A commercial license is not required merely to use the app
-commercially under the GPL.
+A paid commercial license must be obtained before using Stickmations for
+business or commercial purposes. Contact
+[adamalmounayar@hotmail.com](mailto:adamalmounayar@hotmail.com) for pricing and
+written terms. Access to the source code does not grant commercial-use or
+redistribution rights.
 
-Commercial licensing applies only to code we own or have the right to relicense.
-Third-party components retain their own licenses. Historical releases remain
-under the licenses distributed with those versions.
+These terms apply only to code and assets we own or have the right to relicense.
+Third-party components, including FFmpeg, retain their own licenses and any
+applicable notice and corresponding-source requirements. Historical releases
+remain under the licenses distributed with those versions; existing GPL rights
+are not revoked.
