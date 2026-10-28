@@ -11,6 +11,9 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: read
+
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
@@ -31,14 +34,18 @@ jobs:
         env:
           RELEASE_TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || inputs.release_tag }}
         run: test "$RELEASE_TAG" = "v$(node -p "require('./package.json').version")"
-      - name: Require release repository token
+      - name: Verify release source
         if: startsWith(github.ref, 'refs/tags/') || inputs.release_tag != ''
         env:
-          RELEASE_GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || inputs.release_tag }}
         run: |
-          if [[ -z "$RELEASE_GITHUB_TOKEN" ]]; then
-            echo "::error::Missing required release secret: RELEASE_GITHUB_TOKEN"
-            exit 1
+          tag_refs=$(git ls-remote --tags origin "refs/tags/$RELEASE_TAG" "refs/tags/$RELEASE_TAG^{}")
+          if [[ -n "$tag_refs" ]]; then
+            tagged_commit=$(printf '%s\n' "$tag_refs" | tail -n 1 | cut -f 1)
+            if [[ "$tagged_commit" != "$GITHUB_SHA" ]]; then
+              echo "::error::Release tag $RELEASE_TAG points to a different commit. Choose a new tag or run the workflow from the matching tag."
+              exit 1
+            fi
           fi
       - run: npm run check
 
@@ -96,7 +103,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/') || inputs.release_tag != ''
     runs-on: ubuntu-24.04
     permissions:
-      contents: read
+      contents: write
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -108,15 +115,16 @@ jobs:
         run: find . -maxdepth 1 -type f -printf '%f\n' | sort | xargs sha256sum > SHA256SUMS.txt
       - name: Publish release
         env:
-          GH_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-          GH_REPO: adxdits/stickmations_opensource
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
           RELEASE_TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || inputs.release_tag }}
+          RELEASE_COMMIT: ${{ github.sha }}
         run: |
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             gh release upload "$RELEASE_TAG" release-assets/* --clobber
           else
             gh release create "$RELEASE_TAG" release-assets/* \
-              --target main \
-              --notes "Desktop installers for Stickmations ${RELEASE_TAG#v}." \
+              --target "$RELEASE_COMMIT" \
+              --notes "Desktop installers for Stickmations ${RELEASE_TAG#v}. Source code: https://github.com/${GH_REPO}/tree/${RELEASE_COMMIT}. Licensed under GNU GPLv3; see LICENSE in the source code." \
               --title "Stickmations ${RELEASE_TAG#v}"
           fi

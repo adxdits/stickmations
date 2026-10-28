@@ -71,7 +71,7 @@ export interface DownloadSiteConfig {
 }
 
 const RELEASE_VERSION = '0.1.6';
-const RELEASE_REPOSITORY = 'https://github.com/adxdits/stickmations_opensource';
+const RELEASE_REPOSITORY = 'https://github.com/adxdits/stickmations';
 const RELEASE_URL = `${RELEASE_REPOSITORY}/releases/tag/v${RELEASE_VERSION}`;
 const RELEASE_DOWNLOAD_URL = `${RELEASE_REPOSITORY}/releases/download/v${RELEASE_VERSION}`;
 

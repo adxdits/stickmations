@@ -2,6 +2,7 @@
   "name": "stickmations",
   "version": "0.1.6",
   "private": true,
+  "license": "GPL-3.0-only",
   "description": "Desktop 2D stick-figure animation software.",
   "author": {
     "name": "Adam Almounayar",
@@ -53,6 +54,10 @@
       "package.json"
     ],
     "extraResources": [
+      {
+        "from": "LICENSE",
+        "to": "LICENSE"
+      },
       {
         "from": "build/icon.png",
         "to": "branding/icon.png"

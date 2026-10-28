@@ -2,6 +2,7 @@
   "name": "@stickmations/engine",
   "version": "0.1.6",
   "private": true,
+  "license": "GPL-3.0-only",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

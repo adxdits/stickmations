@@ -88,16 +88,22 @@ each operating system and CPU architecture. Each release includes:
 - Linux x64 AppImage and Debian package
 - `SHA256SUMS.txt` covering every download
 
-Assets are published to the separate
-[download repository](https://github.com/adxdits/stickmations_opensource/releases).
+Assets are published alongside the source code in this repository's
+[GitHub Releases](https://github.com/adxdits/stickmations/releases).
 The release workflow verifies the packages and smoke-tests bundled FFmpeg before
 publishing. macOS packages use ad-hoc signing, not a verified publisher signature.
 
 ### Publishing a release
 
-Configure the `RELEASE_GITHUB_TOKEN` Actions secret in the source repository.
-Use a fine-grained token with Contents read/write access only to
-`adxdits/stickmations_opensource`.
+The workflow uses GitHub Actions' built-in `GITHUB_TOKEN`, with Contents write
+permission limited to the publish job. No separate release token is needed.
+
+Before the first public GPL release, make the repository public and choose a new
+version and tag containing the GPL-licensed source. Update the package versions
+and website download configuration together. Do not reuse historical release
+tags, which still identify the source and license for those older versions.
+The workflow rejects existing tags that point to a different commit than the
+one being built.
 
 Run `npm run check` before publishing. Then either:
 
@@ -106,7 +112,8 @@ Run `npm run check` before publishing. Then either:
   to the package version prefixed with `v`.
 
 The workflow builds every platform and publishes the assets and checksums to
-the download repository, replacing existing assets for that release.
+this repository, replacing existing assets for that release. New tags point to
+the exact commit used for the build, and release notes link to that source.
 
 ### Publishing the website
 
@@ -130,9 +137,23 @@ feature, state, domain, rendering, and testing boundaries.
 
 ## License
 
-Stickmations is source-available under the
-[Business Source License 1.1 (BUSL-1.1)](LICENSE), not an open-source license.
-Production or commercial use must comply with its terms or be covered by a
-commercial license from the licensor.
+Copyright (c) 2026 Adam Almounayar (adxdits).
 
-The license is scheduled to change to Apache License 2.0 on 2029-08-22.
+Stickmations is open source under the
+[GNU General Public License version 3 only (GPL-3.0-only)](LICENSE).
+Individuals and companies may use it commercially, and copies may be sold.
+Redistribution, including modified versions, must comply with the GPL,
+including its corresponding-source requirements. The software is provided
+without warranty as described in the license.
+
+### Commercial licensing
+
+A separate paid commercial license is available for individuals or companies
+that need proprietary distribution terms for code owned by Adam Almounayar.
+Contact [adamalmounayar@hotmail.com](mailto:adamalmounayar@hotmail.com) to
+discuss terms. A commercial license is not required merely to use the app
+commercially under the GPL.
+
+Commercial licensing applies only to code we own or have the right to relicense.
+Third-party components retain their own licenses. Historical releases remain
+under the licenses distributed with those versions.
