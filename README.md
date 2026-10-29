@@ -30,6 +30,11 @@ Choose a build for your operating system on the
 Downloaded builds may show an unverified-publisher warning. On macOS, approve
 the app in **System Settings > Privacy & Security > Open Anyway**.
 
+## Stick Figures
+
+You can download [Stick Nodes stickfigures and packs](https://sticknodes.com/stickfigures/)
+and import their `.nodes` files into Stickmations.
+
 ## Development
 
 ### Requirements
