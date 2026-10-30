@@ -4,6 +4,7 @@ import type { StickFigure } from '@stickmations/engine';
 import { isSavableFigure } from '../domain/figure-draft';
 import type { StickmationsDesktopApi } from './desktop-api';
 import { figureFileName, serializeFigureFile } from './figure-file';
+import { downloadBlob } from './file-download';
 
 export type FigureSavePhase = 'idle' | 'saving' | 'complete' | 'error';
 
@@ -68,15 +69,11 @@ async function saveThroughDesktop(
 }
 
 function downloadFigureFile(document: Document, name: string, contents: string): string {
-  const fileName = figureFileName(name);
-  const blob = new Blob([contents], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = fileName;
-  link.click();
-  URL.revokeObjectURL(url);
-  return fileName;
+  return downloadBlob(
+    document,
+    new Blob([contents], { type: 'application/json' }),
+    figureFileName(name),
+  );
 }
 
 function errorMessage(error: unknown): string {

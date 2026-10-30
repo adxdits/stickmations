@@ -1,4 +1,5 @@
 import type { StickFigure } from '@stickmations/engine';
+import { sanitizeDownloadFileName } from './file-download';
 
 export const FIGURE_FILE_EXTENSION = '.json';
 
@@ -12,14 +13,7 @@ export function serializeFigureFile(figure: StickFigure): string {
 }
 
 export function figureFileName(suggestedName: string): string {
-  const name = suggestedName
-    .replace(/[<>:"/|?*\u0000-\u001f]/g, '_')
-    .replaceAll('\\', '_')
-    .trim();
-  const safeName = name || 'Untitled figure';
-  return safeName.toLowerCase().endsWith(FIGURE_FILE_EXTENSION)
-    ? safeName
-    : `${safeName}${FIGURE_FILE_EXTENSION}`;
+  return sanitizeDownloadFileName(suggestedName, 'Untitled figure', FIGURE_FILE_EXTENSION);
 }
 
 function figureFileValue(figure: StickFigure): Record<string, unknown> {

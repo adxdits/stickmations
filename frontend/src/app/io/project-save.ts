@@ -1,6 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import type { StartProjectSaveResult, StickmationsDesktopApi } from './desktop-api';
+import { downloadBlob, sanitizeDownloadFileName } from './file-download';
 import { PROJECT_FILE_EXTENSION, serializeProjectFile, type ProjectSnapshot } from './project-file';
 
 export type ProjectSavePhase = 'idle' | 'saving' | 'complete' | 'error';
@@ -112,13 +113,7 @@ async function downloadProjectFile(document: Document, snapshot: ProjectSnapshot
   const fileName = projectFileName(snapshot.name);
   const compressed = projectFileStream(snapshot).pipeThrough(new CompressionStream('gzip'));
   const blob = await new Response(compressed).blob();
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = fileName;
-  link.click();
-  URL.revokeObjectURL(url);
-  return fileName;
+  return downloadBlob(document, blob, fileName);
 }
 
 function projectFileStream(snapshot: ProjectSnapshot): ReadableStream<BufferSource> {
@@ -136,14 +131,7 @@ function projectFileStream(snapshot: ProjectSnapshot): ReadableStream<BufferSour
 }
 
 export function projectFileName(suggestedName: string): string {
-  const name = suggestedName
-    .replace(/[<>:"/|?*\u0000-\u001f]/g, '_')
-    .replaceAll('\\', '_')
-    .trim();
-  const safeName = name || 'Untitled project';
-  return safeName.toLowerCase().endsWith(PROJECT_FILE_EXTENSION)
-    ? safeName
-    : `${safeName}${PROJECT_FILE_EXTENSION}`;
+  return sanitizeDownloadFileName(suggestedName, 'Untitled project', PROJECT_FILE_EXTENSION);
 }
 
 function errorMessage(error: unknown): string {
