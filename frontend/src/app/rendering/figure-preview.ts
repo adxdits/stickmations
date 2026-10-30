@@ -88,16 +88,25 @@ export function createFigurePreview(figure: StickFigure): FigurePreview {
   };
 }
 
+const scenePreviewCache = new WeakMap<readonly FigureLayer[], FigurePreview>();
+
 export function createScenePreview(layers: readonly FigureLayer[]): FigurePreview {
+  const cached = scenePreviewCache.get(layers);
+  if (cached) {
+    return cached;
+  }
+
   const visibleLayers = layers.filter(({ visible }) => visible);
   if (visibleLayers.length === 0) {
-    return {
+    const emptyPreview: FigurePreview = {
       viewBox: '-320 -180 640 360',
       drawables: [],
       joints: [],
       editableJoints: [],
       center: { id: '', x: 0, y: 0 },
     };
+    scenePreviewCache.set(layers, emptyPreview);
+    return emptyPreview;
   }
 
   const merged: StickFigure = {
@@ -124,7 +133,9 @@ export function createScenePreview(layers: readonly FigureLayer[]): FigurePrevie
       })),
     ),
   };
-  return createFigurePreview(merged);
+  const preview = createFigurePreview(merged);
+  scenePreviewCache.set(layers, preview);
+  return preview;
 }
 
 interface DrawableEntry {

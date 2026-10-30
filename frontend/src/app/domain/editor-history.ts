@@ -14,10 +14,10 @@ export interface FrameMove {
   readonly to: number;
 }
 
-export function appendHistory(
-  history: readonly EditorSnapshot[],
-  snapshot: EditorSnapshot,
-): readonly EditorSnapshot[] {
+export function appendHistory<T>(
+  history: readonly T[],
+  snapshot: T,
+): readonly T[] {
   return [...history.slice(-(MAX_HISTORY_ENTRIES - 1)), snapshot];
 }
 

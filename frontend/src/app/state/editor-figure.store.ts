@@ -1,5 +1,6 @@
 import { computed, Injectable, signal } from '@angular/core';
 import type { StickFigure } from '@stickmations/engine';
+import { appendHistory } from '../domain/editor-history';
 import {
   addJoint,
   connectJoints,
@@ -24,8 +25,6 @@ export interface FigureSelection {
   readonly kind: 'joint' | 'segment';
   readonly id: string;
 }
-
-const MAX_HISTORY_ENTRIES = 100;
 
 @Injectable({ providedIn: 'root' })
 export class EditorFigureStore {
@@ -184,7 +183,7 @@ export class EditorFigureStore {
     if (!previous) {
       return;
     }
-    this.redoStack.update((entries) => append(entries, this.figure()));
+    this.redoStack.update((entries) => appendHistory(entries, this.figure()));
     this.undoStack.update((entries) => entries.slice(0, -1));
     this.pendingEdit = null;
     this.applyRestored(previous);
@@ -195,7 +194,7 @@ export class EditorFigureStore {
     if (!next) {
       return;
     }
-    this.undoStack.update((entries) => append(entries, this.figure()));
+    this.undoStack.update((entries) => appendHistory(entries, this.figure()));
     this.redoStack.update((entries) => entries.slice(0, -1));
     this.pendingEdit = null;
     this.applyRestored(next);
@@ -213,7 +212,7 @@ export class EditorFigureStore {
   }
 
   private pushUndo(snapshot: StickFigure): void {
-    this.undoStack.update((entries) => append(entries, snapshot));
+    this.undoStack.update((entries) => appendHistory(entries, snapshot));
     this.redoStack.set([]);
   }
 
@@ -233,8 +232,4 @@ export class EditorFigureStore {
       this.selection.set(null);
     }
   }
-}
-
-function append(entries: readonly StickFigure[], snapshot: StickFigure): readonly StickFigure[] {
-  return [...entries.slice(-(MAX_HISTORY_ENTRIES - 1)), snapshot];
 }
