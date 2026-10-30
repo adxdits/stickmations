@@ -10,7 +10,8 @@ import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { unlink } from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { basename, extname, join } from 'node:path';
+import { join } from 'node:path';
+import { sanitizeFileName } from './file-name.js';
 import {
   MP4_EXPORT_CHANNELS,
   type CompleteMp4ExportResult,
@@ -227,14 +228,7 @@ function validateOptions(options: StartMp4ExportOptions): void {
 }
 
 function mp4FileName(suggestedName: string): string {
-  const fileName = basename(suggestedName)
-    .replace(/[<>:"/|?*\u0000-\u001f]/g, '_')
-    .replaceAll('\\', '_')
-    .trim();
-  const safeName = fileName || 'animation';
-  return extname(safeName).toLowerCase() === '.mp4'
-    ? safeName
-    : `${safeName}.mp4`;
+  return sanitizeFileName(suggestedName, 'animation', '.mp4');
 }
 
 function resolveFfmpegPath(): string {

@@ -7,7 +7,8 @@ import {
 } from 'electron';
 import { randomUUID } from 'node:crypto';
 import { rename, unlink, writeFile } from 'node:fs/promises';
-import { basename, dirname, extname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
+import { sanitizeFileName, withExtension } from './file-name.js';
 import {
   FIGURE_SAVE_CHANNELS,
   type SaveFigureOptions,
@@ -89,15 +90,9 @@ async function writeAtomically(outputPath: string, contents: string): Promise<vo
 }
 
 function figureFileName(suggestedName: string): string {
-  const fileName = basename(suggestedName)
-    .replace(/[<>:"/|?*\u0000-\u001f]/g, '_')
-    .replaceAll('\\', '_')
-    .trim();
-  return withFigureExtension(fileName || 'Untitled figure');
+  return sanitizeFileName(suggestedName, 'Untitled figure', FIGURE_FILE_EXTENSION);
 }
 
 function withFigureExtension(path: string): string {
-  return extname(path).toLowerCase() === FIGURE_FILE_EXTENSION
-    ? path
-    : `${path}${FIGURE_FILE_EXTENSION}`;
+  return withExtension(path, FIGURE_FILE_EXTENSION);
 }

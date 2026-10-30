@@ -8,9 +8,10 @@ import {
 import { randomUUID } from 'node:crypto';
 import { createWriteStream, type WriteStream } from 'node:fs';
 import { rename, unlink } from 'node:fs/promises';
-import { basename, dirname, extname, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { createGzip, type Gzip } from 'node:zlib';
+import { sanitizeFileName, withExtension } from './file-name.js';
 import {
   PROJECT_SAVE_CHANNELS,
   type CompleteProjectSaveResult,
@@ -227,18 +228,11 @@ function validateOptions(options: StartProjectSaveOptions): void {
 }
 
 function projectFileName(suggestedName: string): string {
-  const fileName = basename(suggestedName)
-    .replace(/[<>:"/|?*\u0000-\u001f]/g, '_')
-    .replaceAll('\\', '_')
-    .trim();
-  const safeName = fileName || 'Untitled project';
-  return withProjectExtension(safeName);
+  return sanitizeFileName(suggestedName, 'Untitled project', PROJECT_FILE_EXTENSION);
 }
 
 function withProjectExtension(path: string): string {
-  return extname(path).toLowerCase() === PROJECT_FILE_EXTENSION
-    ? path
-    : `${path}${PROJECT_FILE_EXTENSION}`;
+  return withExtension(path, PROJECT_FILE_EXTENSION);
 }
 
 function outputPathKey(path: string): string {
