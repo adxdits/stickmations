@@ -63,50 +63,38 @@ describe('parseStickNodesFile', () => {
     expect(figure.joints[2]?.y).toBeCloseTo(Math.SQRT1_2 * 200);
   });
 
-  it('imports files written before build numbers existed', () => {
-    const legacy = createLegacyFigure(323);
+  it('imports files across each supported legacy record layout', () => {
+    for (const [version, layout] of [
+      [170, '45-byte'],
+      [212, '51-byte'],
+      [264, '75-byte'],
+      [417, '86-byte'],
+    ] as const) {
+      const figure = parseStickNodesFile(
+        createLegacyFigure(version, layout),
+        'Legacy.nodes',
+      );
 
-    const figure = parseStickNodesFile(legacy, 'Legacy.nodes');
-
-    expect(figure.name).toBe('Legacy');
-    expect(figure.joints).toHaveLength(2);
-    expect(figure.joints[0]).toMatchObject({ id: 'node-0' });
-    expect(figure.joints[1]?.x).toBeCloseTo(0);
-    expect(figure.joints[1]?.y).toBeCloseTo(100);
-    expect(figure.segments).toMatchObject([
-      {
+      expect(figure.name, layout).toBe('Legacy');
+      expect(figure.joints, layout).toHaveLength(2);
+      expect(figure.joints[0], layout).toMatchObject({ id: 'node-0' });
+      expect(figure.joints[1]?.x, layout).toBeCloseTo(0);
+      expect(figure.joints[1]?.y, layout).toBeCloseTo(100);
+      expect(figure.segments[0], layout).toMatchObject({
         id: 'segment-node-1',
         from: 'node-0',
         to: 'node-1',
         width: 32,
         color: '#ff0000',
-      },
-    ]);
-  });
-
-  it('reads both legacy record layouts', () => {
-    // 305 predates the repeated rotation; 320 and later carry it.
-    for (const version of [200, 305, 319, 320, 323, 334, 431]) {
-      const figure = parseStickNodesFile(
-        createLegacyFigure(version),
-        'Legacy.nodes',
-      );
-      expect(figure.joints, `version ${version}`).toHaveLength(2);
-      expect(figure.joints[1]?.y, `version ${version}`).toBeCloseTo(100);
+      });
     }
   });
 
-  it('imports the shorter record used before the rotation was repeated', () => {
-    const figure = parseStickNodesFile(createLegacyFigure(305), 'Effect.nodes');
-
-    expect(figure.joints).toHaveLength(2);
-    expect(figure.joints[1]?.x).toBeCloseTo(0);
-    expect(figure.joints[1]?.y).toBeCloseTo(100);
-    expect(figure.segments[0]).toMatchObject({ width: 32, color: '#ff0000' });
-  });
-
-  it('defaults the options the legacy layout never stored', () => {
-    const figure = parseStickNodesFile(createLegacyFigure(323), 'Legacy.nodes');
+  it('defaults the options the legacy layouts never stored', () => {
+    const figure = parseStickNodesFile(
+      createLegacyFigure(264, '75-byte'),
+      'Legacy.nodes',
+    );
 
     expect(figure.segments[0]).toMatchObject({
       shape: 'rounded-segment',
@@ -117,24 +105,21 @@ describe('parseStickNodesFile', () => {
     });
   });
 
-  it('rejects versions too old to share the legacy layout', () => {
+  it('rejects compressed Stick Nodes files with a clear message', () => {
     expect(() =>
-      parseStickNodesFile(createLegacyFigure(120), 'Ancient.nodes'),
-    ).toThrow(/Unsupported Stick Nodes version 120/);
+      parseStickNodesFile(new Uint8Array([0x78, 0x9c, 0x00, 0x00]), 'Zlib.nodes'),
+    ).toThrow('This Stick Nodes file is compressed, which is not supported yet.');
   });
 
-  it('still rejects a wrong build number for a current version', () => {
-    const wrongBuild = minimalFigure.slice();
-    new DataView(wrongBuild.buffer, wrongBuild.byteOffset).setInt32(4, 999);
-
-    expect(() => parseStickNodesFile(wrongBuild, 'Wrong.nodes')).toThrow(
-      /Unsupported Stick Nodes build 999/,
-    );
+  it('rejects unrecognized record layouts', () => {
+    expect(() =>
+      parseStickNodesFile(minimalFigure.slice(0, 20), 'Broken.nodes'),
+    ).toThrow(/Unsupported Stick Nodes file layout \(version 432\)/);
   });
 
   it('rejects truncated files', () => {
     expect(() =>
-      parseStickNodesFile(minimalFigure.slice(0, 20), 'Broken.nodes'),
+      parseStickNodesFile(new Uint8Array([1, 2]), 'Broken.nodes'),
     ).toThrow('The Stick Nodes file is incomplete or corrupted.');
   });
 });
@@ -164,23 +149,67 @@ function createNestedFigure(): Uint8Array {
   return result;
 }
 
-/**
- * Builds a two-node file in a pre-build-number layout: no build field, a fixed node record, no
- * per-child connector flags and no trailing connector table. Versions from 320 store the rotation
- * a second time just before the colours, which makes their record four bytes longer.
- */
-function createLegacyFigure(version: number): Uint8Array {
-  const repeatsAngle = version >= 320;
-  const NODE = repeatsAngle ? 84 : 80;
-  const colourAt = repeatsAngle ? 68 : 64;
-  const childCountAt = repeatsAngle ? 80 : 76;
-  const header = 12;
-  const result = new Uint8Array(header + NODE * 2 + 4);
+type LegacyLayoutKind = '45-byte' | '51-byte' | '75-byte' | '86-byte';
+
+function createLegacyFigure(
+  version: number,
+  kind: LegacyLayoutKind,
+): Uint8Array {
+  const specs = {
+    '45-byte': {
+      header: 12,
+      body: 45,
+      hasFills: false,
+      useColor: 7,
+      scale: 17,
+      length: 21,
+      thickness: 29,
+      angle: 37,
+      colors: [41],
+    },
+    '51-byte': {
+      header: 12,
+      body: 51,
+      hasFills: false,
+      useColor: 7,
+      scale: 19,
+      length: 23,
+      thickness: 31,
+      angle: 39,
+      colors: [43, 47],
+    },
+    '75-byte': {
+      header: 12,
+      body: 75,
+      hasFills: true,
+      useColor: 9,
+      scale: 22,
+      length: 26,
+      thickness: 34,
+      angle: 51,
+      colors: [63, 67, 71],
+    },
+    '86-byte': {
+      header: 16,
+      body: 86,
+      hasFills: true,
+      useColor: 9,
+      scale: 25,
+      length: 29,
+      thickness: 37,
+      angle: 62,
+      colors: [74, 78, 82],
+    },
+  }[kind];
+
+  const nodeBytes = specs.body + 4;
+  const trailerBytes = specs.hasFills ? 4 : 0;
+  const result = new Uint8Array(specs.header + nodeBytes * 2 + trailerBytes);
   const view = new DataView(result.buffer);
 
   view.setInt32(0, version);
-  view.setFloat32(4, 1);
-  result.set([0xff, 0x20, 0x20, 0x20], 8); // header colour
+  view.setFloat32(specs.header - 8, 1);
+  result.set([0xff, 0x20, 0x20, 0x20], specs.header - 4);
 
   const writeNode = (
     at: number,
@@ -189,23 +218,27 @@ function createLegacyFigure(version: number): Uint8Array {
     length: number,
     childCount: number,
   ) => {
-    view.setInt8(at, 0); // rounded segment
+    view.setInt8(at, 0);
     view.setInt32(at + 1, drawOrder);
-    result[at + 9] = 1; // use the node's own colour
-    result[at + 13] = 1; // use the node's own scale
-    view.setFloat32(at + 22, 1); // scale
-    view.setFloat32(at + 30, length);
-    view.setInt32(at + 38, 32); // thickness
-    view.setFloat32(at + 60, angle);
-    result.set([0xff, 0x00, 0x00, 0xff], at + colourAt); // node colour, stored BGRA
-    result.set([0xff, 0x80, 0x80, 0x80], at + colourAt + 4);
-    result.set([0xff, 0x80, 0x80, 0x80], at + colourAt + 8);
-    view.setInt32(at + childCountAt, childCount);
+    result[at + specs.useColor] = 1;
+    view.setFloat32(at + specs.scale, 1);
+    view.setFloat32(at + specs.length, length);
+    view.setInt32(at + specs.thickness, 32);
+    view.setFloat32(at + specs.angle, angle);
+    const [primaryColor, ...otherColors] = specs.colors;
+    if (primaryColor !== undefined) {
+      result.set([0xff, 0x00, 0x00, 0xff], at + primaryColor);
+    }
+    for (const offset of otherColors) {
+      result.set([0xff, 0x80, 0x80, 0x80], at + offset);
+    }
+    view.setInt32(at + specs.body, childCount);
   };
 
-  // The root offsets by its own length, so keep it at the origin.
-  writeNode(header, 0, 0, 0, 1);
-  writeNode(header + NODE, 1, 90, 100, 0);
-  view.setInt32(header + NODE * 2, 0); // no polyfills
+  writeNode(specs.header, 0, 0, 0, 1);
+  writeNode(specs.header + nodeBytes, 1, 90, 100, 0);
+  if (specs.hasFills) {
+    view.setInt32(specs.header + nodeBytes * 2, 0);
+  }
   return result;
 }

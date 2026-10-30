@@ -38,6 +38,8 @@ Features may coordinate through inputs and outputs, but should not reach into si
 - `EditorDocumentState` owns document signals and computed projections.
 - `EditorDocumentStore` is the stable command facade for frame, layer, camera, and history actions.
 - `EditorProjectStore` owns project creation, file imports, naming, and background assets.
+- `EditorFigureStore` owns the stick-figure editor's draft, tool selection, and undo/redo history.
+- `EditorOnionStore` owns onion-skin visibility and adjacent-frame preview projection.
 - `EditorHistoryStore` owns undo/redo stacks and grouped edit transactions.
 - `EditorViewportStore` owns zoom, pan, tools, and playback preview state.
 - `EditorWorkspaceStore` owns panel visibility and canvas focus state.
@@ -67,4 +69,4 @@ Each feature folder owns a component and its external template. Extract a child 
 
 ## Tests
 
-Root integration tests are split by behavior (`app.canvas.spec.ts`, `app.animation.spec.ts`, and `app.project.spec.ts`) and share setup through `testing/app-test-harness.ts`. Pure rendering and interaction helpers keep focused specs beside their source.
+Root integration tests are split by behavior (`app.canvas.spec.ts`, `app.animation.spec.ts`, `app.figure-editor.spec.ts`, `app.onion.spec.ts`, `app.import.spec.ts`, `app.save.spec.ts`, `app.export.spec.ts`, and `app.project.spec.ts`) and share setup through `testing/app-test-harness.ts`. Pure rendering and interaction helpers keep focused specs beside their source.
